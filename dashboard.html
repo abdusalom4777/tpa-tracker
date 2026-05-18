@@ -346,7 +346,7 @@ function fetchData() {
       records = data.rows.map(function(r, i) {
         return {
           id: i,
-          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p.getTime())){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r[0]), shift: r[1]||'', operator: r[2]||'',
+          date: (function(d){if(!d)return '';var s=String(d);if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;var m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];return s;})(r[0]), shift: r[1]||'', operator: r[2]||'',
           machine: r[3]||'', material: r[4]||'', partName: r[5]||'',
           moldId: r[6]||'', cavities: parseInt(r[7])||1,
           cycles: parseInt(r[8])||0, cycleTime: parseFloat(r[9])||0,
@@ -376,16 +376,20 @@ function getTodayStr() { return (function(){var d=new Date();return d.getFullYea
 
 function normalizeDate(dateStr) {
   if (!dateStr) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  // Already YYYY-MM-DD - return as is, no Date object needed
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(dateStr))) return String(dateStr);
+  // Try to extract YYYY-MM-DD from full date string directly
+  var match = String(dateStr).match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return match[1]+'-'+match[2]+'-'+match[3];
+  // Parse month name format: "Mon May 18 2026..."
   try {
-    var d = new Date(dateStr);
-    if (!isNaN(d.getTime())) {
-      return d.getFullYear() + '-' +
-        String(d.getMonth()+1).padStart(2,'0') + '-' +
-        String(d.getDate()).padStart(2,'0');
-    }
+    var s = String(dateStr);
+    var months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',
+                  Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+    var m2 = s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+    if (m2) return m2[3]+'-'+(months[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');
   } catch(e) {}
-  return dateStr;
+  return String(dateStr);
 }
 
 function renderAll() {

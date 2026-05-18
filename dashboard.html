@@ -450,7 +450,14 @@ function getMachineStats(machineId, recs) {
     s.good += r.good||0; s.defects += r.defects||0; s.cycles += r.cycles||0;
     s.plannedDown += r.plannedDown||0; s.unplannedDown += r.unplannedDown||0;
     if (r.partName) s.parts.push(r.partName);
-    if (r.operator) s.operators[r.operator] = (s.operators[r.operator]||0)+(r.good||0);
+    if (r.operator) {
+      s.operators[r.operator] = (s.operators[r.operator]||0)+(r.good||0);
+      var isS1op = r.shift && r.shift.indexOf('Смена 1')>=0;
+      var shiftLabel = isS1op ? 'С1' : 'С2';
+      s.opShifts = s.opShifts || {};
+      if (!s.opShifts[r.operator]) s.opShifts[r.operator] = {};
+      s.opShifts[r.operator][shiftLabel] = (s.opShifts[r.operator][shiftLabel]||0)+(r.good||0);
+    }
     var isS1 = r.shift && r.shift.indexOf('Смена 1')>=0;
     var sd = isS1 ? s.s1 : s.s2;
     sd.good += r.good||0;
@@ -478,7 +485,13 @@ function renderGrid(gridId, machines, todayRecs) {
     var statusText = !hasData ? 'Нет данных' : pctDay!==null ? (pctDay>=100?'✅ Норма':'⚠️ '+pctDay+'%') : (defRate===0?'✅ Норма':defRate<5?'⚠️ Внимание':'❌ Брак');
     var statusCls = !hasData?'status-off':cardCls==='ok'?'status-ok':cardCls==='warn'?'status-warn':'status-fail';
 
-    var topOp = Object.keys(s.operators).sort(function(a,b){return s.operators[b]-s.operators[a];})[0]||'—';
+    var topOp = Object.keys(s.operators).length ?
+      Object.keys(s.operators).sort(function(a,b){return s.operators[b]-s.operators[a];})
+        .map(function(op){
+          var shifts = s.opShifts && s.opShifts[op] ? Object.keys(s.opShifts[op]).join('+') : '';
+          return op+(shifts?' ('+shifts+')':'')+' '+s.operators[op].toLocaleString()+'шт';
+        })
+        .join(' / ') : '—';
     var part = s.parts.filter(function(v,i,a){return a.indexOf(v)===i;})[0]||'—';
 
     function pBar(good, norm) {

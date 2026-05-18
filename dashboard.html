@@ -451,6 +451,7 @@ function renderAll() {
 
 function getMachineStats(machineId, recs) {
   var s = { good:0, defects:0, cycles:0, plannedDown:0, unplannedDown:0, operators:{}, parts:[],
+    molds:{},
     s1:{good:0,cycleTime:0,cavities:0,count:0},
     s2:{good:0,cycleTime:0,cavities:0,count:0} };
   recs.forEach(function(r){
@@ -459,6 +460,10 @@ function getMachineStats(machineId, recs) {
     s.good += r.good||0; s.defects += r.defects||0; s.cycles += r.cycles||0;
     s.plannedDown += r.plannedDown||0; s.unplannedDown += r.unplannedDown||0;
     if (r.partName) s.parts.push(r.partName);
+    if (r.moldId || r.partName) {
+      var moldKey = (r.moldId||'') + (r.partName ? ' '+r.partName : '');
+      s.molds[moldKey] = (s.molds[moldKey]||0) + (r.good||0);
+    }
     if (r.operator) {
       s.operators[r.operator] = (s.operators[r.operator]||0)+(r.good||0);
       var isS1op = r.shift && r.shift.indexOf('Смена 1')>=0;
@@ -535,6 +540,18 @@ function renderGrid(gridId, machines, todayRecs) {
         '<span>' + (s.cycles?s.cycles+' цикл':'—') + '</span>' +
         (s.unplannedDown ? '<span style="color:var(--red)">⏸ '+s.unplannedDown+'м</span>' : '') +
       '</div>' +
+      (hasData && Object.keys(s.molds).length ?
+        '<div style="border-top:1px solid rgba(255,255,255,0.08);padding:8px 14px">' +
+        '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Пресс-формы</div>' +
+        Object.keys(s.molds).sort(function(a,b){return s.molds[b]-s.molds[a];}).map(function(mold){
+          var pct = s.good>0?Math.round(s.molds[mold]/s.good*100):0;
+          return '<div style="display:flex;justify-content:space-between;margin-bottom:3px">' +
+            '<span style="font-size:11px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">' + mold + '</span>' +
+            '<span style="font-size:11px;font-weight:700;color:#fff;white-space:nowrap">' + s.molds[mold].toLocaleString() + ' <span style="color:#555;font-weight:400">'+pct+'%</span></span>' +
+          '</div>';
+        }).join('') +
+        '</div>'
+      : '') +
     '</div>';
   });
   grid.innerHTML = html;

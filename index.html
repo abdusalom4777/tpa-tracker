@@ -794,8 +794,8 @@ function saveGsUrl() {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('entry-date').value = new Date().toISOString().slice(0,10);
-  document.getElementById('dash-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('entry-date').value = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
+  document.getElementById('dash-date').value = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
   document.getElementById('gs-url').value = loadGsUrl();
   updateClock();
   updateSyncStatus();

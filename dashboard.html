@@ -242,7 +242,7 @@
   <span class="cfg-lbl">URL:</span>
   <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec">
   <span class="cfg-lbl">Период:</span>
-  <select id="dash-period" onchange="renderAll()" style="height:36px;padding:0 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;">
+  <select id="dash-period" onchange="toggleDateInput();renderAll()" style="height:36px;padding:0 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;">
     <option value="today">Сегодня</option>
     <option value="shift">Текущая смена</option>
     <option value="s1">Смена 1</option>
@@ -250,7 +250,7 @@
     <option value="date">Выбрать дату</option>
     <option value="all">Всё время</option>
   </select>
-  <input type="date" id="dash-filter-date" style="height:36px;padding:0 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;display:none;" oninput="renderAll()">
+  <input type="date" id="dash-filter-date" style="height:36px;padding:0 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;display:none;" oninput="renderAll()" onchange="renderAll()">
   <button class="cfg-btn" onclick="saveAndLoad()">🔄 Загрузить</button>
   <span class="auto-badge" id="auto-badge">⏱ 5 мин</span>
 </div>
@@ -313,6 +313,17 @@ function saveAndLoad() {
   saveGsUrl(url);
   nextRefresh = 300;
   fetchData();
+}
+
+function toggleDateInput() {
+  var period = document.getElementById('dash-period').value;
+  var dateInput = document.getElementById('dash-filter-date');
+  if (dateInput) {
+    dateInput.style.display = period === 'date' ? 'inline-block' : 'none';
+    if (period === 'date' && !dateInput.value) {
+      dateInput.value = getTodayStr();
+    }
+  }
 }
 
 function fetchData() {
@@ -389,7 +400,7 @@ function renderAll() {
     if (period === 'shift') { var ws = isS1now?'Смена 1':'Смена 2'; return rd===today && r.shift.indexOf(ws)>=0; }
     if (period === 's1') return rd===today && r.shift.indexOf('Смена 1')>=0;
     if (period === 's2') return rd===today && r.shift.indexOf('Смена 2')>=0;
-    if (period === 'date') { var fd = filterDate?filterDate.value:today; return rd===fd; }
+    if (period === 'date') { var fd = filterDate&&filterDate.value?filterDate.value:today; return rd===fd; }
     return true; // all
   });
 

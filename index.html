@@ -1557,7 +1557,8 @@ function addMold() {
   });
 }
 
-function deleteMold(id) {
+function deleteMold(btn) {
+  var id = btn ? (btn.getAttribute ? btn.getAttribute('data-id') : btn) : btn;
   var url = loadGsUrl();
   if (!url) { alert('Настройте Google Sheets'); return; }
   if (!confirm('Удалить пресс-форму ' + id + ' из Google Sheets?')) return;
@@ -1585,7 +1586,7 @@ function renderMoldsTable() {
       '<td><strong>'+m.id+'</strong></td>'+
       '<td>'+(m.label||'—')+'</td>'+
       '<td>'+(m.machine||'—')+'</td>'+
-      '<td><button class="btn-danger" onclick="deleteMold(''+m.id.replace(/'/g,"\'")+'')" >🗑</button></td>'+
+      '<td><button class="btn-danger" onclick="deleteMold(this)" data-id="'+m.id+'">🗑</button></td>'+
       '</tr>';
   }).join('');
 }

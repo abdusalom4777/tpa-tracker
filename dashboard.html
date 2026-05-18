@@ -372,7 +372,7 @@ function fetchData() {
   document.body.appendChild(script);
 }
 
-function getTodayStr() { return new Date().toISOString().slice(0,10); }
+function getTodayStr() { return (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})(); }
 
 function normalizeDate(dateStr) {
   if (!dateStr) return '';
@@ -397,12 +397,19 @@ function renderAll() {
   var todayRecs = records.filter(function(r) {
     var rd = normalizeDate(r.date);
     if (period === 'today') return rd === today;
-    if (period === 'shift') { var ws = isS1now?'Смена 1':'Смена 2'; return rd===today && r.shift.indexOf(ws)>=0; }
-    if (period === 's1') return rd===today && r.shift.indexOf('Смена 1')>=0;
-    if (period === 's2') return rd===today && r.shift.indexOf('Смена 2')>=0;
-    if (period === 'date') { var fd = filterDate&&filterDate.value?filterDate.value:today; return rd===fd; }
+    if (period === 'shift') {
+      var ws = isS1now ? 'Смена 1' : 'Смена 2';
+      return rd === today && r.shift.indexOf(ws) >= 0;
+    }
+    if (period === 's1') return rd === today && r.shift.indexOf('Смена 1') >= 0;
+    if (period === 's2') return rd === today && r.shift.indexOf('Смена 2') >= 0;
+    if (period === 'date') {
+      var fd = filterDate && filterDate.value ? filterDate.value : today;
+      return rd === fd;
+    }
     return true; // all
   });
+  console.log('Period:', period, '| Today:', today, '| Records total:', records.length, '| Filtered:', todayRecs.length);
 
   // Summary
   var totalGood = todayRecs.reduce(function(s,r){return s+r.good;},0);

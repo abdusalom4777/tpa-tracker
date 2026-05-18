@@ -376,20 +376,14 @@ function getTodayStr() { return (function(){var d=new Date();return d.getFullYea
 
 function normalizeDate(dateStr) {
   if (!dateStr) return '';
-  // Already YYYY-MM-DD - return as is, no Date object needed
-  if (/^\d{4}-\d{2}-\d{2}$/.test(String(dateStr))) return String(dateStr);
-  // Try to extract YYYY-MM-DD from full date string directly
-  var match = String(dateStr).match(/(\d{4})-(\d{2})-(\d{2})/);
-  if (match) return match[1]+'-'+match[2]+'-'+match[3];
-  // Parse month name format: "Mon May 18 2026..."
-  try {
-    var s = String(dateStr);
-    var months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',
-                  Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
-    var m2 = s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
-    if (m2) return m2[3]+'-'+(months[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');
-  } catch(e) {}
-  return String(dateStr);
+  var s = String(dateStr);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var m1 = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m1) return m1[1]+'-'+m1[2]+'-'+m1[3];
+  var months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  var m2 = s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+  if (m2) return m2[3]+'-'+(months[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');
+  return s;
 }
 
 function renderAll() {

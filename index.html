@@ -315,6 +315,7 @@
   <button class="tab" onclick="showTab('stats',this)">📊 Итоги</button>
   <button class="tab" onclick="showTab('dashboard',this)">📊 Дашборд</button>
   <button class="tab" onclick="showTab('molds',this)">🗂 Пресс-формы</button>
+  <button class="tab" onclick="showTab('operators',this)">👷 Операторы</button>
   <button class="tab" onclick="showTab('setup',this)">🔗 Google</button>
 </div>
 
@@ -609,6 +610,50 @@
 
 </div>
 
+<!-- ===== СПРАВОЧНИК ОПЕРАТОРОВ ===== -->
+<div class="section" id="tab-operators">
+
+  <div class="card">
+    <div class="card-title">➕ Добавить оператора</div>
+    <div class="grid3">
+      <div class="field">
+        <label>ФИО оператора</label>
+        <input type="text" id="new-op-name" placeholder="Иванов И.И.">
+      </div>
+      <div class="field">
+        <label>Табельный № (необязательно)</label>
+        <input type="text" id="new-op-num" placeholder="ТН-001">
+      </div>
+      <div class="field">
+        <label>Станок (необязательно)</label>
+        <input type="text" id="new-op-machine" placeholder="T1, T2...">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="addOperator()" style="margin-top:4px;">
+      ➕ Добавить
+    </button>
+    <div id="op-add-msg" style="display:none;margin-top:8px;"></div>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:14px;font-weight:600;">Список операторов</span>
+      <span id="op-count" style="font-size:12px;color:var(--text2);">0 человек</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>ФИО</th><th>Таб. №</th><th>Станок</th><th></th></tr>
+        </thead>
+        <tbody id="operators-table-body">
+          <tr><td colspan="4" class="empty">Нет операторов. Добавьте выше.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
 <!-- ===== НАСТРОЙКА GOOGLE SHEETS ===== -->
 <div class="section" id="tab-setup">
 
@@ -658,7 +703,6 @@
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var d = JSON.parse(e.postData.contents);
 
-    // Добавить пресс-форму
     if (d.action === "addMold") {
       var sheet = ss.getSheetByName("Пресс-формы") || ss.insertSheet("Пресс-формы");
       if (sheet.getLastRow() === 0) sheet.appendRow(["№ Пресс-формы","Название","Станок"]);
@@ -670,7 +714,6 @@
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Удалить пресс-форму
     if (d.action === "deleteMold") {
       var sheet = ss.getSheetByName("Пресс-формы");
       if (sheet && sheet.getLastRow() > 1) {
@@ -682,7 +725,28 @@
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Добавить запись в журнал (по умолчанию)
+    if (d.action === "addOperator") {
+      var sheet = ss.getSheetByName("Операторы") || ss.insertSheet("Операторы");
+      if (sheet.getLastRow() === 0) sheet.appendRow(["ФИО","Таб. №","Станок"]);
+      if (sheet.getLastRow() > 1) {
+        var names = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues().map(function(r){return String(r[0]);});
+        if (names.indexOf(d.name) >= 0) return ContentService.createTextOutput(JSON.stringify({status:"error",msg:"Уже существует"})).setMimeType(ContentService.MimeType.JSON);
+      }
+      sheet.appendRow([d.name, d.num||"", d.machine||""]);
+      return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (d.action === "deleteOperator") {
+      var sheet = ss.getSheetByName("Операторы");
+      if (sheet && sheet.getLastRow() > 1) {
+        var data = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues();
+        for (var i = data.length-1; i >= 0; i--) {
+          if (String(data[i][0]) === String(d.name)) { sheet.deleteRow(i+2); break; }
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+    }
+
     var sheet = ss.getSheetByName("Журнал") || ss.insertSheet("Журнал");
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(["Дата","Смена","Оператор","ТПА","Материал","Деталь","Пресс-форма","Гнёзда","Циклов","Время цикла (с)","Годные","Брак","% брака","Вес дет. (г)","Прич. брака","Пл. простой (мин)","Внепл. простой (мин)","Прич. простоя","Время отправки"]);
@@ -714,6 +778,18 @@ function doGet(e) {
       return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
     }
 
+    if (action === "getOperators") {
+      var sheet = ss.getSheetByName("Операторы");
+      var operators = [];
+      if (sheet && sheet.getLastRow() > 1) {
+        var data = sheet.getRange(2,1,sheet.getLastRow()-1,3).getValues();
+        data.forEach(function(row){ if(row[0]) operators.push({name:String(row[0]),num:String(row[1]||""),machine:String(row[2]||"")}); });
+      }
+      var json = JSON.stringify({status:"ok",operators:operators});
+      if (callback) return ContentService.createTextOutput(callback+"("+json+")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+      return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+    }
+
     if (action === "getLog") {
       var sheet = ss.getSheetByName("Журнал");
       var rows = [];
@@ -726,7 +802,7 @@ function doGet(e) {
       return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
     }
 
-    return ContentService.createTextOutput(JSON.stringify({status:"ok",msg:"TPA Tracker ready v3"})).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({status:"ok",msg:"TPA Tracker ready v4"})).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({status:"error",msg:err.toString()})).setMimeType(ContentService.MimeType.JSON);
   }
@@ -806,6 +882,7 @@ document.addEventListener('DOMContentLoaded', function() {
     autoLoadFromSheets();
   }
   renderMoldsTable();
+  loadOperators();
 });
 
 
@@ -974,6 +1051,7 @@ function showTab(id, btn) {
   if (id === 'log') { loadAndRender(); }
   if (id === 'setup') updateSyncStatus();
   if (id === 'molds') { renderMoldsTable(); }
+  if (id === 'operators') { renderOperatorsTable(); }
 }
 
 // ===== ADD ENTRY =====
@@ -1522,6 +1600,120 @@ function renderDashboard() {
   container.innerHTML = outerHtml;
 }
 
+
+
+// ===== OPERATORS MANAGER (Google Sheets) =====
+var operatorsCache = [];
+
+function addOperator() {
+  var url = loadGsUrl();
+  if (!url) { alert('Сначала настройте подключение к Google Sheets во вкладке 🔗 Google'); return; }
+  var name = document.getElementById('new-op-name').value.trim();
+  var num = document.getElementById('new-op-num').value.trim();
+  var machine = document.getElementById('new-op-machine').value.trim();
+  if (!name) { alert('Введите ФИО оператора'); return; }
+  var msg = document.getElementById('op-add-msg');
+  msg.style.display = 'block'; msg.className = 'status-bar status-info';
+  msg.textContent = '⏳ Сохранение...';
+  fetch(url, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'addOperator', name:name, num:num, machine:machine})
+  }).then(function() {
+    operatorsCache.push({name:name, num:num, machine:machine});
+    document.getElementById('new-op-name').value='';
+    document.getElementById('new-op-num').value='';
+    document.getElementById('new-op-machine').value='';
+    msg.className='status-bar status-ok';
+    msg.textContent='✅ Оператор '+name+' добавлен';
+    setTimeout(function(){msg.style.display='none';},2500);
+    renderOperatorsTable();
+    updateOperatorSelect();
+  }).catch(function(){
+    msg.className='status-bar status-err';
+    msg.textContent='❌ Ошибка при сохранении';
+    setTimeout(function(){msg.style.display='none';},2500);
+  });
+}
+
+function deleteOperator(name) {
+  var url = loadGsUrl();
+  if (!url) { alert('Настройте Google Sheets'); return; }
+  if (!confirm('Удалить оператора ' + name + '?')) return;
+  fetch(url, {
+    method:'POST', mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({action:'deleteOperator', name:name})
+  }).then(function() {
+    operatorsCache = operatorsCache.filter(function(o){return o.name!==name;});
+    renderOperatorsTable();
+    updateOperatorSelect();
+  });
+}
+
+function renderOperatorsTable() {
+  var tbody = document.getElementById('operators-table-body');
+  if (!tbody) return;
+  document.getElementById('op-count').textContent = operatorsCache.length + ' человек';
+  if (!operatorsCache.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">Нет операторов. Добавьте выше.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = operatorsCache.map(function(o) {
+    var safeName = o.name.replace(/'/g, "\'");
+    return '<tr>'+
+      '<td><strong>'+o.name+'</strong></td>'+
+      '<td>'+(o.num||'—')+'</td>'+
+      '<td>'+(o.machine||'—')+'</td>'+
+      '<td><button class="btn-danger" onclick="deleteOperator(this)" data-name="'+o.name.replace(/"/g,'&quot;')+'">🗑</button></td>'+
+      '</tr>';
+  }).join('');
+}
+
+function updateOperatorSelect() {
+  var input = document.getElementById('operator');
+  if (!input || !operatorsCache.length) return;
+  // Create datalist for autocomplete
+  var dl = document.getElementById('operators-datalist');
+  if (!dl) {
+    dl = document.createElement('datalist');
+    dl.id = 'operators-datalist';
+    input.setAttribute('list', 'operators-datalist');
+    input.parentNode.appendChild(dl);
+  }
+  dl.innerHTML = operatorsCache.map(function(o){
+    return '<option value="'+o.name.replace(/"/g,'&quot;')+'">'+
+      (o.num ? o.num+' — ' : '')+o.name+'</option>';
+  }).join('');
+}
+
+function loadOperators() {
+  var url = loadGsUrl();
+  if (!url) return;
+  var cbName = 'opsCb_' + Date.now();
+  var script = document.createElement('script');
+  var done = false;
+  window[cbName] = function(data) {
+    done = true; delete window[cbName];
+    if (document.body.contains(script)) document.body.removeChild(script);
+    if (data && data.operators) {
+      operatorsCache = data.operators;
+      renderOperatorsTable();
+      updateOperatorSelect();
+    }
+  };
+  script.onerror = function(){ if(!done){done=true;delete window[cbName];} };
+  setTimeout(function(){ if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);} },5000);
+  script.src = url + '?action=getOperators&callback=' + cbName;
+  document.body.appendChild(script);
+}
+
+// Fix deleteOperator to use data-name
+var _origDeleteOp = deleteOperator;
+deleteOperator = function(btn) {
+  var name = btn && btn.getAttribute ? btn.getAttribute('data-name') : btn;
+  _origDeleteOp(name);
+};
 
 // ===== MOLDS MANAGER (Google Sheets) =====
 var moldsCache = []; // in-memory cache

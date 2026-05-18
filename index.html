@@ -1630,8 +1630,7 @@ function importMolds() {
   if (!url) { alert('Настройте Google Sheets'); return; }
   var text = document.getElementById('import-text').value.trim();
   if (!text) return;
-  var lines = text.split('
-');
+  var lines = text.split('\n');
   var toAdd = [];
   lines.forEach(function(line){
     var parts = line.split(',');

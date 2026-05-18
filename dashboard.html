@@ -410,6 +410,7 @@ function renderAll() {
     return true; // all
   });
   console.log('Period:', period, '| Today:', today, '| Records total:', records.length, '| Filtered:', todayRecs.length);
+  todayRecs.forEach(function(r){ console.log('Record:', r.date, r.machine, r.operator, r.shift, 'good:'+r.good); });
 
   // Summary
   var totalGood = todayRecs.reduce(function(s,r){return s+r.good;},0);

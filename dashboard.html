@@ -242,7 +242,8 @@
   <span class="cfg-lbl">URL:</span>
   <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec">
   <span class="cfg-lbl">Период:</span>
-  <select id="dash-period" onchange="toggleDateInput();renderAll()" style="height:36px;padding:0 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;">
+  <select id="dash-period" onchange="toggleDateInput();renderAll()"  style="height:36px;padding:0 10px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px;">
+    <option value="last">Последний день с данными</option>
     <option value="today">Сегодня</option>
     <option value="shift">Текущая смена</option>
     <option value="s1">Смена 1</option>
@@ -358,7 +359,9 @@ function fetchData() {
       });
       var now = new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
       document.getElementById('status-bottom').textContent = '✅ Данных загружено: ' + records.length + ' записей · Обновлено: ' + now;
-      document.getElementById('hdr-sub').textContent = 'Записей в базе: ' + records.length + ' · Обновлено: ' + now;
+      var dates2 = records.map(function(r){return normalizeDate(r.date);}).filter(Boolean).sort();
+      var lastDate2 = dates2.length ? dates2[dates2.length-1] : '—';
+      document.getElementById('hdr-sub').textContent = 'Записей: ' + records.length + ' · Последние данные: ' + lastDate2 + ' · Обновлено: ' + now;
       renderAll();
     } else {
       document.getElementById('status-bottom').textContent = '⚠️ Нет данных от Google Sheets';
@@ -407,10 +410,15 @@ function renderAll() {
       var fd = filterDate && filterDate.value ? filterDate.value : today;
       return rd === fd;
     }
+    if (period === 'last') {
+      if (!records.length) return false;
+      var dates = records.map(function(r){return normalizeDate(r.date);}).filter(Boolean).sort();
+      var lastDate = dates[dates.length-1];
+      return normalizeDate(r.date) === lastDate;
+    }
     return true; // all
   });
   console.log('Period:', period, '| Today:', today, '| Records total:', records.length, '| Filtered:', todayRecs.length);
-  todayRecs.forEach(function(r){ console.log('Record:', r.date, r.machine, r.operator, r.shift, 'good:'+r.good); });
 
   // Summary
   var totalGood = todayRecs.reduce(function(s,r){return s+r.good;},0);

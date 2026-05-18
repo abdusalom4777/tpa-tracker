@@ -328,8 +328,13 @@
     <div class="card-title">👤 Смена и оператор</div>
     <div class="grid2">
       <div class="field">
-        <label>Оператор (ФИО)</label>
-        <input type="text" id="operator" placeholder="Иванов И.И.">
+        <label>Оператор <span id="op-load-status" style="font-weight:400;font-size:11px;color:var(--text3);">загрузка...</span></label>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <select id="operator" style="flex:1;">
+            <option value="">— выбрать оператора —</option>
+          </select>
+          <button onclick="loadOperators()" title="Обновить список" style="height:42px;padding:0 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-size:16px;flex-shrink:0;">🔄</button>
+        </div>
       </div>
       <div class="field">
         <label>№ ТПА / Машина</label>
@@ -1143,6 +1148,7 @@ function addEntry() {
   document.getElementById('planned-down').value = '0';
   document.getElementById('defect-parts').value = '0';
   document.getElementById('mold-id').value = '';
+  document.getElementById('operator').value = '';
   updateSyncStatus();
 }
 
@@ -1671,20 +1677,19 @@ function renderOperatorsTable() {
 }
 
 function updateOperatorSelect() {
-  var input = document.getElementById('operator');
-  if (!input || !operatorsCache.length) return;
-  // Create datalist for autocomplete
-  var dl = document.getElementById('operators-datalist');
-  if (!dl) {
-    dl = document.createElement('datalist');
-    dl.id = 'operators-datalist';
-    input.setAttribute('list', 'operators-datalist');
-    input.parentNode.appendChild(dl);
-  }
-  dl.innerHTML = operatorsCache.map(function(o){
-    return '<option value="'+o.name.replace(/"/g,'&quot;')+'">'+
-      (o.num ? o.num+' — ' : '')+o.name+'</option>';
-  }).join('');
+  var sel = document.getElementById('operator');
+  if (!sel) return;
+  var current = sel.value;
+  sel.innerHTML = '<option value="">— выбрать оператора —</option>';
+  operatorsCache.forEach(function(o) {
+    var opt = document.createElement('option');
+    opt.value = o.name;
+    opt.textContent = (o.num ? o.num+' — ' : '') + o.name + (o.machine ? ' ('+o.machine+')' : '');
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+  var statusEl = document.getElementById('op-load-status');
+  if (statusEl) statusEl.textContent = operatorsCache.length ? '✅ '+operatorsCache.length+' чел.' : '(нет данных)';
 }
 
 function loadOperators() {

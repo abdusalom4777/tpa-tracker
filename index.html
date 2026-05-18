@@ -1609,13 +1609,15 @@ function updateMoldSelect() {
 
 function exportMoldsCSV() {
   if (!moldsCache.length) { alert('Нет пресс-форм'); return; }
-  var csv = '№ Пресс-формы,Название,Станок
-'+
-    moldsCache.map(function(m){return '"'+m.id+'","'+(m.label||'')+'","'+(m.machine||'')+'"';}).join('
-');
-  var blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
-  var a = document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='press_formy.csv'; a.click();
+  var rows = moldsCache.map(function(m){
+    return '"'+m.id+'","'+(m.label||'')+'","'+(m.machine||'')+'"';
+  });
+  var csv = '\uFEFF' + '№ Пресс-формы,Название,Станок' + '\n' + rows.join('\n');
+  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'press_formy.csv';
+  a.click();
 }
 
 function importMoldsPrompt() {

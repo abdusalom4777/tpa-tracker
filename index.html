@@ -829,7 +829,7 @@ function autoLoadFromSheets() {
       var imported = data.rows.map(function(r, i) {
         return {
           id: Date.now() + i,
-          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p))return p.toISOString().slice(0,10);}catch(e){}return d;})(r[0]), shift: r[1]||'', operator: r[2]||'',
+          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p)){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r[0]), shift: r[1]||'', operator: r[2]||'',
           machine: r[3]||'', material: r[4]||'', partName: r[5]||'',
           moldId: r[6]||'', cavities: parseInt(r[7])||1,
           cycles: parseInt(r[8])||0, cycleTime: parseFloat(r[9])||0,
@@ -1132,7 +1132,7 @@ function renderLog() {
   var filtered = records.filter(function(r) {
     if (filterOp && r.operator.toLowerCase().indexOf(filterOp) < 0) return false;
     if (filterM && r.machine !== filterM) return false;
-    var rd2 = (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p))return p.toISOString().slice(0,10);}catch(e){}return d;})(r.date);
+    var rd2 = (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p)){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r.date);
     if (filterD && rd2 !== filterD) return false;
     return true;
   });

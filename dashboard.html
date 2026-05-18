@@ -346,7 +346,7 @@ function fetchData() {
       records = data.rows.map(function(r, i) {
         return {
           id: i,
-          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p))return p.toISOString().slice(0,10);}catch(e){}return d;})(r[0]), shift: r[1]||'', operator: r[2]||'',
+          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p.getTime())){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r[0]), shift: r[1]||'', operator: r[2]||'',
           machine: r[3]||'', material: r[4]||'', partName: r[5]||'',
           moldId: r[6]||'', cavities: parseInt(r[7])||1,
           cycles: parseInt(r[8])||0, cycleTime: parseFloat(r[9])||0,
@@ -376,12 +376,14 @@ function getTodayStr() { return (function(){var d=new Date();return d.getFullYea
 
 function normalizeDate(dateStr) {
   if (!dateStr) return '';
-  // Already in YYYY-MM-DD format
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-  // Full date string like "Mon May 18 2026 00:00:00 GMT+0500..."
   try {
     var d = new Date(dateStr);
-    if (!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+    if (!isNaN(d.getTime())) {
+      return d.getFullYear() + '-' +
+        String(d.getMonth()+1).padStart(2,'0') + '-' +
+        String(d.getDate()).padStart(2,'0');
+    }
   } catch(e) {}
   return dateStr;
 }

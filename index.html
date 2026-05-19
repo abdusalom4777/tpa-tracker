@@ -445,6 +445,17 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-title">🤖 Режим работы станка</div>
+    <div style="display:flex;align-items:center;gap:16px;padding:4px 0;">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:15px;">
+        <input type="checkbox" id="auto-mode" style="width:22px;height:22px;cursor:pointer;accent-color:var(--blue);">
+        <span>Автоматический режим</span>
+      </label>
+      <span style="font-size:12px;color:var(--text2);">отметьте если станок работал без участия оператора</span>
+    </div>
+  </div>
+
   <button class="btn-primary" onclick="addEntry()">
     💾 Сохранить запись
   </button>
@@ -754,11 +765,11 @@
 
     var sheet = ss.getSheetByName("Журнал") || ss.insertSheet("Журнал");
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["Дата","Смена","Оператор","ТПА","Материал","Деталь","Пресс-форма","Гнёзда","Циклов","Время цикла (с)","Годные","Брак","% брака","Вес дет. (г)","Прич. брака","Пл. простой (мин)","Внепл. простой (мин)","Прич. простоя","Время отправки"]);
+      sheet.appendRow(["Дата","Смена","Оператор","ТПА","Материал","Деталь","Пресс-форма","Гнёзда","Циклов","Время цикла (с)","Годные","Брак","% брака","Вес дет. (г)","Прич. брака","Пл. простой (мин)","Внепл. простой (мин)","Прич. простоя","Время отправки","Авто режим"]);
     }
     var total = (d.good||0)+(d.defects||0);
     var rate = total>0?Math.round(d.defects/total*100):0;
-    sheet.appendRow([d.date,d.shift,d.operator,d.machine,d.material,d.partName,d.moldId,d.cavities,d.cycles,d.cycleTime,d.good,d.defects,rate+"%",d.weight,d.defectNote,d.plannedDown,d.unplannedDown,d.downtimeReason,d.sentAt||""]);
+    sheet.appendRow([d.date,d.shift,d.operator,d.machine,d.material,d.partName,d.moldId,d.cavities,d.cycles,d.cycleTime,d.good,d.defects,rate+"%",d.weight,d.defectNote,d.plannedDown,d.unplannedDown,d.downtimeReason,d.sentAt||"",d.autoMode||0]);
     return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({status:"error",msg:err.toString()})).setMimeType(ContentService.MimeType.JSON);
@@ -799,7 +810,7 @@ function doGet(e) {
       var sheet = ss.getSheetByName("Журнал");
       var rows = [];
       if (sheet&&sheet.getLastRow()>1) {
-        var data = sheet.getRange(2,1,sheet.getLastRow()-1,19).getValues();
+        var data = sheet.getRange(2,1,sheet.getLastRow()-1,20).getValues();
         data.forEach(function(row){ if(row[0]) rows.push(row.map(function(v){return String(v||"");})); });
       }
       var json = JSON.stringify({status:"ok",rows:rows});
@@ -1106,6 +1117,7 @@ function addEntry() {
     plannedDown: parseInt(document.getElementById('planned-down').value) || 0,
     unplannedDown: parseInt(document.getElementById('unplanned-down').value) || 0,
     downtimeReason: document.getElementById('downtime-reason').value.trim(),
+    autoMode: document.getElementById('auto-mode').checked ? 1 : 0,
     synced: false
   };
 
@@ -1148,6 +1160,7 @@ function addEntry() {
   document.getElementById('planned-down').value = '0';
   document.getElementById('defect-parts').value = '0';
   document.getElementById('mold-id').value = '';
+  document.getElementById('auto-mode').checked = false;
   document.getElementById('operator').value = '';
   updateSyncStatus();
 }

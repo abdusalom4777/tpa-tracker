@@ -116,17 +116,26 @@
       <div class="field">
         <label>Период</label>
         <select id="period" onchange="toggleDate();renderKPI()">
-          <option value="today">Сегодня</option>
           <option value="last">Последний день с данными</option>
+          <option value="today">Сегодня</option>
           <option value="date">Выбрать дату</option>
+          <option value="range">От — До</option>
           <option value="week">Неделя</option>
           <option value="month">Месяц</option>
           <option value="all">Всё время</option>
         </select>
       </div>
-      <div class="field">
+      <div class="field" id="field-date" style="display:none">
         <label>Дата</label>
-        <input type="date" id="filter-date" style="display:none" onchange="renderKPI()">
+        <input type="date" id="filter-date" onchange="renderKPI()">
+      </div>
+      <div class="field" id="field-from" style="display:none">
+        <label>От</label>
+        <input type="date" id="filter-from" onchange="renderKPI()">
+      </div>
+      <div class="field" id="field-to" style="display:none">
+        <label>До</label>
+        <input type="date" id="filter-to" onchange="renderKPI()">
       </div>
       <div class="field" style="justify-content:flex-end;">
         <label>&nbsp;</label>
@@ -236,9 +245,22 @@ function calcNorm(cycleTime, cavities, shiftNum) {
 
 function toggleDate() {
   var p = document.getElementById('period').value;
-  document.getElementById('filter-date').style.display = p === 'date' ? 'block' : 'none';
+  var today = getTodayStr();
+  document.getElementById('field-date').style.display = p === 'date' ? 'flex' : 'none';
+  document.getElementById('field-from').style.display = p === 'range' ? 'flex' : 'none';
+  document.getElementById('field-to').style.display = p === 'range' ? 'flex' : 'none';
   if (p === 'date' && !document.getElementById('filter-date').value) {
-    document.getElementById('filter-date').value = getTodayStr();
+    document.getElementById('filter-date').value = today;
+  }
+  if (p === 'range') {
+    if (!document.getElementById('filter-from').value) {
+      // Default: from 7 days ago to today
+      var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+      document.getElementById('filter-from').value = weekAgo.getFullYear()+'-'+String(weekAgo.getMonth()+1).padStart(2,'0')+'-'+String(weekAgo.getDate()).padStart(2,'0');
+    }
+    if (!document.getElementById('filter-to').value) {
+      document.getElementById('filter-to').value = today;
+    }
   }
 }
 
@@ -257,13 +279,21 @@ function getFilteredRecords() {
     var fd = document.getElementById('filter-date').value || today;
     return records.filter(function(r){ return normalizeDate(r.date) === fd; });
   }
+  if (period === 'range') {
+    var from = document.getElementById('filter-from').value;
+    var to = document.getElementById('filter-to').value;
+    return records.filter(function(r){
+      var rd = normalizeDate(r.date);
+      return (!from || rd >= from) && (!to || rd <= to);
+    });
+  }
   if (period === 'week') {
     var weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate()-7);
-    return records.filter(function(r){ return new Date(normalizeDate(r.date)) >= weekAgo; });
+    return records.filter(function(r){ return normalizeDate(r.date) >= weekAgo.toISOString().slice(0,10); });
   }
   if (period === 'month') {
     var monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth()-1);
-    return records.filter(function(r){ return new Date(normalizeDate(r.date)) >= monthAgo; });
+    return records.filter(function(r){ return normalizeDate(r.date) >= monthAgo.toISOString().slice(0,10); });
   }
   return records;
 }

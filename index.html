@@ -1553,10 +1553,15 @@ function renderDashboard() {
     var topOp = Object.keys(s.operators).sort(function(a,b){return s.operators[b]-s.operators[a];})[0] || '—';
     var uniqueParts = s.parts.filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,2).join(', ') || '—';
 
-    // Norm calculations
+    // Norm calculations - always use full 22h day
     var norm1 = s.s1.cycleTime > 0 ? calcNorm(s.s1.cycleTime, s.s1.cavities, 1) : 0;
     var norm2 = s.s2.cycleTime > 0 ? calcNorm(s.s2.cycleTime, s.s2.cavities, 2) : 0;
-    var normDay = norm1 + norm2; // total daily norm
+    // If one shift has no data, use other shift's cycle time for full day norm
+    var ct = s.s1.cycleTime > 0 ? s.s1.cycleTime : s.s2.cycleTime;
+    var cav = s.s1.cycleTime > 0 ? s.s1.cavities : s.s2.cavities;
+    if (norm1 === 0 && ct > 0) norm1 = calcNorm(ct, cav, 1);
+    if (norm2 === 0 && ct > 0) norm2 = calcNorm(ct, cav, 2);
+    var normDay = norm1 + norm2; // всегда 22 часа
 
     // % от суточной нормы (22ч = 100%)
     var pct1 = normDay > 0 ? Math.round(s.s1.good / normDay * 100) : null;

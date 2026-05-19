@@ -490,7 +490,12 @@ function renderGrid(gridId, machines, todayRecs) {
     var hasData = total > 0;
     var norm1 = s.s1.cycleTime>0 ? calcNorm(s.s1.cycleTime,s.s1.cavities,1) : 0;
     var norm2 = s.s2.cycleTime>0 ? calcNorm(s.s2.cycleTime,s.s2.cavities,2) : 0;
-    var normDay = norm1+norm2;
+    // Use best available cycleTime for missing shift
+    var ct = s.s1.cycleTime>0 ? s.s1.cycleTime : s.s2.cycleTime;
+    var cav = s.s1.cycleTime>0 ? s.s1.cavities : s.s2.cavities;
+    if (norm1===0 && ct>0) norm1 = calcNorm(ct, cav, 1);
+    if (norm2===0 && ct>0) norm2 = calcNorm(ct, cav, 2);
+    var normDay = norm1+norm2; // всегда 22 часа
     // % от суточной нормы (22 часа = 100%)
     var pct1 = normDay>0 ? Math.round(s.s1.good/normDay*100) : null;
     var pct2 = normDay>0 ? Math.round(s.s2.good/normDay*100) : null;

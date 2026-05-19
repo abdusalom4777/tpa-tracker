@@ -1314,6 +1314,10 @@ function updateStats() {
       var r2 = (v.good + v.defects) ? Math.round(v.defects / (v.good + v.defects) * 100) : 0;
       var norm1 = v.s1.cycleTime > 0 ? calcNorm(v.s1.cycleTime, v.s1.cavities, 1) : 0;
       var norm2 = v.s2.cycleTime > 0 ? calcNorm(v.s2.cycleTime, v.s2.cavities, 2) : 0;
+      var ct = v.s1.cycleTime > 0 ? v.s1.cycleTime : v.s2.cycleTime;
+      var cav = v.s1.cycleTime > 0 ? v.s1.cavities : v.s2.cavities;
+      if (norm1 === 0 && ct > 0) norm1 = calcNorm(ct, cav, 1);
+      if (norm2 === 0 && ct > 0) norm2 = calcNorm(ct, cav, 2);
       var normDay = norm1 + norm2; // суточная норма 22ч
       var pct = normDay > 0 ? Math.round(v.good / normDay * 100) : null;
       var pctCell = pct !== null
@@ -1609,8 +1613,8 @@ function renderDashboard() {
         '</div>' +
         // Norm progress bars
         (hasData && normDay ? '<div style="margin-bottom:8px">' +
-          (s.s1.count>0 ? normBar(s.s1.good, normDay, '☀️ Смена 1 (45%)') : '') +
-          (s.s2.count>0 ? normBar(s.s2.good, normDay, '🌙 Смена 2 (55%)') : '') +
+          (s.s1.count>0 ? normBar(s.s1.good, normDay, '☀️ С1 — '+Math.round(s.s1.good/normDay*100)+'%') : '') +
+          (s.s2.count>0 ? normBar(s.s2.good, normDay, '🌙 С2 — '+Math.round(s.s2.good/normDay*100)+'%') : '') +
           normBar(s.good, normDay, '📅 За сутки') +
         '</div>' : '') +
         // Norm badges

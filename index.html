@@ -388,7 +388,7 @@
       <div class="field">
         <label>№ Пресс-формы <span id="mold-load-status" style="font-weight:400;font-size:11px;color:var(--text3);">загрузка...</span></label>
         <div style="display:flex;gap:6px;align-items:center;">
-          <select id="mold-id" style="flex:1;">
+          <select id="mold-id" style="flex:1;" onchange="onMoldSelected()">
             <option value="">— загрузка из таблицы —</option>
           </select>
           <button onclick="reloadMolds()" title="Обновить список" style="height:42px;padding:0 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-size:16px;flex-shrink:0;">🔄</button>

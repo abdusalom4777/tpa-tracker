@@ -333,8 +333,13 @@ function calcKPIForDay(dayRecs) {
     var md = machineData[m];
     var norm1 = md.s1.cycleTime > 0 ? calcNorm(md.s1.cycleTime, md.s1.cavities, 1) : 0;
     var norm2 = md.s2.cycleTime > 0 ? calcNorm(md.s2.cycleTime, md.s2.cavities, 2) : 0;
+    // Use best available cycleTime for missing shift
+    var ct = md.s1.cycleTime > 0 ? md.s1.cycleTime : md.s2.cycleTime;
+    var cav = md.s1.cycleTime > 0 ? md.s1.cavities : md.s2.cavities;
+    if (norm1 === 0 && ct > 0) norm1 = calcNorm(ct, cav, 1);
+    if (norm2 === 0 && ct > 0) norm2 = calcNorm(ct, cav, 2);
 
-    // Full day norm (both shifts)
+    // Full day norm = 22 hours always
     var normFull = norm1 + norm2;
     if (normFull === 0) return;
 

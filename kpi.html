@@ -298,15 +298,15 @@ function getFilteredRecords() {
   return records;
 }
 
-function calcKPIForRecords(recs) {
-  // Group by machine and shift
+function calcKPIForDay(dayRecs) {
+  // Calculate KPI for a single day
   var machineData = {};
   MACHINES.forEach(function(m){ machineData[m] = {
     s1:{good:0,cycleTime:0,cavities:0,count:0,auto:0},
     s2:{good:0,cycleTime:0,cavities:0,count:0,auto:0}
   }; });
 
-  recs.forEach(function(r) {
+  dayRecs.forEach(function(r) {
     var key = r.machine ? r.machine.split(' ')[0] : null;
     if (!key || !machineData[key]) return;
     var isS1 = r.shift && r.shift.indexOf('Смена 1') >= 0;
@@ -324,34 +324,92 @@ function calcKPIForRecords(recs) {
   var juniorTotal = 0;
   var seniorExtra = 0;
 
+  // Total hours in day = 22 (shift1=10h, shift2=12h)
+  var TOTAL_HOURS = 22;
+  var SHIFT1_HOURS = 10;
+  var SHIFT2_HOURS = 12;
+
   MACHINES.forEach(function(m) {
     var md = machineData[m];
     var norm1 = md.s1.cycleTime > 0 ? calcNorm(md.s1.cycleTime, md.s1.cavities, 1) : 0;
     var norm2 = md.s2.cycleTime > 0 ? calcNorm(md.s2.cycleTime, md.s2.cavities, 2) : 0;
-    var normDay = norm1 + norm2;
-    var goodDay = md.s1.good + md.s2.good;
-    if (normDay === 0 || goodDay === 0) return;
 
-    var pct = Math.min(goodDay / normDay, 1); // cap at 100%
+    // Full day norm (both shifts)
+    var normFull = norm1 + norm2;
+    if (normFull === 0) return;
+
+    var goodDay = md.s1.good + md.s2.good;
+    if (goodDay === 0) return;
+
+    // % выполнения от суточной нормы (не от активной смены!)
+    var pctOfDay = Math.min(goodDay / normFull, 1);
+
+    // KPI за день пропорционально суточной норме
     var isAuto = md.s1.auto || md.s2.auto;
-    var juniorKPI = Math.round(KPI_JUNIOR * pct);
-    var seniorKPI = isAuto ? Math.round(KPI_SENIOR_AUTO * pct) : 0;
+    var juniorKPI = Math.round(KPI_JUNIOR * pctOfDay);
+    var seniorKPI = isAuto ? Math.round(KPI_SENIOR_AUTO * pctOfDay) : 0;
 
     juniorTotal += juniorKPI;
     seniorExtra += seniorKPI;
 
+    // Show % of full day norm
     stationKPI.push({
       machine: m,
-      pct: Math.round(pct * 100),
+      pct: Math.round(pctOfDay * 100),
+      pct1: norm1>0 ? Math.round(Math.min(md.s1.good/norm1,1)*100) : null,
+      pct2: norm2>0 ? Math.round(Math.min(md.s2.good/norm2,1)*100) : null,
       good: goodDay,
-      norm: normDay,
+      norm: normFull,
       juniorKPI: juniorKPI,
       seniorKPI: seniorKPI,
       isAuto: isAuto
     });
   });
 
-  return { stationKPI: stationKPI, juniorTotal: juniorTotal, seniorTotal: juniorTotal + seniorExtra, seniorExtra: seniorExtra };
+  return { stationKPI:stationKPI, juniorTotal:juniorTotal, seniorTotal:juniorTotal+seniorExtra, seniorExtra:seniorExtra };
+}
+
+function calcKPIForRecords(recs) {
+  // Group by date, calc KPI per day, then sum
+  var byDate = {};
+  recs.forEach(function(r) {
+    var d = normalizeDate(r.date);
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
+  });
+
+  var allStations = {};
+  var juniorTotal = 0;
+  var seniorExtra = 0;
+
+  Object.keys(byDate).forEach(function(d) {
+    var dayKPI = calcKPIForDay(byDate[d]);
+    juniorTotal += dayKPI.juniorTotal;
+    seniorExtra += dayKPI.seniorExtra;
+    dayKPI.stationKPI.forEach(function(s) {
+      if (!allStations[s.machine]) {
+        allStations[s.machine] = { machine:s.machine, pctSum:0, days:0, good:0, norm:0, juniorKPI:0, seniorKPI:0, isAuto:false };
+      }
+      allStations[s.machine].pctSum += s.pct;
+      allStations[s.machine].days++;
+      allStations[s.machine].good += s.good;
+      allStations[s.machine].norm += s.norm;
+      allStations[s.machine].juniorKPI += s.juniorKPI;
+      allStations[s.machine].seniorKPI += s.seniorKPI;
+      if (s.isAuto) allStations[s.machine].isAuto = true;
+    });
+  });
+
+  var stationKPI = Object.values(allStations).map(function(s) {
+    return {
+      machine: s.machine,
+      pct: s.days > 0 ? Math.round(s.pctSum / s.days) : 0,
+      good: s.good, norm: s.norm,
+      juniorKPI: s.juniorKPI, seniorKPI: s.seniorKPI, isAuto: s.isAuto
+    };
+  }).sort(function(a,b){ return a.machine.localeCompare(b.machine); });
+
+  return { stationKPI:stationKPI, juniorTotal:juniorTotal, seniorTotal:juniorTotal+seniorExtra, seniorExtra:seniorExtra };
 }
 
 function renderKPI() {

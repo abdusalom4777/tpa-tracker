@@ -536,8 +536,8 @@ function renderGrid(gridId, machines, todayRecs) {
           '<div><div class="big-num-val">' + (hasData?defRate+'%':'—') + '</div><div class="big-num-lbl">% брак</div></div>' +
         '</div>' +
         (hasData&&(norm1||norm2) ? '<div class="norm-block">' +
-          (s.s1.count>0 ? pBar(s.s1.good, normDay, '☀️ С1 (45%)') : '') +
-          (s.s2.count>0 ? pBar(s.s2.good, normDay, '🌙 С2 (55%)') : '') +
+          (s.s1.count>0 ? pBar(s.s1.good, normDay, '☀️ С1 — '+Math.round(s.s1.good/normDay*100)+'%') : '') +
+          (s.s2.count>0 ? pBar(s.s2.good, normDay, '🌙 С2 — '+Math.round(s.s2.good/normDay*100)+'%') : '') +
           pBar(s.good, normDay, '📅 Сутки') +
         '</div>' : (!hasData?'':'<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">Норма: нет данных о цикле</div>')) +
       '</div>' +

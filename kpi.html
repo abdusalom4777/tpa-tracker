@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI Наладчиков — ТПА</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.1);
+    --text: #1a1a18;
+    --text2: #6b6b66;
+    --text3: #9b9b94;
+    --blue: #185FA5;
+    --blue-bg: #E6F1FB;
+    --green: #3B6D11;
+    --green-bg: #EAF3DE;
+    --green-text: #27500A;
+    --red: #A32D2D;
+    --red-bg: #FCEBEB;
+    --amber: #854F0B;
+    --amber-bg: #FAEEDA;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { font-size: 18px; font-weight: 700; }
+  .header-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  .content { padding: 16px; max-width: 1000px; margin: 0 auto; }
+
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+
+  .filter-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .field input, .field select { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface2); color: var(--text); width: 100%; }
+
+  .btn-primary { background: var(--blue); color: #fff; border: none; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { opacity: 0.85; }
+
+  /* KPI CARDS */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media(max-width:600px){ .kpi-grid { grid-template-columns: 1fr; } }
+
+  .kpi-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .kpi-card-header { padding: 12px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .kpi-card-title { font-size: 16px; font-weight: 700; }
+  .kpi-card-sub { font-size: 12px; color: var(--text2); }
+  .kpi-card-body { padding: 14px 16px; }
+
+  .kpi-total { font-size: 32px; font-weight: 800; color: var(--green); }
+  .kpi-total-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  .kpi-breakdown { margin-top: 12px; }
+  .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+  .kpi-row:last-child { border-bottom: none; }
+  .kpi-row-label { color: var(--text2); }
+  .kpi-row-value { font-weight: 600; }
+
+  /* DAILY TABLE */
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 12px; background: var(--surface2); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-ok { background: var(--green-bg); color: var(--green-text); }
+  .badge-warn { background: var(--amber-bg); color: var(--amber); }
+  .badge-err { background: var(--red-bg); color: var(--red); }
+
+  /* STATION BREAKDOWN */
+  .station-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 8px; margin-top: 10px; }
+  .station-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 12px; }
+  .station-name { font-size: 13px; font-weight: 700; }
+  .station-pct { font-size: 18px; font-weight: 800; margin: 2px 0; }
+  .station-kpi { font-size: 11px; color: var(--text2); }
+  .station-auto { font-size: 10px; background: var(--blue-bg); color: var(--blue); padding: 1px 6px; border-radius: 10px; display: inline-block; margin-top: 2px; }
+
+  .config-bar { background: var(--surface); border-top: 0.5px solid var(--border); padding: 10px 20px; display: flex; align-items: center; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0; }
+  .config-bar input { flex: 1; height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; background: var(--surface2); color: var(--text); }
+  .config-bar label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+
+  .empty { text-align: center; padding: 32px; color: var(--text3); font-size: 14px; }
+  .page-pad { padding-bottom: 70px; }
+
+  .sum-highlight { font-size: 20px; font-weight: 800; }
+  .green { color: var(--green); }
+  .amber { color: var(--amber); }
+  .red { color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">📊 KPI Наладчиков</div>
+    <div class="header-sub" id="hdr-sub">Загрузка...</div>
+  </div>
+  <div style="font-size:13px;color:var(--text2)" id="hdr-date"></div>
+</div>
+
+<div class="content page-pad">
+
+  <!-- FILTERS -->
+  <div class="card">
+    <div class="filter-row">
+      <div class="field">
+        <label>Период</label>
+        <select id="period" onchange="toggleDate();renderKPI()">
+          <option value="today">Сегодня</option>
+          <option value="last">Последний день с данными</option>
+          <option value="date">Выбрать дату</option>
+          <option value="week">Неделя</option>
+          <option value="month">Месяц</option>
+          <option value="all">Всё время</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Дата</label>
+        <input type="date" id="filter-date" style="display:none" onchange="renderKPI()">
+      </div>
+      <div class="field" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button class="btn-primary" onclick="fetchAndRender()">🔄 Обновить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-card-header">
+        <div>
+          <div class="kpi-card-title">🔧 Младший наладчик</div>
+          <div class="kpi-card-sub">25 000 сум × % нормы × кол-во станков</div>
+        </div>
+      </div>
+      <div class="kpi-card-body">
+        <div class="kpi-total" id="junior-total">— сум</div>
+        <div class="kpi-total-sub" id="junior-sub">нет данных</div>
+        <div class="kpi-breakdown" id="junior-breakdown"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-card-header">
+        <div>
+          <div class="kpi-card-title">⭐ Старший наладчик</div>
+          <div class="kpi-card-sub">+10 000 сум × % нормы за авто-режим</div>
+        </div>
+      </div>
+      <div class="kpi-card-body">
+        <div class="kpi-total" id="senior-total">— сум</div>
+        <div class="kpi-total-sub" id="senior-sub">нет данных</div>
+        <div class="kpi-breakdown" id="senior-breakdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATION BREAKDOWN -->
+  <div class="card">
+    <div class="card-title">🏭 Выполнение нормы по станкам</div>
+    <div id="station-breakdown" class="empty">Нет данных</div>
+  </div>
+
+  <!-- DAILY TABLE -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:0.5px solid var(--border);font-size:14px;font-weight:600;">📅 По дням</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Станков работало</th>
+            <th>Авто-режим</th>
+            <th>Ср. % нормы</th>
+            <th>Младший наладчик</th>
+            <th>Старший наладчик</th>
+          </tr>
+        </thead>
+        <tbody id="daily-table">
+          <tr><td colspan="6" class="empty">Нет данных</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="config-bar">
+  <label>Apps Script URL:</label>
+  <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec">
+  <button class="btn-primary" onclick="saveAndFetch()">🔄 Загрузить</button>
+</div>
+
+<script>
+var MACHINES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','V1','V2','V3','V4','V5'];
+var KPI_JUNIOR = 25000;
+var KPI_SENIOR_AUTO = 10000;
+var records = [];
+
+function loadGsUrl(){ return localStorage.getItem('kpi_gs_url') || ''; }
+function saveGsUrl(u){ localStorage.setItem('kpi_gs_url', u); }
+
+function normalizeDate(d) {
+  if (!d) return '';
+  var s = String(d);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var m1 = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m1) return m1[1]+'-'+m1[2]+'-'+m1[3];
+  var months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  var m2 = s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+  if (m2) return m2[3]+'-'+(months[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');
+  return s;
+}
+
+function getTodayStr() {
+  var d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function calcNorm(cycleTime, cavities, shiftNum) {
+  if (!cycleTime || cycleTime <= 0) return 0;
+  var hours = shiftNum === 1 ? 10 : 12;
+  return Math.floor((3600 / cycleTime) * (cavities||1) * hours);
+}
+
+function toggleDate() {
+  var p = document.getElementById('period').value;
+  document.getElementById('filter-date').style.display = p === 'date' ? 'block' : 'none';
+  if (p === 'date' && !document.getElementById('filter-date').value) {
+    document.getElementById('filter-date').value = getTodayStr();
+  }
+}
+
+function getFilteredRecords() {
+  var period = document.getElementById('period').value;
+  var today = getTodayStr();
+  var now = new Date();
+
+  if (period === 'today') return records.filter(function(r){ return normalizeDate(r.date) === today; });
+  if (period === 'last') {
+    var dates = records.map(function(r){return normalizeDate(r.date);}).filter(Boolean).sort();
+    var last = dates[dates.length-1];
+    return records.filter(function(r){ return normalizeDate(r.date) === last; });
+  }
+  if (period === 'date') {
+    var fd = document.getElementById('filter-date').value || today;
+    return records.filter(function(r){ return normalizeDate(r.date) === fd; });
+  }
+  if (period === 'week') {
+    var weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate()-7);
+    return records.filter(function(r){ return new Date(normalizeDate(r.date)) >= weekAgo; });
+  }
+  if (period === 'month') {
+    var monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth()-1);
+    return records.filter(function(r){ return new Date(normalizeDate(r.date)) >= monthAgo; });
+  }
+  return records;
+}
+
+function calcKPIForRecords(recs) {
+  // Group by machine and shift
+  var machineData = {};
+  MACHINES.forEach(function(m){ machineData[m] = {
+    s1:{good:0,cycleTime:0,cavities:0,count:0,auto:0},
+    s2:{good:0,cycleTime:0,cavities:0,count:0,auto:0}
+  }; });
+
+  recs.forEach(function(r) {
+    var key = r.machine ? r.machine.split(' ')[0] : null;
+    if (!key || !machineData[key]) return;
+    var isS1 = r.shift && r.shift.indexOf('Смена 1') >= 0;
+    var sd = isS1 ? machineData[key].s1 : machineData[key].s2;
+    sd.good += r.good||0;
+    if (r.cycleTime > 0) {
+      sd.cycleTime = sd.count > 0 ? (sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1) : r.cycleTime;
+      sd.cavities = r.cavities||1;
+      sd.count++;
+    }
+    if (r.autoMode == 1 || r.autoMode === '1') sd.auto = 1;
+  });
+
+  var stationKPI = [];
+  var juniorTotal = 0;
+  var seniorExtra = 0;
+
+  MACHINES.forEach(function(m) {
+    var md = machineData[m];
+    var norm1 = md.s1.cycleTime > 0 ? calcNorm(md.s1.cycleTime, md.s1.cavities, 1) : 0;
+    var norm2 = md.s2.cycleTime > 0 ? calcNorm(md.s2.cycleTime, md.s2.cavities, 2) : 0;
+    var normDay = norm1 + norm2;
+    var goodDay = md.s1.good + md.s2.good;
+    if (normDay === 0 || goodDay === 0) return;
+
+    var pct = Math.min(goodDay / normDay, 1); // cap at 100%
+    var isAuto = md.s1.auto || md.s2.auto;
+    var juniorKPI = Math.round(KPI_JUNIOR * pct);
+    var seniorKPI = isAuto ? Math.round(KPI_SENIOR_AUTO * pct) : 0;
+
+    juniorTotal += juniorKPI;
+    seniorExtra += seniorKPI;
+
+    stationKPI.push({
+      machine: m,
+      pct: Math.round(pct * 100),
+      good: goodDay,
+      norm: normDay,
+      juniorKPI: juniorKPI,
+      seniorKPI: seniorKPI,
+      isAuto: isAuto
+    });
+  });
+
+  return { stationKPI: stationKPI, juniorTotal: juniorTotal, seniorTotal: juniorTotal + seniorExtra, seniorExtra: seniorExtra };
+}
+
+function renderKPI() {
+  var recs = getFilteredRecords();
+  if (!recs.length) {
+    document.getElementById('junior-total').textContent = '— сум';
+    document.getElementById('junior-sub').textContent = 'нет данных';
+    document.getElementById('senior-total').textContent = '— сум';
+    document.getElementById('senior-sub').textContent = 'нет данных';
+    document.getElementById('station-breakdown').innerHTML = '<div class="empty">Нет данных за выбранный период</div>';
+    document.getElementById('daily-table').innerHTML = '<tr><td colspan="6" class="empty">Нет данных</td></tr>';
+    return;
+  }
+
+  var kpi = calcKPIForRecords(recs);
+
+  // Junior card
+  document.getElementById('junior-total').textContent = kpi.juniorTotal.toLocaleString() + ' сум';
+  document.getElementById('junior-sub').textContent = 'за ' + kpi.stationKPI.length + ' работавших станков';
+  document.getElementById('junior-breakdown').innerHTML = kpi.stationKPI.map(function(s){
+    var cls = s.pct >= 100 ? 'green' : s.pct >= 80 ? 'amber' : 'red';
+    return '<div class="kpi-row"><span class="kpi-row-label">' + s.machine + ' — ' + s.pct + '% нормы</span>' +
+      '<span class="kpi-row-value ' + cls + '">' + s.juniorKPI.toLocaleString() + ' сум</span></div>';
+  }).join('');
+
+  // Senior card
+  document.getElementById('senior-total').textContent = kpi.seniorTotal.toLocaleString() + ' сум';
+  var autoCount = kpi.stationKPI.filter(function(s){return s.isAuto;}).length;
+  document.getElementById('senior-sub').textContent = 'база + ' + kpi.seniorExtra.toLocaleString() + ' сум за ' + autoCount + ' авто-станков';
+  document.getElementById('senior-breakdown').innerHTML = kpi.stationKPI.map(function(s){
+    return '<div class="kpi-row"><span class="kpi-row-label">' + s.machine + (s.isAuto?' 🤖':'') + '</span>' +
+      '<span class="kpi-row-value">' + s.juniorKPI.toLocaleString() + (s.seniorKPI?' + <span style="color:var(--blue)">'+s.seniorKPI.toLocaleString()+'</span>':'') + ' сум</span></div>';
+  }).join('');
+
+  // Station breakdown
+  if (kpi.stationKPI.length) {
+    document.getElementById('station-breakdown').innerHTML =
+      '<div class="station-grid">' +
+      kpi.stationKPI.map(function(s) {
+        var cls = s.pct >= 100 ? 'green' : s.pct >= 80 ? 'amber' : 'red';
+        return '<div class="station-item">' +
+          '<div class="station-name">' + s.machine + '</div>' +
+          '<div class="station-pct ' + cls + '">' + s.pct + '%</div>' +
+          '<div class="station-kpi">' + s.good.toLocaleString() + ' / ' + s.norm.toLocaleString() + ' шт</div>' +
+          (s.isAuto ? '<div class="station-auto">🤖 Авто</div>' : '') +
+        '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  // Daily table
+  var byDate = {};
+  records.forEach(function(r) {
+    var d = normalizeDate(r.date);
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
+  });
+
+  var dateRows = Object.keys(byDate).sort().reverse().slice(0, 30);
+  document.getElementById('daily-table').innerHTML = dateRows.map(function(d) {
+    var kd = calcKPIForRecords(byDate[d]);
+    var autoCount = kd.stationKPI.filter(function(s){return s.isAuto;}).length;
+    var avgPct = kd.stationKPI.length ? Math.round(kd.stationKPI.reduce(function(s,x){return s+x.pct;},0)/kd.stationKPI.length) : 0;
+    var badgeCls = avgPct >= 100 ? 'badge-ok' : avgPct >= 80 ? 'badge-warn' : 'badge-err';
+    return '<tr>' +
+      '<td><strong>' + d + '</strong></td>' +
+      '<td>' + kd.stationKPI.length + ' шт</td>' +
+      '<td>' + (autoCount ? '🤖 ' + autoCount + ' шт' : '—') + '</td>' +
+      '<td><span class="badge ' + badgeCls + '">' + avgPct + '%</span></td>' +
+      '<td class="green" style="font-weight:600">' + kd.juniorTotal.toLocaleString() + ' сум</td>' +
+      '<td style="font-weight:600;color:var(--blue)">' + kd.seniorTotal.toLocaleString() + ' сум</td>' +
+    '</tr>';
+  }).join('') || '<tr><td colspan="6" class="empty">Нет данных</td></tr>';
+}
+
+function fetchAndRender() {
+  var url = loadGsUrl();
+  if (!url) { alert('Введите URL Apps Script'); return; }
+  document.getElementById('hdr-sub').textContent = '⏳ Загрузка...';
+
+  var cbName = 'kpiCb_' + Date.now();
+  var script = document.createElement('script');
+  var done = false;
+
+  window[cbName] = function(data) {
+    done = true; delete window[cbName];
+    if (document.body.contains(script)) document.body.removeChild(script);
+    if (data && data.rows) {
+      records = data.rows.map(function(r, i) {
+        return {
+          id: i,
+          date: (function(d){var s=String(d||'');if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;var m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];var months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};var m2=s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);if(m2)return m2[3]+'-'+(months[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');return s;})(r[0]),
+          shift: r[1]||'', operator: r[2]||'', machine: r[3]||'',
+          cycles: parseInt(r[8])||0, cycleTime: parseFloat(r[9])||0,
+          good: parseInt(r[10])||0, defects: parseInt(r[11])||0,
+          cavities: parseInt(r[7])||1,
+          plannedDown: parseInt(r[15])||0, unplannedDown: parseInt(r[16])||0,
+          autoMode: r[19]||0
+        };
+      });
+      var now = new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('hdr-sub').textContent = 'Записей: ' + records.length + ' · Обновлено: ' + now;
+      renderKPI();
+    }
+  };
+  script.onerror = function(){ if(!done){done=true;delete window[cbName];document.getElementById('hdr-sub').textContent='❌ Ошибка';} };
+  setTimeout(function(){ if(!done){done=true;delete window[cbName];document.getElementById('hdr-sub').textContent='❌ Превышено время';} }, 8000);
+  script.src = url + '?action=getLog&callback=' + cbName;
+  document.body.appendChild(script);
+}
+
+function saveAndFetch() {
+  var url = document.getElementById('gs-url').value.trim();
+  saveGsUrl(url);
+  fetchAndRender();
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', function() {
+  var saved = loadGsUrl();
+  if (saved) { document.getElementById('gs-url').value = saved; fetchAndRender(); }
+  var now = new Date();
+  document.getElementById('hdr-date').textContent = now.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+});
+</script>
+</body>
+</html>

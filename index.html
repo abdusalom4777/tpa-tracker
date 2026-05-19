@@ -383,7 +383,7 @@
     <div class="grid2">
       <div class="field">
         <label>Артикул / Наименование</label>
-        <input type="text" id="part-name" placeholder="Корпус крышки Арт.2201">
+        <input type="text" id="part-name" placeholder="Корпус крышки Арт.2201" oninput="onPartNameInput()">
       </div>
       <div class="field">
         <label>№ Пресс-формы <span id="mold-load-status" style="font-weight:400;font-size:11px;color:var(--text3);">загрузка...</span></label>
@@ -572,10 +572,14 @@
 
   <div class="card">
     <div class="card-title">➕ Добавить пресс-форму</div>
-    <div class="grid3">
+    <div class="grid2">
       <div class="field">
         <label>№ Пресс-формы</label>
         <input type="text" id="new-mold-id" placeholder="ПФ-01">
+      </div>
+      <div class="field">
+        <label>Артикул детали</label>
+        <input type="text" id="new-mold-article" placeholder="sds, pp, krishka...">
       </div>
       <div class="field">
         <label>Название / Описание</label>
@@ -600,7 +604,7 @@
     <div class="table-scroll">
       <table>
         <thead>
-          <tr><th>№ Пресс-формы</th><th>Название</th><th>Станок</th><th></th></tr>
+          <tr><th>№ Пресс-формы</th><th>Артикул</th><th>Название</th><th>Станок</th><th></th></tr>
         </thead>
         <tbody id="molds-table-body">
           <tr><td colspan="4" class="empty">Нет пресс-форм. Добавьте выше.</td></tr>
@@ -721,12 +725,12 @@
 
     if (d.action === "addMold") {
       var sheet = ss.getSheetByName("Пресс-формы") || ss.insertSheet("Пресс-формы");
-      if (sheet.getLastRow() === 0) sheet.appendRow(["№ Пресс-формы","Название","Станок"]);
+      if (sheet.getLastRow() === 0) sheet.appendRow(["№ Пресс-формы","Артикул","Название","Станок"]);
       if (sheet.getLastRow() > 1) {
         var ids = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues().map(function(r){return String(r[0]);});
         if (ids.indexOf(d.id) >= 0) return ContentService.createTextOutput(JSON.stringify({status:"error",msg:"Уже существует"})).setMimeType(ContentService.MimeType.JSON);
       }
-      sheet.appendRow([d.id, d.label||"", d.machine||""]);
+      sheet.appendRow([d.id, d.article||"", d.label||"", d.machine||""]);
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -786,8 +790,8 @@ function doGet(e) {
       var sheet = ss.getSheetByName("Пресс-формы");
       var molds = [];
       if (sheet && sheet.getLastRow() > 1) {
-        var data = sheet.getRange(2,1,sheet.getLastRow()-1,3).getValues();
-        data.forEach(function(row){ if(row[0]) molds.push({id:String(row[0]),label:String(row[1]||""),machine:String(row[2]||"")}); });
+        var data = sheet.getRange(2,1,sheet.getLastRow()-1,4).getValues();
+        data.forEach(function(row){ if(row[0]) molds.push({id:String(row[0]),article:String(row[1]||""),label:String(row[2]||""),machine:String(row[3]||"")}); });
       }
       var json = JSON.stringify({status:"ok",molds:molds});
       if (callback) return ContentService.createTextOutput(callback+"("+json+")").setMimeType(ContentService.MimeType.JAVASCRIPT);
@@ -818,7 +822,7 @@ function doGet(e) {
       return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
     }
 
-    return ContentService.createTextOutput(JSON.stringify({status:"ok",msg:"TPA Tracker ready v4"})).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({status:"ok",msg:"TPA Tracker ready v5"})).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({status:"error",msg:err.toString()})).setMimeType(ContentService.MimeType.JSON);
   }
@@ -1746,13 +1750,15 @@ function addMold() {
   var msg = document.getElementById('mold-add-msg');
   msg.style.display = 'block'; msg.className = 'status-bar status-info';
   msg.textContent = '⏳ Сохранение...';
+  var article = document.getElementById('new-mold-article').value.trim();
   fetch(url, {
     method:'POST', mode:'no-cors',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'addMold', id:id, label:label, machine:machine})
+    body: JSON.stringify({action:'addMold', id:id, label:label, machine:machine, article:article})
   }).then(function() {
-    moldsCache.push({id:id, label:label, machine:machine});
+    moldsCache.push({id:id, label:label, machine:machine, article:article});
     document.getElementById('new-mold-id').value='';
+    document.getElementById('new-mold-article').value='';
     document.getElementById('new-mold-label').value='';
     document.getElementById('new-mold-machine').value='';
     msg.className='status-bar status-ok';
@@ -1857,6 +1863,30 @@ function importMolds() {
   document.getElementById('import-text').value='';
   document.getElementById('import-area').style.display='none';
   alert('Отправляем '+toAdd.length+' пресс-форм в Google Sheets...');
+}
+
+
+// ===== MOLD <-> ARTICLE SYNC =====
+function onMoldSelected() {
+  var sel = document.getElementById('mold-id');
+  var moldId = sel.value;
+  if (!moldId) return;
+  var mold = moldsCache.find(function(m){ return m.id === moldId; });
+  if (mold && mold.article) {
+    document.getElementById('part-name').value = mold.article;
+  }
+}
+
+function onPartNameInput() {
+  var partName = document.getElementById('part-name').value.trim();
+  if (!partName) return;
+  // Find mold with matching article
+  var mold = moldsCache.find(function(m){
+    return m.article && m.article.toLowerCase() === partName.toLowerCase();
+  });
+  if (mold) {
+    document.getElementById('mold-id').value = mold.id;
+  }
 }
 
 // ===== EXPORT CSV =====

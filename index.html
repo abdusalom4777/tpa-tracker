@@ -1314,7 +1314,7 @@ function updateStats() {
       var r2 = (v.good + v.defects) ? Math.round(v.defects / (v.good + v.defects) * 100) : 0;
       var norm1 = v.s1.cycleTime > 0 ? calcNorm(v.s1.cycleTime, v.s1.cavities, 1) : 0;
       var norm2 = v.s2.cycleTime > 0 ? calcNorm(v.s2.cycleTime, v.s2.cavities, 2) : 0;
-      var normDay = norm1 + norm2;
+      var normDay = norm1 + norm2; // суточная норма 22ч
       var pct = normDay > 0 ? Math.round(v.good / normDay * 100) : null;
       var pctCell = pct !== null
         ? '<span class="badge ' + (pct>=100?'badge-ok':pct>=80?'badge-warn':'badge-err') + '">' + (pct>=100?'✅':pct>=80?'⚠️':'❌') + ' ' + pct + '%</span>'
@@ -1465,10 +1465,15 @@ var MACHINES = [
 ];
 
 function calcNorm(cycleTime, cavities, shiftNum) {
-  // cycleTime in seconds, cavities = number of cavities
   if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
-  var hours = shiftNum === 1 ? 10 : 12; // shift1=10h, shift2=12h
+  var hours = shiftNum === 1 ? 10 : 12;
   return Math.floor((3600 / cycleTime) * cavities * hours);
+}
+
+function calcNormDay(cycleTime, cavities) {
+  // Full day norm = 22 hours (shift1=10 + shift2=12)
+  if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
+  return Math.floor((3600 / cycleTime) * cavities * 22);
 }
 
 function renderDashboard() {
@@ -1553,9 +1558,9 @@ function renderDashboard() {
     var norm2 = s.s2.cycleTime > 0 ? calcNorm(s.s2.cycleTime, s.s2.cavities, 2) : 0;
     var normDay = norm1 + norm2; // total daily norm
 
-    // % выполнения нормы
-    var pct1 = norm1 > 0 ? Math.round(s.s1.good / norm1 * 100) : null;
-    var pct2 = norm2 > 0 ? Math.round(s.s2.good / norm2 * 100) : null;
+    // % от суточной нормы (22ч = 100%)
+    var pct1 = normDay > 0 ? Math.round(s.s1.good / normDay * 100) : null;
+    var pct2 = normDay > 0 ? Math.round(s.s2.good / normDay * 100) : null;
     var pctDay = normDay > 0 ? Math.round(s.good / normDay * 100) : null;
 
     function normBadge(pct, label) {
@@ -1598,10 +1603,10 @@ function renderDashboard() {
           '<div class="m-metric"><div class="m-metric-val">' + (hasData?defRate+'%':'—') + '</div><div class="m-metric-lbl">% брака</div></div>' +
         '</div>' +
         // Norm progress bars
-        (hasData && (norm1||norm2) ? '<div style="margin-bottom:8px">' +
-          (norm1 ? normBar(s.s1.good, norm1, '☀️ Смена 1') : '') +
-          (norm2 ? normBar(s.s2.good, norm2, '🌙 Смена 2') : '') +
-          (normDay ? normBar(s.good, normDay, '📅 За сутки') : '') +
+        (hasData && normDay ? '<div style="margin-bottom:8px">' +
+          (s.s1.count>0 ? normBar(s.s1.good, normDay, '☀️ Смена 1 (45%)') : '') +
+          (s.s2.count>0 ? normBar(s.s2.good, normDay, '🌙 Смена 2 (55%)') : '') +
+          normBar(s.good, normDay, '📅 За сутки') +
         '</div>' : '') +
         // Norm badges
         (hasData ? '<div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px">' +

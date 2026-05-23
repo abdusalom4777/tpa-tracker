@@ -358,8 +358,8 @@ function renderOpRating(records) {
     var op = r.operator || '—';
     if (!ops[op]) ops[op] = { good: 0, norm: 0 };
     ops[op].good += r.good || 0;
-    var n = calcNormShift(r.cycleTime, r.cavities, r.shift);
-    ops[op].norm += n;
+    // Each record = one shift worked, use that shift's hours
+    ops[op].norm += calcNormShift(r.cycleTime, r.cavities, r.shift);
   });
 
   var list = Object.entries(ops).map(function(e) {
@@ -416,10 +416,39 @@ function renderMachineRating(records) {
   var machines = {};
   records.forEach(function(r) {
     var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machines[key]) machines[key] = { good: 0, norm: 0, records: 0 };
+    if (!machines[key]) machines[key] = { good: 0, s1: null, s2: null, records: 0 };
     machines[key].good += r.good || 0;
-    machines[key].norm += calcNormShift(r.cycleTime, r.cavities, r.shift);
     machines[key].records++;
+    var isS1 = r.shift && r.shift.indexOf('Смена 2') < 0;
+    if (isS1) {
+      if (!machines[key].s1) machines[key].s1 = { cycleTime: r.cycleTime, cavities: r.cavities };
+    } else {
+      if (!machines[key].s2) machines[key].s2 = { cycleTime: r.cycleTime, cavities: r.cavities };
+    }
+  });
+
+  // Calculate norm: norm1(10h) + norm2(12h) per unique day
+  // Count unique days per machine
+  var machineDays = {};
+  records.forEach(function(r) {
+    var key = r.machine ? r.machine.split(' ')[0] : '—';
+    if (!machineDays[key]) machineDays[key] = { s1: new Set(), s2: new Set() };
+    if (r.date) {
+      var isS1 = r.shift && r.shift.indexOf('Смена 2') < 0;
+      if (isS1) machineDays[key].s1.add(r.date);
+      else machineDays[key].s2.add(r.date);
+    }
+  });
+
+  Object.keys(machines).forEach(function(key) {
+    var m = machines[key];
+    var days = machineDays[key] || { s1: new Set(), s2: new Set() };
+    var norm1 = m.s1 ? calcNormShift(m.s1.cycleTime, m.s1.cavities, 'Смена 1') * days.s1.size : 0;
+    var norm2 = m.s2 ? calcNormShift(m.s2.cycleTime, m.s2.cavities, 'Смена 2') * days.s2.size : 0;
+    // fallback: use whichever shift has data
+    if (!norm1 && m.s2 && days.s1.size) norm1 = calcNormShift(m.s2.cycleTime, m.s2.cavities, 'Смена 1') * days.s1.size;
+    if (!norm2 && m.s1 && days.s2.size) norm2 = calcNormShift(m.s1.cycleTime, m.s1.cavities, 'Смена 2') * days.s2.size;
+    m.norm = norm1 + norm2;
   });
 
   var list = Object.entries(machines).map(function(e) {

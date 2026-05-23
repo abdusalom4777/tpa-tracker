@@ -212,6 +212,7 @@
 </div>
 
 <script>
+(function(){var s=JSON.parse(sessionStorage.getItem("tpa_session")||"null");if(!s||s.role!=="admin")window.location.href="login.html";})();
 var MACHINES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','V1','V2','V3','V4','V5'];
 var KPI_JUNIOR = 25000;
 var KPI_SENIOR_AUTO = 10000;

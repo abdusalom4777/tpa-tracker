@@ -257,6 +257,7 @@
 </div>
 
 <script>
+(function(){var s=JSON.parse(sessionStorage.getItem("tpa_session")||"null");if(!s)window.location.href="login.html";})();
 var MACHINES_T = [
   {id:'T1',name:'T1',type:'Hwamda 170'},
   {id:'T2',name:'T2',type:'Hwamda 170'},
@@ -576,6 +577,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
+(function(){var s=JSON.parse(sessionStorage.getItem("tpa_session")||"null");if(!s)window.location.href="login.html";})();
 var chartOutput = null;
 var chartEff = null;
 

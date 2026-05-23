@@ -416,40 +416,19 @@ function renderMachineRating(records) {
   var machines = {};
   records.forEach(function(r) {
     var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machines[key]) machines[key] = { good: 0, s1: null, s2: null, records: 0 };
+    if (!machines[key]) machines[key] = { good: 0, cycleTime: 0, cavities: 0, days: new Set() };
     machines[key].good += r.good || 0;
-    machines[key].records++;
-    var isS1 = r.shift && r.shift.indexOf('Смена 2') < 0;
-    if (isS1) {
-      if (!machines[key].s1) machines[key].s1 = { cycleTime: r.cycleTime, cavities: r.cavities };
-    } else {
-      if (!machines[key].s2) machines[key].s2 = { cycleTime: r.cycleTime, cavities: r.cavities };
-    }
+    if (r.date) machines[key].days.add(r.date);
+    if (r.cycleTime > 0) { machines[key].cycleTime = r.cycleTime; machines[key].cavities = r.cavities; }
   });
 
-  // Calculate norm: norm1(10h) + norm2(12h) per unique day
-  // Count unique days per machine
-  var machineDays = {};
-  records.forEach(function(r) {
-    var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machineDays[key]) machineDays[key] = { s1: new Set(), s2: new Set() };
-    if (r.date) {
-      var isS1 = r.shift && r.shift.indexOf('Смена 2') < 0;
-      if (isS1) machineDays[key].s1.add(r.date);
-      else machineDays[key].s2.add(r.date);
-    }
-  });
-
-  Object.keys(machines).forEach(function(key) {
-    var m = machines[key];
-    var days = machineDays[key] || { s1: new Set(), s2: new Set() };
-    var norm1 = m.s1 ? calcNormShift(m.s1.cycleTime, m.s1.cavities, 'Смена 1') * days.s1.size : 0;
-    var norm2 = m.s2 ? calcNormShift(m.s2.cycleTime, m.s2.cavities, 'Смена 2') * days.s2.size : 0;
-    // fallback: use whichever shift has data
-    if (!norm1 && m.s2 && days.s1.size) norm1 = calcNormShift(m.s2.cycleTime, m.s2.cavities, 'Смена 1') * days.s1.size;
-    if (!norm2 && m.s1 && days.s2.size) norm2 = calcNormShift(m.s1.cycleTime, m.s1.cavities, 'Смена 2') * days.s2.size;
-    m.norm = norm1 + norm2;
-  });
+  var list = Object.entries(machines).map(function(e) {
+    var m = e[1];
+    var normPerDay = calcNormDay(m.cycleTime, m.cavities); // 22ч
+    var normTotal = normPerDay * m.days.size;
+    var pct = normTotal > 0 ? Math.round(m.good / normTotal * 100) : 0;
+    return { name: e[0], good: m.good, pct: pct, days: m.days.size };
+  }).filter(function(m){ return m.good > 0; }).sort(function(a,b){ return b.pct - a.pct; });
 
   var list = Object.entries(machines).map(function(e) {
     var pct = e[1].norm > 0 ? Math.round(e[1].good / e[1].norm * 100) : 0;

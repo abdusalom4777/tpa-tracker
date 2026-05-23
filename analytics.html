@@ -416,16 +416,16 @@ function renderMachineRating(records) {
   var machines = {};
   records.forEach(function(r) {
     var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machines[key]) machines[key] = { good: 0, cycleTime: 0, cavities: 0, days: new Set() };
+    if (!machines[key]) machines[key] = { good: 0, cycleTime: 0, cavities: 0, days: {} };
     machines[key].good += r.good || 0;
-    if (r.date) machines[key].days.add(r.date);
+    if (r.date) machines[key].days[r.date] = true;
     if (r.cycleTime > 0) { machines[key].cycleTime = r.cycleTime; machines[key].cavities = r.cavities; }
   });
 
   var list = Object.entries(machines).map(function(e) {
     var m = e[1];
     var normPerDay = calcNormDay(m.cycleTime, m.cavities); // 22ч
-    var normTotal = normPerDay * m.days.size;
+    var normTotal = normPerDay * Object.keys(m.days).length;
     var pct = normTotal > 0 ? Math.round(m.good / normTotal * 100) : 0;
     return { name: e[0], good: m.good, pct: pct, days: m.days.size };
   }).filter(function(m){ return m.good > 0; }).sort(function(a,b){ return b.pct - a.pct; });

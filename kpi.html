@@ -2,642 +2,544 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Аналитика ТПА</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI Наладчиков — ТПА</title>
 <style>
   :root {
     --bg: #f5f4f0;
     --surface: #ffffff;
     --surface2: #f0efe9;
-    --border: rgba(0,0,0,0.12);
-    --border2: rgba(0,0,0,0.22);
+    --border: rgba(0,0,0,0.1);
     --text: #1a1a18;
     --text2: #6b6b66;
     --text3: #9b9b94;
     --blue: #185FA5;
     --blue-bg: #E6F1FB;
-    --blue-text: #0C447C;
     --green: #3B6D11;
     --green-bg: #EAF3DE;
     --green-text: #27500A;
     --red: #A32D2D;
     --red-bg: #FCEBEB;
-    --red-text: #791F1F;
+    --amber: #854F0B;
     --amber-bg: #FAEEDA;
-    --amber-text: #854F0B;
     --radius: 10px;
     --radius-sm: 6px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a; --surface: #282825; --surface2: #323230;
-      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
-      --text: #f0efe9; --text2: #a0a09a; --text3: #666660;
-      --blue-bg: #0C447C; --blue-text: #B5D4F4;
-      --green-bg: #27500A; --green-text: #C0DD97;
-      --red-bg: #791F1F; --red-text: #F7C1C1;
-      --amber-bg: #633806; --amber-text: #FAC775;
-    }
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; min-height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  .topbar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 0 16px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
-  .topbar-title { font-size: 17px; font-weight: 600; }
-  .topbar-sub { font-size: 12px; color: var(--text2); }
-  .topbar-right { display: flex; align-items: center; gap: 10px; }
-  .btn-logout { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); font-size: 12px; padding: 5px 10px; border-radius: var(--radius-sm); cursor: pointer; }
-  .btn-home { background: var(--blue-bg); border: none; color: var(--blue-text); font-size: 12px; padding: 5px 10px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; }
+  .header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { font-size: 18px; font-weight: 700; }
+  .header-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
 
-  .content { padding: 16px; max-width: 900px; margin: 0 auto; }
+  .content { padding: 16px; max-width: 1000px; margin: 0 auto; }
 
-  .filter-bar { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+
+  .filter-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label { font-size: 12px; color: var(--text2); font-weight: 500; }
-  .field select, .field input { height: 38px; padding: 0 10px; border: 1px solid var(--border2); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface2); color: var(--text); }
-  .btn-primary { background: var(--blue); color: #fff; border: none; padding: 0 18px; height: 38px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-  .btn-primary:active { opacity: 0.85; }
+  .field input, .field select { height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; background: var(--surface2); color: var(--text); width: 100%; }
 
-  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; }
-  .card-header { padding: 12px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-  .card-body { padding: 14px 16px; }
+  .btn-primary { background: var(--blue); color: #fff; border: none; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { opacity: 0.85; }
 
-  /* RANK ROWS */
-  .rank-list { display: flex; flex-direction: column; gap: 8px; }
-  .rank-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface2); border-radius: var(--radius-sm); }
-  .rank-num { font-size: 13px; font-weight: 700; color: var(--text3); min-width: 24px; text-align: center; }
-  .rank-num.gold { color: #F59E0B; }
-  .rank-num.silver { color: #9CA3AF; }
-  .rank-num.bronze { color: #B45309; }
-  .rank-name { flex: 1; font-size: 14px; font-weight: 600; }
-  .rank-sub { font-size: 12px; color: var(--text2); }
-  .rank-bar-wrap { flex: 1; max-width: 160px; }
-  .rank-bar-bg { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .rank-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
-  .fill-blue { background: var(--blue); }
-  .fill-green { background: var(--green); }
-  .fill-red { background: var(--red); }
-  .fill-amber { background: #F59E0B; }
-  .rank-val { font-size: 14px; font-weight: 700; min-width: 52px; text-align: right; }
+  /* KPI CARDS */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media(max-width:600px){ .kpi-grid { grid-template-columns: 1fr; } }
 
-  /* BADGE */
-  .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .badge-ok { background: var(--green-bg); color: var(--green-text); }
-  .badge-warn { background: var(--amber-bg); color: var(--amber-text); }
-  .badge-err { background: var(--red-bg); color: var(--red-text); }
-  .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .kpi-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .kpi-card-header { padding: 12px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .kpi-card-title { font-size: 16px; font-weight: 700; }
+  .kpi-card-sub { font-size: 12px; color: var(--text2); }
+  .kpi-card-body { padding: 14px 16px; }
 
-  /* GRID */
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+  .kpi-total { font-size: 32px; font-weight: 800; color: var(--green); }
+  .kpi-total-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
 
-  /* SUMMARY METRICS */
-  .metrics { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 14px; }
-  @media (min-width: 600px) { .metrics { grid-template-columns: repeat(4,1fr); } }
-  .metric { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; }
-  .metric-label { font-size: 11px; color: var(--text2); font-weight: 500; margin-bottom: 4px; }
-  .metric-value { font-size: 22px; font-weight: 700; }
+  .kpi-breakdown { margin-top: 12px; }
+  .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+  .kpi-row:last-child { border-bottom: none; }
+  .kpi-row-label { color: var(--text2); }
+  .kpi-row-value { font-weight: 600; }
 
-  /* DOWNTIME */
-  .downtime-list { display: flex; flex-direction: column; gap: 6px; }
-  .downtime-row { display: flex; align-items: center; gap: 10px; }
-  .downtime-label { flex: 1; font-size: 13px; }
-  .downtime-bar-wrap { flex: 2; }
-  .downtime-val { font-size: 13px; font-weight: 700; min-width: 60px; text-align: right; color: var(--text2); }
-
-  .empty { text-align: center; padding: 28px 16px; color: var(--text3); font-size: 14px; }
-
-  .status-bar { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; margin-bottom: 12px; }
-  .status-info { background: var(--blue-bg); color: var(--blue-text); }
-  .status-ok { background: var(--green-bg); color: var(--green-text); }
-  .status-err { background: var(--red-bg); color: var(--red-text); }
-
+  /* DAILY TABLE */
   .table-scroll { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 400px; }
-  th { text-align: left; padding: 9px 12px; background: var(--surface2); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
-  td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 12px; background: var(--surface2); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); }
   tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-ok { background: var(--green-bg); color: var(--green-text); }
+  .badge-warn { background: var(--amber-bg); color: var(--amber); }
+  .badge-err { background: var(--red-bg); color: var(--red); }
+
+  /* STATION BREAKDOWN */
+  .station-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 8px; margin-top: 10px; }
+  .station-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 8px 12px; }
+  .station-name { font-size: 13px; font-weight: 700; }
+  .station-pct { font-size: 18px; font-weight: 800; margin: 2px 0; }
+  .station-kpi { font-size: 11px; color: var(--text2); }
+  .station-auto { font-size: 10px; background: var(--blue-bg); color: var(--blue); padding: 1px 6px; border-radius: 10px; display: inline-block; margin-top: 2px; }
+
+  .config-bar { background: var(--surface); border-top: 0.5px solid var(--border); padding: 10px 20px; display: flex; align-items: center; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0; }
+  .config-bar input { flex: 1; height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; background: var(--surface2); color: var(--text); }
+  .config-bar label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+
+  .empty { text-align: center; padding: 32px; color: var(--text3); font-size: 14px; }
+  .page-pad { padding-bottom: 70px; }
+
+  .sum-highlight { font-size: 20px; font-weight: 800; }
+  .green { color: var(--green); }
+  .amber { color: var(--amber); }
+  .red { color: var(--red); }
 </style>
 </head>
 <body>
 
-<script>
-(function(){var s=JSON.parse(sessionStorage.getItem('tpa_session')||'null');if(!s)window.location.href='login.html';})();
-</script>
-
-<div class="topbar">
+<div class="header">
   <div>
-    <div class="topbar-title">🏆 Аналитика</div>
-    <div class="topbar-sub" id="topbar-sub">Загрузка...</div>
+    <div class="header-title">📊 KPI Наладчиков</div>
+    <div class="header-sub" id="hdr-sub">Загрузка...</div>
   </div>
-  <div class="topbar-right">
-    <a class="btn-home" href="home.html">← Главная</a>
-    <button class="btn-logout" onclick="sessionStorage.removeItem('tpa_session');location.href='login.html'">Выйти</button>
-  </div>
+  <div style="font-size:13px;color:var(--text2)" id="hdr-date"></div>
 </div>
 
-<div class="content">
+<div class="content page-pad">
 
-  <!-- FILTER -->
-  <div class="filter-bar">
-    <div class="field">
-      <label>Период</label>
-      <select id="filter-period" onchange="onPeriodChange()">
-        <option value="last">Последний день с данными</option>
-        <option value="week">Последние 7 дней</option>
-        <option value="month">Последние 30 дней</option>
-        <option value="all">Всё время</option>
-        <option value="custom">Произвольный</option>
-      </select>
-    </div>
-    <div class="field" id="date-from-wrap" style="display:none">
-      <label>С</label>
-      <input type="date" id="filter-from">
-    </div>
-    <div class="field" id="date-to-wrap" style="display:none">
-      <label>По</label>
-      <input type="date" id="filter-to">
-    </div>
-    <button class="btn-primary" onclick="render()">🔄 Обновить</button>
-    <button class="btn-primary" style="background:var(--green)" onclick="loadFromSheets()">☁️ Загрузить</button>
-  </div>
-
-  <div id="status-msg" style="display:none"></div>
-
-  <!-- SUMMARY -->
-  <div class="metrics" id="summary-metrics">
-    <div class="metric"><div class="metric-label">Всего записей</div><div class="metric-value" id="m-records" style="color:var(--blue)">—</div></div>
-    <div class="metric"><div class="metric-label">Годных деталей</div><div class="metric-value" id="m-good" style="color:var(--green)">—</div></div>
-    <div class="metric"><div class="metric-label">Брак</div><div class="metric-value" id="m-bad" style="color:var(--red)">—</div></div>
-    <div class="metric"><div class="metric-label">Простои (мин)</div><div class="metric-value" id="m-down" style="color:var(--amber-text)">—</div></div>
-  </div>
-
-  <div class="grid2">
-
-    <!-- OPERATOR RATING -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🏆 Рейтинг операторов</div>
-        <span style="font-size:12px;color:var(--text2)">по % нормы</span>
-      </div>
-      <div class="card-body">
-        <div class="rank-list" id="op-rating"><div class="empty">Нет данных</div></div>
-      </div>
-    </div>
-
-    <!-- OPERATOR DAYS -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">📅 Отработанных дней</div>
-        <span style="font-size:12px;color:var(--text2)">по операторам</span>
-      </div>
-      <div class="card-body">
-        <div class="rank-list" id="op-days"><div class="empty">Нет данных</div></div>
-      </div>
-    </div>
-
-    <!-- MACHINE LOAD -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">⚙️ Загруженность станков</div>
-        <span style="font-size:12px;color:var(--text2)">по % нормы</span>
-      </div>
-      <div class="card-body">
-        <div class="rank-list" id="machine-rating"><div class="empty">Нет данных</div></div>
-      </div>
-    </div>
-
-    <!-- DOWNTIME -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">⏱️ Простои по причинам</div>
-        <span style="font-size:12px;color:var(--text2)">в минутах</span>
-      </div>
-      <div class="card-body">
-        <div class="downtime-list" id="downtime-list"><div class="empty">Нет данных</div></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- PARTS TOP -->
+  <!-- FILTERS -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">📦 Топ деталей по выпуску</div>
-    </div>
-    <div class="card-body">
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>#</th><th>Деталь</th><th>Годные</th><th>Брак</th><th>% брака</th><th>Статус</th></tr></thead>
-          <tbody id="parts-table"><tr><td colspan="6" class="empty">Нет данных</td></tr></tbody>
-        </table>
+    <div class="filter-row">
+      <div class="field">
+        <label>Период</label>
+        <select id="period" onchange="toggleDate();renderKPI()">
+          <option value="last">Последний день с данными</option>
+          <option value="today">Сегодня</option>
+          <option value="date">Выбрать дату</option>
+          <option value="range">От — До</option>
+          <option value="week">Неделя</option>
+          <option value="month">Месяц</option>
+          <option value="all">Всё время</option>
+        </select>
+      </div>
+      <div class="field" id="field-date" style="display:none">
+        <label>Дата</label>
+        <input type="date" id="filter-date" onchange="renderKPI()">
+      </div>
+      <div class="field" id="field-from" style="display:none">
+        <label>От</label>
+        <input type="date" id="filter-from" onchange="renderKPI()">
+      </div>
+      <div class="field" id="field-to" style="display:none">
+        <label>До</label>
+        <input type="date" id="filter-to" onchange="renderKPI()">
+      </div>
+      <div class="field" style="justify-content:flex-end;">
+        <label>&nbsp;</label>
+        <button class="btn-primary" onclick="fetchAndRender()">🔄 Обновить</button>
       </div>
     </div>
   </div>
 
-  <!-- MOLDS PROBLEMS -->
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-card-header">
+        <div>
+          <div class="kpi-card-title">🔧 Младший наладчик</div>
+          <div class="kpi-card-sub">25 000 сум × % нормы × кол-во станков</div>
+        </div>
+      </div>
+      <div class="kpi-card-body">
+        <div class="kpi-total" id="junior-total">— сум</div>
+        <div class="kpi-total-sub" id="junior-sub">нет данных</div>
+        <div class="kpi-breakdown" id="junior-breakdown"></div>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-card-header">
+        <div>
+          <div class="kpi-card-title">⭐ Старший наладчик</div>
+          <div class="kpi-card-sub">+10 000 сум × % нормы за авто-режим</div>
+        </div>
+      </div>
+      <div class="kpi-card-body">
+        <div class="kpi-total" id="senior-total">— сум</div>
+        <div class="kpi-total-sub" id="senior-sub">нет данных</div>
+        <div class="kpi-breakdown" id="senior-breakdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATION BREAKDOWN -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">🔴 Проблемные пресс-формы</div>
-      <span style="font-size:12px;color:var(--text2)">брак > 2%</span>
-    </div>
-    <div class="card-body">
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>#</th><th>Пресс-форма</th><th>Деталь</th><th>Годные</th><th>Брак</th><th>% брака</th></tr></thead>
-          <tbody id="molds-table"><tr><td colspan="6" class="empty">Нет данных</td></tr></tbody>
-        </table>
-      </div>
+    <div class="card-title">🏭 Выполнение нормы по станкам</div>
+    <div id="station-breakdown" class="empty">Нет данных</div>
+  </div>
+
+  <!-- DAILY TABLE -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:12px 16px;border-bottom:0.5px solid var(--border);font-size:14px;font-weight:600;">📅 По дням</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Станков работало</th>
+            <th>Авто-режим</th>
+            <th>Ср. % нормы</th>
+            <th>Младший наладчик</th>
+            <th>Старший наладчик</th>
+          </tr>
+        </thead>
+        <tbody id="daily-table">
+          <tr><td colspan="6" class="empty">Нет данных</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
+</div>
+
+<div class="config-bar">
+  <label>Apps Script URL:</label>
+  <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec">
+  <button class="btn-primary" onclick="saveAndFetch()">🔄 Загрузить</button>
 </div>
 
 <script>
-// ===== STORAGE =====
-function loadRecords() {
-  try { return JSON.parse(localStorage.getItem('tpa_v2') || '[]'); } catch(e){ return []; }
-}
-function saveRecords(r) {
-  try { localStorage.setItem('tpa_v2', JSON.stringify(r)); } catch(e){}
-}
-function loadGsUrl() { return localStorage.getItem('tpa_gs_url') || ''; }
+(function(){var s=JSON.parse(sessionStorage.getItem("tpa_session")||"null");if(!s||s.role!=="admin")window.location.href="login.html";})();
+var MACHINES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','V1','V2','V3','V4','V5'];
+var KPI_JUNIOR = 25000;
+var KPI_SENIOR_AUTO = 10000;
+var records = [];
 
-// ===== NORM CALC =====
-function calcNormShift(cycleTime, cavities, shiftStr) {
-  if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
-  var hours = (shiftStr && shiftStr.indexOf('Смена 2') >= 0) ? 12 : 10;
-  return Math.floor((3600 / cycleTime) * cavities * hours);
-}
-function calcNormDay(cycleTime, cavities) {
-  if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
-  return Math.floor((3600 / cycleTime) * cavities * 22);
+function loadGsUrl(){ return localStorage.getItem('kpi_gs_url') || ''; }
+function saveGsUrl(u){ localStorage.setItem('kpi_gs_url', u); }
+
+function normalizeDate(d) {
+  if (!d) return '';
+  var s = String(d);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  var m1 = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m1) return m1[1]+'-'+m1[2]+'-'+m1[3];
+  var months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+  var m2 = s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
+  if (m2) return m2[3]+'-'+(months[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');
+  return s;
 }
 
-// ===== PERIOD FILTER =====
-function onPeriodChange() {
-  var p = document.getElementById('filter-period').value;
-  var show = p === 'custom';
-  document.getElementById('date-from-wrap').style.display = show ? '' : 'none';
-  document.getElementById('date-to-wrap').style.display = show ? '' : 'none';
+function getTodayStr() {
+  var d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function calcNorm(cycleTime, cavities, shiftNum) {
+  if (!cycleTime || cycleTime <= 0) return 0;
+  var hours = shiftNum === 1 ? 10 : 12;
+  return Math.floor((3600 / cycleTime) * (cavities||1) * hours);
+}
+
+function toggleDate() {
+  var p = document.getElementById('period').value;
+  var today = getTodayStr();
+  document.getElementById('field-date').style.display = p === 'date' ? 'flex' : 'none';
+  document.getElementById('field-from').style.display = p === 'range' ? 'flex' : 'none';
+  document.getElementById('field-to').style.display = p === 'range' ? 'flex' : 'none';
+  if (p === 'date' && !document.getElementById('filter-date').value) {
+    document.getElementById('filter-date').value = today;
+  }
+  if (p === 'range') {
+    if (!document.getElementById('filter-from').value) {
+      // Default: from 7 days ago to today
+      var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+      document.getElementById('filter-from').value = weekAgo.getFullYear()+'-'+String(weekAgo.getMonth()+1).padStart(2,'0')+'-'+String(weekAgo.getDate()).padStart(2,'0');
+    }
+    if (!document.getElementById('filter-to').value) {
+      document.getElementById('filter-to').value = today;
+    }
+  }
 }
 
 function getFilteredRecords() {
-  var records = loadRecords();
-  if (!records.length) return [];
-  var p = document.getElementById('filter-period').value;
+  var period = document.getElementById('period').value;
+  var today = getTodayStr();
   var now = new Date();
 
-  if (p === 'last') {
-    var dates = records.map(function(r){ return r.date; }).filter(Boolean).sort();
-    var lastDate = dates[dates.length - 1];
-    return records.filter(function(r){ return r.date === lastDate; });
+  if (period === 'today') return records.filter(function(r){ return normalizeDate(r.date) === today; });
+  if (period === 'last') {
+    var dates = records.map(function(r){return normalizeDate(r.date);}).filter(Boolean).sort();
+    var last = dates[dates.length-1];
+    return records.filter(function(r){ return normalizeDate(r.date) === last; });
   }
-  if (p === 'week') {
-    var from = new Date(now); from.setDate(from.getDate() - 7);
-    return records.filter(function(r){ return r.date && new Date(r.date) >= from; });
+  if (period === 'date') {
+    var fd = document.getElementById('filter-date').value || today;
+    return records.filter(function(r){ return normalizeDate(r.date) === fd; });
   }
-  if (p === 'month') {
-    var from = new Date(now); from.setDate(from.getDate() - 30);
-    return records.filter(function(r){ return r.date && new Date(r.date) >= from; });
-  }
-  if (p === 'custom') {
+  if (period === 'range') {
     var from = document.getElementById('filter-from').value;
     var to = document.getElementById('filter-to').value;
     return records.filter(function(r){
-      if (from && r.date < from) return false;
-      if (to && r.date > to) return false;
-      return true;
+      var rd = normalizeDate(r.date);
+      return (!from || rd >= from) && (!to || rd <= to);
     });
   }
-  return records; // all
-}
-
-// ===== RANK NUM =====
-function rankNum(i) {
-  if (i === 0) return '<span class="rank-num gold">🥇</span>';
-  if (i === 1) return '<span class="rank-num silver">🥈</span>';
-  if (i === 2) return '<span class="rank-num bronze">🥉</span>';
-  return '<span class="rank-num">' + (i+1) + '</span>';
-}
-
-// ===== RENDER =====
-function render() {
-  var records = getFilteredRecords();
-
-  // Summary
-  var totalGood = 0, totalBad = 0, totalDown = 0;
-  records.forEach(function(r){
-    totalGood += r.good || 0;
-    totalBad += r.defects || 0;
-    totalDown += (r.plannedDown || 0) + (r.unplannedDown || 0);
-  });
-  document.getElementById('m-records').textContent = records.length;
-  document.getElementById('m-good').textContent = totalGood.toLocaleString();
-  document.getElementById('m-bad').textContent = totalBad.toLocaleString();
-  document.getElementById('m-down').textContent = totalDown;
-
-  // Topbar
-  var dates = records.map(function(r){ return r.date; }).filter(Boolean).sort();
-  var dateRange = dates.length ? (dates[0] === dates[dates.length-1] ? dates[0] : dates[0] + ' — ' + dates[dates.length-1]) : '—';
-  document.getElementById('topbar-sub').textContent = 'Записей: ' + records.length + ' · ' + dateRange;
-
-  renderOpRating(records);
-  renderOpDays(records);
-  renderMachineRating(records);
-  renderDowntime(records);
-  renderParts(records);
-  renderMolds(records);
-}
-
-// 1. OPERATOR RATING by norm %
-function renderOpRating(records) {
-  var ops = {};
-  records.forEach(function(r) {
-    var op = r.operator || '—';
-    if (!ops[op]) ops[op] = { good: 0, norm: 0 };
-    ops[op].good += r.good || 0;
-    // Each record = one shift worked, use that shift's hours
-    ops[op].norm += calcNormShift(r.cycleTime, r.cavities, r.shift);
-  });
-
-  var list = Object.entries(ops).map(function(e) {
-    var pct = e[1].norm > 0 ? Math.round(e[1].good / e[1].norm * 100) : 0;
-    return { name: e[0], good: e[1].good, norm: e[1].norm, pct: pct };
-  }).sort(function(a,b){ return b.pct - a.pct; });
-
-  if (!list.length) { document.getElementById('op-rating').innerHTML = '<div class="empty">Нет данных</div>'; return; }
-  var maxPct = list[0].pct || 1;
-
-  document.getElementById('op-rating').innerHTML = list.map(function(o, i) {
-    var w = Math.round(o.pct / Math.max(maxPct, 100) * 100);
-    var cls = o.pct >= 100 ? 'fill-green' : o.pct >= 80 ? 'fill-amber' : 'fill-red';
-    var badge = o.pct >= 100 ? '<span class="badge badge-ok">✅ Норма</span>' : o.pct >= 80 ? '<span class="badge badge-warn">⚠️ Близко</span>' : '<span class="badge badge-err">❌ Ниже</span>';
-    return '<div class="rank-row">' +
-      rankNum(i) +
-      '<div style="flex:1"><div class="rank-name">' + o.name + '</div>' +
-      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill ' + cls + '" style="width:' + w + '%"></div></div></div></div>' +
-      badge +
-      '<div class="rank-val" style="color:' + (o.pct>=100?'var(--green)':o.pct>=80?'var(--amber-text)':'var(--red)') + '">' + o.pct + '%</div>' +
-    '</div>';
-  }).join('');
-}
-
-// 2. OPERATOR DAYS
-function renderOpDays(records) {
-  var ops = {};
-  records.forEach(function(r) {
-    var op = r.operator || '—';
-    if (!ops[op]) ops[op] = new Set();
-    if (r.date) ops[op].add(r.date);
-  });
-
-  var list = Object.entries(ops).map(function(e) {
-    return { name: e[0], days: e[1].size };
-  }).sort(function(a,b){ return b.days - a.days; });
-
-  if (!list.length) { document.getElementById('op-days').innerHTML = '<div class="empty">Нет данных</div>'; return; }
-  var maxDays = list[0].days || 1;
-
-  document.getElementById('op-days').innerHTML = list.map(function(o, i) {
-    var w = Math.round(o.days / maxDays * 100);
-    return '<div class="rank-row">' +
-      rankNum(i) +
-      '<div style="flex:1"><div class="rank-name">' + o.name + '</div>' +
-      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill fill-blue" style="width:' + w + '%"></div></div></div></div>' +
-      '<div class="rank-val">' + o.days + ' дн.</div>' +
-    '</div>';
-  }).join('');
-}
-
-// 3. MACHINE LOAD
-function renderMachineRating(records) {
-  var machines = {};
-  records.forEach(function(r) {
-    var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machines[key]) machines[key] = { good: 0, s1: null, s2: null, records: 0 };
-    machines[key].good += r.good || 0;
-    machines[key].records++;
-    var isS1 = r.shift && r.shift.indexOf('Смена 2') < 0;
-    if (isS1) {
-      if (!machines[key].s1) machines[key].s1 = { cycleTime: r.cycleTime, cavities: r.cavities };
-    } else {
-      if (!machines[key].s2) machines[key].s2 = { cycleTime: r.cycleTime, cavities: r.cavities };
-    }
-  });
-
-  // Calculate norm: norm1(10h) + norm2(12h) per unique day
-  // Count unique days per machine
-  var machineDays = {};
-  records.forEach(function(r) {
-    var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machineDays[key]) machineDays[key] = { s1: new Set(), s2: new Set() };
-    if (r.date) {
-      var isS1 = r.shift && r.shift.indexOf('Смена 2') < 0;
-      if (isS1) machineDays[key].s1.add(r.date);
-      else machineDays[key].s2.add(r.date);
-    }
-  });
-
-  Object.keys(machines).forEach(function(key) {
-    var m = machines[key];
-    var days = machineDays[key] || { s1: new Set(), s2: new Set() };
-    var norm1 = m.s1 ? calcNormShift(m.s1.cycleTime, m.s1.cavities, 'Смена 1') * days.s1.size : 0;
-    var norm2 = m.s2 ? calcNormShift(m.s2.cycleTime, m.s2.cavities, 'Смена 2') * days.s2.size : 0;
-    // fallback: use whichever shift has data
-    if (!norm1 && m.s2 && days.s1.size) norm1 = calcNormShift(m.s2.cycleTime, m.s2.cavities, 'Смена 1') * days.s1.size;
-    if (!norm2 && m.s1 && days.s2.size) norm2 = calcNormShift(m.s1.cycleTime, m.s1.cavities, 'Смена 2') * days.s2.size;
-    m.norm = norm1 + norm2;
-  });
-
-  var list = Object.entries(machines).map(function(e) {
-    var pct = e[1].norm > 0 ? Math.round(e[1].good / e[1].norm * 100) : 0;
-    return { name: e[0], good: e[1].good, pct: pct, records: e[1].records };
-  }).sort(function(a,b){ return b.pct - a.pct; });
-
-  if (!list.length) { document.getElementById('machine-rating').innerHTML = '<div class="empty">Нет данных</div>'; return; }
-  var maxPct = list[0].pct || 1;
-
-  document.getElementById('machine-rating').innerHTML = list.map(function(m, i) {
-    var w = Math.round(m.pct / Math.max(maxPct, 100) * 100);
-    var cls = m.pct >= 100 ? 'fill-green' : m.pct >= 80 ? 'fill-amber' : 'fill-red';
-    var type = m.name.startsWith('T') ? '🔵' : '🟢';
-    return '<div class="rank-row">' +
-      rankNum(i) +
-      '<div style="flex:1"><div class="rank-name">' + type + ' ' + m.name + ' <span style="font-size:11px;color:var(--text2);font-weight:400">' + m.good.toLocaleString() + ' шт</span></div>' +
-      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill ' + cls + '" style="width:' + w + '%"></div></div></div></div>' +
-      '<div class="rank-val" style="color:' + (m.pct>=100?'var(--green)':m.pct>=80?'var(--amber-text)':'var(--red)') + '">' + m.pct + '%</div>' +
-    '</div>';
-  }).join('');
-}
-
-// 4. DOWNTIME BY REASON
-function renderDowntime(records) {
-  var reasons = {};
-  var totalPlanned = 0, totalUnplanned = 0;
-  records.forEach(function(r) {
-    var planned = r.plannedDown || 0;
-    var unplanned = r.unplannedDown || 0;
-    totalPlanned += planned;
-    totalUnplanned += unplanned;
-    if (unplanned > 0) {
-      var reason = (r.downtimeReason || 'Без причины').trim() || 'Без причины';
-      reasons[reason] = (reasons[reason] || 0) + unplanned;
-    }
-  });
-
-  var list = Object.entries(reasons).sort(function(a,b){ return b[1]-a[1]; });
-  var maxVal = list.length ? list[0][1] : 1;
-
-  var html = '';
-  if (totalPlanned > 0 || totalUnplanned > 0) {
-    html += '<div style="display:flex;gap:10px;margin-bottom:12px;">' +
-      '<div class="badge badge-blue">Плановые: ' + totalPlanned + ' мин</div>' +
-      '<div class="badge badge-err">Неплановые: ' + totalUnplanned + ' мин</div>' +
-    '</div>';
+  if (period === 'week') {
+    var weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate()-7);
+    return records.filter(function(r){ return normalizeDate(r.date) >= weekAgo.toISOString().slice(0,10); });
   }
-
-  if (!list.length) {
-    html += '<div class="empty">Простоев нет</div>';
-  } else {
-    html += list.map(function(e) {
-      var w = Math.round(e[1] / maxVal * 100);
-      return '<div class="downtime-row">' +
-        '<div class="downtime-label">' + e[0] + '</div>' +
-        '<div class="downtime-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill fill-amber" style="width:' + w + '%"></div></div></div>' +
-        '<div class="downtime-val">' + e[1] + ' мин</div>' +
-      '</div>';
-    }).join('');
+  if (period === 'month') {
+    var monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth()-1);
+    return records.filter(function(r){ return normalizeDate(r.date) >= monthAgo.toISOString().slice(0,10); });
   }
-
-  document.getElementById('downtime-list').innerHTML = html;
+  return records;
 }
 
-// 5. PARTS TOP
-function renderParts(records) {
-  var parts = {};
-  records.forEach(function(r) {
-    var name = (r.partName || '—').trim();
-    if (!parts[name]) parts[name] = { good: 0, bad: 0 };
-    parts[name].good += r.good || 0;
-    parts[name].bad += r.defects || 0;
+function calcKPIForDay(dayRecs) {
+  // Calculate KPI for a single day
+  var machineData = {};
+  MACHINES.forEach(function(m){ machineData[m] = {
+    s1:{good:0,cycleTime:0,cavities:0,count:0,auto:0},
+    s2:{good:0,cycleTime:0,cavities:0,count:0,auto:0}
+  }; });
+
+  dayRecs.forEach(function(r) {
+    var key = r.machine ? r.machine.split(' ')[0] : null;
+    if (!key || !machineData[key]) return;
+    var isS1 = r.shift && r.shift.indexOf('Смена 1') >= 0;
+    var sd = isS1 ? machineData[key].s1 : machineData[key].s2;
+    sd.good += r.good||0;
+    if (r.cycleTime > 0) {
+      sd.cycleTime = sd.count > 0 ? (sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1) : r.cycleTime;
+      sd.cavities = r.cavities||1;
+      sd.count++;
+    }
+    if (r.autoMode == 1 || r.autoMode === '1') sd.auto = 1;
   });
 
-  var list = Object.entries(parts).sort(function(a,b){ return b[1].good - a[1].good; }).slice(0, 15);
+  var stationKPI = [];
+  var juniorTotal = 0;
+  var seniorExtra = 0;
 
-  if (!list.length) { document.getElementById('parts-table').innerHTML = '<tr><td colspan="6" class="empty">Нет данных</td></tr>'; return; }
+  // Total hours in day = 22 (shift1=10h, shift2=12h)
+  var TOTAL_HOURS = 22;
+  var SHIFT1_HOURS = 10;
+  var SHIFT2_HOURS = 12;
 
-  document.getElementById('parts-table').innerHTML = list.map(function(e, i) {
-    var total = e[1].good + e[1].bad;
-    var rate = total > 0 ? Math.round(e[1].bad / total * 100) : 0;
-    var badge = rate === 0 ? '<span class="badge badge-ok">Норма</span>' : rate < 3 ? '<span class="badge badge-warn">Внимание</span>' : '<span class="badge badge-err">Высокий</span>';
-    return '<tr>' +
-      '<td style="color:var(--text3)">' + (i+1) + '</td>' +
-      '<td><strong>' + e[0] + '</strong></td>' +
-      '<td style="color:var(--green)">' + e[1].good.toLocaleString() + '</td>' +
-      '<td>' + e[1].bad.toLocaleString() + '</td>' +
-      '<td>' + rate + '%</td>' +
-      '<td>' + badge + '</td>' +
-    '</tr>';
-  }).join('');
+  MACHINES.forEach(function(m) {
+    var md = machineData[m];
+    var norm1 = md.s1.cycleTime > 0 ? calcNorm(md.s1.cycleTime, md.s1.cavities, 1) : 0;
+    var norm2 = md.s2.cycleTime > 0 ? calcNorm(md.s2.cycleTime, md.s2.cavities, 2) : 0;
+    // Use best available cycleTime for missing shift
+    var ct = md.s1.cycleTime > 0 ? md.s1.cycleTime : md.s2.cycleTime;
+    var cav = md.s1.cycleTime > 0 ? md.s1.cavities : md.s2.cavities;
+    if (norm1 === 0 && ct > 0) norm1 = calcNorm(ct, cav, 1);
+    if (norm2 === 0 && ct > 0) norm2 = calcNorm(ct, cav, 2);
+
+    // Full day norm = 22 hours always
+    var normFull = norm1 + norm2;
+    if (normFull === 0) return;
+
+    var goodDay = md.s1.good + md.s2.good;
+    if (goodDay === 0) return;
+
+    // % выполнения от суточной нормы (не от активной смены!)
+    var pctOfDay = Math.min(goodDay / normFull, 1);
+
+    // KPI за день пропорционально суточной норме
+    var isAuto = md.s1.auto || md.s2.auto;
+    var juniorKPI = Math.round(KPI_JUNIOR * pctOfDay);
+    var seniorKPI = isAuto ? Math.round(KPI_SENIOR_AUTO * pctOfDay) : 0;
+
+    juniorTotal += juniorKPI;
+    seniorExtra += seniorKPI;
+
+    // Show % of full day norm
+    stationKPI.push({
+      machine: m,
+      pct: Math.round(pctOfDay * 100),
+      pct1: norm1>0 ? Math.round(Math.min(md.s1.good/norm1,1)*100) : null,
+      pct2: norm2>0 ? Math.round(Math.min(md.s2.good/norm2,1)*100) : null,
+      good: goodDay,
+      norm: normFull,
+      juniorKPI: juniorKPI,
+      seniorKPI: seniorKPI,
+      isAuto: isAuto
+    });
+  });
+
+  return { stationKPI:stationKPI, juniorTotal:juniorTotal, seniorTotal:juniorTotal+seniorExtra, seniorExtra:seniorExtra };
 }
 
-// 6. PROBLEM MOLDS
-function renderMolds(records) {
-  var molds = {};
-  records.forEach(function(r) {
-    var mold = (r.moldId || '—').trim();
-    var part = (r.partName || '—').trim();
-    var key = mold;
-    if (!molds[key]) molds[key] = { good: 0, bad: 0, part: part };
-    molds[key].good += r.good || 0;
-    molds[key].bad += r.defects || 0;
-    if (part !== '—') molds[key].part = part;
+function calcKPIForRecords(recs) {
+  // Group by date, calc KPI per day, then sum
+  var byDate = {};
+  recs.forEach(function(r) {
+    var d = normalizeDate(r.date);
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
   });
 
-  var list = Object.entries(molds).map(function(e) {
-    var total = e[1].good + e[1].bad;
-    var rate = total > 0 ? Math.round(e[1].bad / total * 100) : 0;
-    return { mold: e[0], good: e[1].good, bad: e[1].bad, rate: rate, part: e[1].part };
-  }).filter(function(m){ return m.rate >= 2; }).sort(function(a,b){ return b.rate - a.rate; }).slice(0, 10);
+  var allStations = {};
+  var juniorTotal = 0;
+  var seniorExtra = 0;
 
-  if (!list.length) {
-    document.getElementById('molds-table').innerHTML = '<tr><td colspan="6" class="empty">✅ Проблемных пресс-форм нет</td></tr>';
+  Object.keys(byDate).forEach(function(d) {
+    var dayKPI = calcKPIForDay(byDate[d]);
+    juniorTotal += dayKPI.juniorTotal;
+    seniorExtra += dayKPI.seniorExtra;
+    dayKPI.stationKPI.forEach(function(s) {
+      if (!allStations[s.machine]) {
+        allStations[s.machine] = { machine:s.machine, pctSum:0, days:0, good:0, norm:0, juniorKPI:0, seniorKPI:0, isAuto:false };
+      }
+      allStations[s.machine].pctSum += s.pct;
+      allStations[s.machine].days++;
+      allStations[s.machine].good += s.good;
+      allStations[s.machine].norm += s.norm;
+      allStations[s.machine].juniorKPI += s.juniorKPI;
+      allStations[s.machine].seniorKPI += s.seniorKPI;
+      if (s.isAuto) allStations[s.machine].isAuto = true;
+    });
+  });
+
+  var stationKPI = Object.values(allStations).map(function(s) {
+    return {
+      machine: s.machine,
+      pct: s.days > 0 ? Math.round(s.pctSum / s.days) : 0,
+      good: s.good, norm: s.norm,
+      juniorKPI: s.juniorKPI, seniorKPI: s.seniorKPI, isAuto: s.isAuto
+    };
+  }).sort(function(a,b){ return a.machine.localeCompare(b.machine); });
+
+  return { stationKPI:stationKPI, juniorTotal:juniorTotal, seniorTotal:juniorTotal+seniorExtra, seniorExtra:seniorExtra };
+}
+
+function renderKPI() {
+  var recs = getFilteredRecords();
+  if (!recs.length) {
+    document.getElementById('junior-total').textContent = '— сум';
+    document.getElementById('junior-sub').textContent = 'нет данных';
+    document.getElementById('senior-total').textContent = '— сум';
+    document.getElementById('senior-sub').textContent = 'нет данных';
+    document.getElementById('station-breakdown').innerHTML = '<div class="empty">Нет данных за выбранный период</div>';
+    document.getElementById('daily-table').innerHTML = '<tr><td colspan="6" class="empty">Нет данных</td></tr>';
     return;
   }
 
-  document.getElementById('molds-table').innerHTML = list.map(function(m, i) {
-    var badge = m.rate >= 10 ? '<span class="badge badge-err">🔴 Критично</span>' : m.rate >= 5 ? '<span class="badge badge-warn">🟡 Внимание</span>' : '<span class="badge badge-blue">🔵 Следить</span>';
-    return '<tr>' +
-      '<td style="color:var(--text3)">' + (i+1) + '</td>' +
-      '<td><strong>' + m.mold + '</strong></td>' +
-      '<td style="color:var(--text2)">' + m.part + '</td>' +
-      '<td style="color:var(--green)">' + m.good.toLocaleString() + '</td>' +
-      '<td style="color:var(--red)">' + m.bad.toLocaleString() + '</td>' +
-      '<td>' + m.rate + '% ' + badge + '</td>' +
-    '</tr>';
+  var kpi = calcKPIForRecords(recs);
+
+  // Junior card
+  document.getElementById('junior-total').textContent = kpi.juniorTotal.toLocaleString() + ' сум';
+  document.getElementById('junior-sub').textContent = 'за ' + kpi.stationKPI.length + ' работавших станков';
+  document.getElementById('junior-breakdown').innerHTML = kpi.stationKPI.map(function(s){
+    var cls = s.pct >= 100 ? 'green' : s.pct >= 80 ? 'amber' : 'red';
+    return '<div class="kpi-row"><span class="kpi-row-label">' + s.machine + ' — ' + s.pct + '% нормы</span>' +
+      '<span class="kpi-row-value ' + cls + '">' + s.juniorKPI.toLocaleString() + ' сум</span></div>';
   }).join('');
+
+  // Senior card
+  document.getElementById('senior-total').textContent = kpi.seniorTotal.toLocaleString() + ' сум';
+  var autoCount = kpi.stationKPI.filter(function(s){return s.isAuto;}).length;
+  document.getElementById('senior-sub').textContent = 'база + ' + kpi.seniorExtra.toLocaleString() + ' сум за ' + autoCount + ' авто-станков';
+  document.getElementById('senior-breakdown').innerHTML = kpi.stationKPI.map(function(s){
+    return '<div class="kpi-row"><span class="kpi-row-label">' + s.machine + (s.isAuto?' 🤖':'') + '</span>' +
+      '<span class="kpi-row-value">' + s.juniorKPI.toLocaleString() + (s.seniorKPI?' + <span style="color:var(--blue)">'+s.seniorKPI.toLocaleString()+'</span>':'') + ' сум</span></div>';
+  }).join('');
+
+  // Station breakdown
+  if (kpi.stationKPI.length) {
+    document.getElementById('station-breakdown').innerHTML =
+      '<div class="station-grid">' +
+      kpi.stationKPI.map(function(s) {
+        var cls = s.pct >= 100 ? 'green' : s.pct >= 80 ? 'amber' : 'red';
+        return '<div class="station-item">' +
+          '<div class="station-name">' + s.machine + '</div>' +
+          '<div class="station-pct ' + cls + '">' + s.pct + '%</div>' +
+          '<div class="station-kpi">' + s.good.toLocaleString() + ' / ' + s.norm.toLocaleString() + ' шт</div>' +
+          (s.isAuto ? '<div class="station-auto">🤖 Авто</div>' : '') +
+        '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  // Daily table
+  var byDate = {};
+  records.forEach(function(r) {
+    var d = normalizeDate(r.date);
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
+  });
+
+  var dateRows = Object.keys(byDate).sort().reverse().slice(0, 30);
+  document.getElementById('daily-table').innerHTML = dateRows.map(function(d) {
+    var kd = calcKPIForRecords(byDate[d]);
+    var autoCount = kd.stationKPI.filter(function(s){return s.isAuto;}).length;
+    var avgPct = kd.stationKPI.length ? Math.round(kd.stationKPI.reduce(function(s,x){return s+x.pct;},0)/kd.stationKPI.length) : 0;
+    var badgeCls = avgPct >= 100 ? 'badge-ok' : avgPct >= 80 ? 'badge-warn' : 'badge-err';
+    return '<tr>' +
+      '<td><strong>' + d + '</strong></td>' +
+      '<td>' + kd.stationKPI.length + ' шт</td>' +
+      '<td>' + (autoCount ? '🤖 ' + autoCount + ' шт' : '—') + '</td>' +
+      '<td><span class="badge ' + badgeCls + '">' + avgPct + '%</span></td>' +
+      '<td class="green" style="font-weight:600">' + kd.juniorTotal.toLocaleString() + ' сум</td>' +
+      '<td style="font-weight:600;color:var(--blue)">' + kd.seniorTotal.toLocaleString() + ' сум</td>' +
+    '</tr>';
+  }).join('') || '<tr><td colspan="6" class="empty">Нет данных</td></tr>';
 }
 
-// ===== LOAD FROM SHEETS =====
-function loadFromSheets() {
+function fetchAndRender() {
   var url = loadGsUrl();
-  if (!url) { showStatus('⚠️ Google Sheets не настроен. Откройте index.html → вкладка Google', 'err'); return; }
+  if (!url) { alert('Введите URL Apps Script'); return; }
+  document.getElementById('hdr-sub').textContent = '⏳ Загрузка...';
 
-  showStatus('⏳ Загрузка данных из Google Sheets...', 'info');
-
-  var cbName = 'anCb_' + Date.now();
+  var cbName = 'kpiCb_' + Date.now();
   var script = document.createElement('script');
   var done = false;
 
   window[cbName] = function(data) {
     done = true; delete window[cbName];
     if (document.body.contains(script)) document.body.removeChild(script);
-
-    if (data && data.rows && data.rows.length) {
-      var imported = data.rows.map(function(r, i) {
+    if (data && data.rows) {
+      records = data.rows.map(function(r, i) {
         return {
-          id: Date.now() + i,
-          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p)){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r[0]),
+          id: i,
+          date: (function(d){var s=String(d||'');if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;var m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];var months={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};var m2=s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);if(m2)return m2[3]+'-'+(months[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');return s;})(r[0]),
           shift: r[1]||'', operator: r[2]||'', machine: r[3]||'',
-          material: r[4]||'', partName: r[5]||'', moldId: r[6]||'',
-          cavities: parseInt(r[7])||1, cycles: parseInt(r[8])||0,
-          cycleTime: parseFloat(r[9])||0, good: parseInt(r[10])||0,
-          defects: parseInt(r[11])||0, weight: parseFloat(r[13])||0,
-          defectNote: r[14]||'', plannedDown: parseInt(r[15])||0,
-          unplannedDown: parseInt(r[16])||0, downtimeReason: r[17]||'',
-          synced: true
+          cycles: parseInt(r[8])||0, cycleTime: parseFloat(r[9])||0,
+          good: parseInt(r[10])||0, defects: parseInt(r[11])||0,
+          cavities: parseInt(r[7])||1,
+          plannedDown: parseInt(r[15])||0, unplannedDown: parseInt(r[16])||0,
+          autoMode: r[19]||0
         };
       });
-      saveRecords(imported);
-      showStatus('✅ Загружено ' + imported.length + ' записей', 'ok');
-      render();
-    } else {
-      showStatus('⚠️ Нет данных или ошибка загрузки', 'err');
+      var now = new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('hdr-sub').textContent = 'Записей: ' + records.length + ' · Обновлено: ' + now;
+      renderKPI();
     }
   };
-
-  script.onerror = function(){ if(!done){done=true;delete window[cbName];showStatus('❌ Ошибка соединения','err');} };
-  setTimeout(function(){ if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);showStatus('❌ Превышено время ожидания','err');} }, 8000);
+  script.onerror = function(){ if(!done){done=true;delete window[cbName];document.getElementById('hdr-sub').textContent='❌ Ошибка';} };
+  setTimeout(function(){ if(!done){done=true;delete window[cbName];document.getElementById('hdr-sub').textContent='❌ Превышено время';} }, 8000);
   script.src = url + '?action=getLog&callback=' + cbName;
   document.body.appendChild(script);
 }
 
-function showStatus(msg, type) {
-  var el = document.getElementById('status-msg');
-  el.style.display = 'block';
-  el.className = 'status-bar status-' + (type === 'info' ? 'info' : type === 'ok' ? 'ok' : 'err');
-  el.textContent = msg;
-  if (type !== 'info') setTimeout(function(){ el.style.display='none'; }, 4000);
+function saveAndFetch() {
+  var url = document.getElementById('gs-url').value.trim();
+  saveGsUrl(url);
+  fetchAndRender();
 }
 
-// ===== INIT =====
+// Init
 document.addEventListener('DOMContentLoaded', function() {
-  render();
-  if (loadGsUrl()) loadFromSheets();
+  var saved = loadGsUrl();
+  if (saved) { document.getElementById('gs-url').value = saved; fetchAndRender(); }
+  var now = new Date();
+  document.getElementById('hdr-date').textContent = now.toLocaleDateString('ru-RU',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
 });
 </script>
-
 </body>
 </html>

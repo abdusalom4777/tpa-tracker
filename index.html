@@ -873,6 +873,11 @@ function doGet(e) {
 </div><!-- /content -->
 
 <script>
+  (function() {
+  var s = JSON.parse(sessionStorage.getItem('tpa_session') || 'null');
+  if (!s) window.location.href = 'login.html';
+})();
+  
 // ===== STORAGE =====
 function loadRecords() {
   try { return JSON.parse(localStorage.getItem('tpa_v2') || '[]'); } catch(e){ return []; }

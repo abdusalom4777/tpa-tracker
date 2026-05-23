@@ -498,8 +498,8 @@ function renderGrid(gridId, machines, todayRecs) {
     if (norm2===0 && ct>0) norm2 = calcNorm(ct, cav, 2);
     var normDay = norm1+norm2; // всегда 22 часа
     // % от суточной нормы (22 часа = 100%)
-    var pct1 = normDay>0 ? Math.round(s.s1.good/normDay*100) : null;
-    var pct2 = normDay>0 ? Math.round(s.s2.good/normDay*100) : null;
+    var pct1 = norm1>0 ? Math.round(s.s1.good/norm1*100) : null;
+    var pct2 = norm2>0 ? Math.round(s.s2.good/norm2*100) : null;
     var pctDay = normDay>0 ? Math.round(s.good/normDay*100) : null;
 
     var cardCls = !hasData ? 'off' : pctDay===null ? (defRate===0?'ok':defRate<5?'warn':'fail') : (pctDay>=100?'ok':pctDay>=80?'warn':'fail');
@@ -537,8 +537,8 @@ function renderGrid(gridId, machines, todayRecs) {
           '<div><div class="big-num-val">' + (hasData?defRate+'%':'—') + '</div><div class="big-num-lbl">% брак</div></div>' +
         '</div>' +
         (hasData&&(norm1||norm2) ? '<div class="norm-block">' +
-          (s.s1.count>0 ? pBar(s.s1.good, normDay, '☀️ С1 — '+Math.round(s.s1.good/normDay*100)+'%') : '') +
-          (s.s2.count>0 ? pBar(s.s2.good, normDay, '🌙 С2 — '+Math.round(s.s2.good/normDay*100)+'%') : '') +
+          (s.s1.count>0 && norm1>0 ? pBar(s.s1.good, norm1, '☀️ С1 — '+Math.round(s.s1.good/norm1*100)+'%') : '') +
+          (s.s2.count>0 && norm2>0 ? pBar(s.s2.good, norm2, '🌙 С2 — '+Math.round(s.s2.good/norm2*100)+'%') : '') +
           pBar(s.good, normDay, '📅 Сутки') +
         '</div>' : (!hasData?'':'<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">Норма: нет данных о цикле</div>')) +
       '</div>' +

@@ -265,6 +265,11 @@ function saveRecords(r) {
 function loadGsUrl() { return localStorage.getItem('tpa_gs_url') || ''; }
 
 // ===== NORM CALC =====
+function calcNormShift(cycleTime, cavities, shiftStr) {
+  if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
+  var hours = (shiftStr && shiftStr.indexOf('Смена 2') >= 0) ? 12 : 10;
+  return Math.floor((3600 / cycleTime) * cavities * hours);
+}
 function calcNormDay(cycleTime, cavities) {
   if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
   return Math.floor((3600 / cycleTime) * cavities * 22);
@@ -353,7 +358,7 @@ function renderOpRating(records) {
     var op = r.operator || '—';
     if (!ops[op]) ops[op] = { good: 0, norm: 0 };
     ops[op].good += r.good || 0;
-    var n = calcNormDay(r.cycleTime, r.cavities);
+    var n = calcNormShift(r.cycleTime, r.cavities, r.shift);
     ops[op].norm += n;
   });
 
@@ -413,7 +418,7 @@ function renderMachineRating(records) {
     var key = r.machine ? r.machine.split(' ')[0] : '—';
     if (!machines[key]) machines[key] = { good: 0, norm: 0, records: 0 };
     machines[key].good += r.good || 0;
-    machines[key].norm += calcNormDay(r.cycleTime, r.cavities);
+    machines[key].norm += calcNormShift(r.cycleTime, r.cavities, r.shift);
     machines[key].records++;
   });
 

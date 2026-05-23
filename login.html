@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ТПА — Вход</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Golos+Text:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f0f0d;
+    --surface: #1a1a17;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0efe8;
+    --text2: #8a8a80;
+    --text3: #444440;
+    --blue: #3b82f6;
+    --red: #ef4444;
+    --red-bg: rgba(239,68,68,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Golos Text', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .card {
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .logo-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 16px;
+    font-size: 26px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 32px rgba(59,130,246,0.3);
+  }
+
+  .logo-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff, var(--text2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-sub {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text2);
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .field input {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--text);
+    font-family: 'Golos Text', sans-serif;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+
+  .btn {
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Golos Text', sans-serif;
+    cursor: pointer;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+    transition: opacity 0.15s, transform 0.15s;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.25);
+  }
+
+  .btn:active { opacity: 0.85; transform: scale(0.98); }
+
+  .error {
+    background: var(--red-bg);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+    text-align: center;
+  }
+
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-8px)}
+    40%{transform:translateX(8px)}
+    60%{transform:translateX(-5px)}
+    80%{transform:translateX(5px)}
+  }
+
+  .shake { animation: shake 0.4s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="login-card">
+  <div class="logo">
+    <div class="logo-icon">⚙️</div>
+    <div class="logo-title">ТПА ТРЕКЕР</div>
+    <div class="logo-sub">Система учёта продукции цеха</div>
+  </div>
+
+  <div class="field">
+    <label>Логин</label>
+    <input type="text" id="username" placeholder="Введите логин" autocomplete="username" autocapitalize="none">
+  </div>
+
+  <div class="field">
+    <label>Пароль</label>
+    <input type="password" id="password" placeholder="Введите пароль" autocomplete="current-password">
+  </div>
+
+  <button class="btn" onclick="doLogin()">Войти →</button>
+
+  <div class="error" id="error-msg">❌ Неверный логин или пароль</div>
+</div>
+
+<script>
+var USERS = {
+  'admin':    { password: '12345678', role: 'admin' },
+  'operator': { password: '12345678', role: 'operator' }
+};
+
+var ROUTES = {
+  'admin':    'home.html',
+  'operator': 'index.html'
+};
+
+// Если уже залогинен — редиректим
+(function() {
+  var session = getSession();
+  if (session) redirect(session.role);
+})();
+
+function getSession() {
+  try { return JSON.parse(sessionStorage.getItem('tpa_session')); } catch(e) { return null; }
+}
+
+function redirect(role) {
+  window.location.href = ROUTES[role] || 'index.html';
+}
+
+function doLogin() {
+  var username = document.getElementById('username').value.trim().toLowerCase();
+  var password = document.getElementById('password').value;
+  var errorEl = document.getElementById('error-msg');
+  var card = document.getElementById('login-card');
+
+  var user = USERS[username];
+  if (user && user.password === password) {
+    sessionStorage.setItem('tpa_session', JSON.stringify({ username: username, role: user.role }));
+    redirect(user.role);
+  } else {
+    errorEl.style.display = 'block';
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    document.getElementById('password').value = '';
+    document.getElementById('password').focus();
+  }
+}
+
+// Enter key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+
+</body>
+</html>

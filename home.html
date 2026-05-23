@@ -354,11 +354,7 @@
 </div>
 
 <script>
-  (function() {
-  var s = JSON.parse(sessionStorage.getItem('tpa_session') || 'null');
-  if (!s) window.location.href = 'login.html';
-})();
-  
+(function(){var s=JSON.parse(sessionStorage.getItem("tpa_session")||"null");if(!s)window.location.href="login.html";})();
 function updateClock() {
   var now = new Date();
   var h = now.getHours(), m = now.getMinutes();

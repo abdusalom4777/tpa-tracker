@@ -1,3 +1,7 @@
+(function() {
+  var s = JSON.parse(sessionStorage.getItem('tpa_session') || 'null');
+  if (!s) window.location.href = 'login.html';
+})();
 <!DOCTYPE html>
 <html lang="ru">
 <head>

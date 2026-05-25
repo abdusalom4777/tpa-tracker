@@ -431,8 +431,7 @@ function renderAll() {
   var totalNorm = 0, totalProduced = 0;
   ALL_MACHINES.forEach(function(m){
     var ms = getMachineStats(m.id, todayRecs);
-    var n = (ms.s1.cycleTime>0?calcNorm(ms.s1.cycleTime,ms.s1.cavities,1):0) +
-            (ms.s2.cycleTime>0?calcNorm(ms.s2.cycleTime,ms.s2.cavities,2):0);
+    var n = (ms.norm1||0) + (ms.norm2||0);
     if (n>0){ totalNorm+=n; totalProduced+=ms.good; }
   });
   var normPct = totalNorm>0 ? Math.round(totalProduced/totalNorm*100) : null;
@@ -453,8 +452,8 @@ function renderAll() {
 function getMachineStats(machineId, recs) {
   var s = { good:0, defects:0, cycles:0, plannedDown:0, unplannedDown:0, operators:{}, parts:[],
     molds:{},
-    s1:{good:0,cycleTime:0,cavities:0,count:0},
-    s2:{good:0,cycleTime:0,cavities:0,count:0} };
+    s1:{good:0,cycleTime:0,cavities:0,count:0,shifts:{}},
+    s2:{good:0,cycleTime:0,cavities:0,count:0,shifts:{}} };
   recs.forEach(function(r){
     var key = r.machine ? r.machine.split(' ')[0] : '';
     if (key !== machineId) return;
@@ -476,8 +475,22 @@ function getMachineStats(machineId, recs) {
     var isS1 = r.shift && r.shift.indexOf('Смена 1')>=0;
     var sd = isS1 ? s.s1 : s.s2;
     sd.good += r.good||0;
-    if (r.cycleTime>0){ sd.cycleTime=sd.count>0?(sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1):r.cycleTime; sd.cavities=r.cavities||1; sd.count++; }
+    if (r.cycleTime>0){
+      sd.cycleTime=sd.count>0?(sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1):r.cycleTime;
+      sd.cavities=r.cavities||1; sd.count++;
+      // Норма по уникальной смене за день
+      if (r.date) {
+        var shiftKey = r.date + (isS1 ? '_s1' : '_s2');
+        var shiftNorm = Math.floor((3600/r.cycleTime)*(r.cavities||1)*(isS1?10:12));
+        if (!sd.shifts[shiftKey] || shiftNorm > sd.shifts[shiftKey]) {
+          sd.shifts[shiftKey] = shiftNorm;
+        }
+      }
+    }
   });
+  // Считаем норму как сумму уникальных смен
+  s.norm1 = Object.values(s.s1.shifts).reduce(function(a,v){return a+v;},0);
+  s.norm2 = Object.values(s.s2.shifts).reduce(function(a,v){return a+v;},0);
   return s;
 }
 
@@ -489,15 +502,9 @@ function renderGrid(gridId, machines, todayRecs) {
     var total = s.good + s.defects;
     var defRate = total ? Math.round(s.defects/total*100) : 0;
     var hasData = total > 0;
-    var norm1 = s.s1.cycleTime>0 ? calcNorm(s.s1.cycleTime,s.s1.cavities,1) : 0;
-    var norm2 = s.s2.cycleTime>0 ? calcNorm(s.s2.cycleTime,s.s2.cavities,2) : 0;
-    // Use best available cycleTime for missing shift
-    var ct = s.s1.cycleTime>0 ? s.s1.cycleTime : s.s2.cycleTime;
-    var cav = s.s1.cycleTime>0 ? s.s1.cavities : s.s2.cavities;
-    if (norm1===0 && ct>0) norm1 = calcNorm(ct, cav, 1);
-    if (norm2===0 && ct>0) norm2 = calcNorm(ct, cav, 2);
-    var normDay = norm1+norm2; // всегда 22 часа
-    // % от суточной нормы (22 часа = 100%)
+    var norm1 = s.norm1 || 0;
+    var norm2 = s.norm2 || 0;
+    var normDay = norm1 + norm2;
     var pct1 = norm1>0 ? Math.round(s.s1.good/norm1*100) : null;
     var pct2 = norm2>0 ? Math.round(s.s2.good/norm2*100) : null;
     var pctDay = normDay>0 ? Math.round(s.good/normDay*100) : null;
@@ -590,8 +597,8 @@ function renderCharts(todayRecs) {
 
   ALL_MACHINES.forEach(function(m) {
     var s = getMachineStats(m.id, todayRecs);
-    var norm1 = s.s1.cycleTime > 0 ? calcNorm(s.s1.cycleTime, s.s1.cavities, 1) : 0;
-    var norm2 = s.s2.cycleTime > 0 ? calcNorm(s.s2.cycleTime, s.s2.cavities, 2) : 0;
+    var norm1 = s.norm1 || 0;
+    var norm2 = s.norm2 || 0;
     var normDay = norm1 + norm2;
     var pct = normDay > 0 ? Math.round(s.good / normDay * 100) : 0;
 

@@ -83,6 +83,13 @@
   td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); }
   tr:last-child td { border-bottom: none; }
 </style>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <meta name="theme-color" content="#185FA5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ТПА Трекер">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
 
@@ -261,11 +268,24 @@ function renderOpRating(records) {
   var ops = {};
   records.forEach(function(r) {
     var op = r.operator || '—';
-    if (!ops[op]) ops[op] = { good: 0, norm: 0 };
+    if (!ops[op]) ops[op] = { good: 0, shifts: {} };
     ops[op].good += r.good || 0;
-    ops[op].norm += calcNormShift(r.cycleTime, r.cavities, r.shift);
+    // Норма по уникальной смене — один раз за смену
+    if (r.date && r.cycleTime > 0) {
+      var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
+      var shiftKey = r.date + '_' + r.machine + (isS2 ? '_s2' : '_s1');
+      var shiftNorm = Math.floor((3600 / r.cycleTime) * (r.cavities || 1) * (isS2 ? 12 : 10));
+      if (!ops[op].shifts[shiftKey] || shiftNorm > ops[op].shifts[shiftKey]) {
+        ops[op].shifts[shiftKey] = shiftNorm;
+      }
+    }
   });
-  var list = Object.entries(ops).map(function(e) {
+  var ops2 = {};
+  Object.entries(ops).forEach(function(e) {
+    var normTotal = Object.values(e[1].shifts).reduce(function(s,v){return s+v;},0);
+    ops2[e[0]] = { good: e[1].good, norm: normTotal };
+  });
+  var list = Object.entries(ops2).map(function(e) {
     var pct = e[1].norm > 0 ? Math.round(e[1].good / e[1].norm * 100) : 0;
     return { name: e[0], good: e[1].good, pct: pct };
   }).sort(function(a,b){ return b.pct - a.pct; });
@@ -307,21 +327,22 @@ function renderMachineRating(records) {
   var machines = {};
   records.forEach(function(r) {
     var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machines[key]) machines[key] = { good: 0, cycleTime: 0, cavities: 0, days: {} };
+    if (!machines[key]) machines[key] = { good: 0, shifts: {} };
     machines[key].good += r.good || 0;
-    if (r.date) machines[key].days[r.date] = true;
-    if (r.cycleTime > 0) {
-      machines[key].cycleTime = r.cycleTime;
-      machines[key].cavities = r.cavities;
+    if (r.date && r.cycleTime > 0) {
+      var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
+      var shiftKey = r.date + (isS2 ? '_s2' : '_s1');
+      var shiftNorm = Math.floor((3600 / r.cycleTime) * (r.cavities || 1) * (isS2 ? 12 : 10));
+      if (!machines[key].shifts[shiftKey] || shiftNorm > machines[key].shifts[shiftKey]) {
+        machines[key].shifts[shiftKey] = shiftNorm;
+      }
     }
   });
   var list = Object.entries(machines).map(function(e) {
     var m = e[1];
-    var normPerDay = calcNormDay(m.cycleTime, m.cavities);
-    var daysCount = Object.keys(m.days).length;
-    var normTotal = normPerDay * daysCount;
+    var normTotal = Object.values(m.shifts).reduce(function(s, v){ return s + v; }, 0);
     var pct = normTotal > 0 ? Math.round(m.good / normTotal * 100) : 0;
-    return { name: e[0], good: m.good, pct: pct, days: daysCount };
+    return { name: e[0], good: m.good, pct: pct, days: Object.keys(m.shifts).length };
   }).filter(function(m){ return m.good > 0; }).sort(function(a,b){ return b.pct - a.pct; });
   if (!list.length) { document.getElementById('machine-rating').innerHTML = '<div class="empty">Нет данных</div>'; return; }
   var maxPct = list[0].pct || 1;

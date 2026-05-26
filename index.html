@@ -67,11 +67,48 @@
   }
   .topbar-title { font-size: 17px; font-weight: 600; }
   .topbar-sub { font-size: 12px; color: var(--text2); }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
   .shift-badge {
     background: var(--green-bg); color: var(--green-text);
     font-size: 12px; font-weight: 600;
     padding: 4px 10px; border-radius: 20px;
   }
+
+  /* ✅ НОВОЕ: Индикатор онлайн/офлайн */
+  .net-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600;
+    padding: 4px 8px; border-radius: 20px;
+    transition: all 0.3s;
+  }
+  .net-badge.online  { background: var(--green-bg); color: var(--green-text); }
+  .net-badge.offline { background: var(--red-bg);   color: var(--red-text); }
+  .net-badge.syncing { background: var(--amber-bg); color: var(--amber-text); }
+  .net-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .net-badge.online  .net-dot { background: var(--green); }
+  .net-badge.offline .net-dot { background: var(--red); }
+  .net-badge.syncing .net-dot { background: var(--amber-text); animation: pulse 1s infinite; }
+
+  /* ✅ НОВОЕ: Счётчик неотправленных */
+  .pending-badge {
+    background: var(--red-bg); color: var(--red-text);
+    font-size: 11px; font-weight: 700;
+    padding: 4px 8px; border-radius: 20px;
+    cursor: pointer;
+    display: none;
+  }
+  .pending-badge.visible { display: inline-flex; align-items: center; gap: 4px; }
+
+  /* ✅ НОВОЕ: Баннер офлайн */
+  .offline-banner {
+    display: none;
+    background: var(--amber-bg); color: var(--amber-text);
+    font-size: 13px; font-weight: 500;
+    padding: 8px 16px;
+    text-align: center;
+    border-bottom: 1px solid rgba(133,79,11,0.2);
+  }
+  .offline-banner.visible { display: block; }
 
   /* TABS */
   .tabs {
@@ -106,14 +143,11 @@
     font-size: 14px; font-weight: 600; color: var(--text);
     margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
   }
-  .card-title svg { opacity: 0.6; }
 
   /* FORM */
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
   .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  @media (max-width: 480px) {
-    .grid2, .grid3 { grid-template-columns: 1fr 1fr; }
-  }
+  @media (max-width: 480px) { .grid2, .grid3 { grid-template-columns: 1fr 1fr; } }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label { font-size: 12px; color: var(--text2); font-weight: 500; }
   .field input, .field select {
@@ -127,8 +161,7 @@
     -webkit-appearance: none;
   }
   .field input:focus, .field select:focus {
-    outline: none;
-    border-color: var(--blue);
+    outline: none; border-color: var(--blue);
     background: var(--surface);
     box-shadow: 0 0 0 3px rgba(24,95,165,0.15);
   }
@@ -172,11 +205,7 @@
   /* METRICS */
   .metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 12px; }
   @media (min-width: 600px) { .metrics { grid-template-columns: repeat(4, 1fr); } }
-  .metric {
-    background: var(--surface2);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-  }
+  .metric { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; }
   .metric-label { font-size: 11px; color: var(--text2); font-weight: 500; margin-bottom: 4px; }
   .metric-value { font-size: 24px; font-weight: 700; color: var(--text); }
   .metric-unit { font-size: 12px; color: var(--text2); margin-left: 2px; font-weight: 400; }
@@ -194,28 +223,20 @@
   tr:last-child td { border-bottom: none; }
 
   /* BADGES */
-  .badge {
-    display: inline-block; padding: 3px 8px;
-    border-radius: 20px; font-size: 11px; font-weight: 600;
-  }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
   .badge-ok { background: var(--green-bg); color: var(--green-text); }
   .badge-warn { background: var(--amber-bg); color: var(--amber-text); }
   .badge-err { background: var(--red-bg); color: var(--red-text); }
   .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
 
   /* STATUS */
-  .status-bar {
-    padding: 10px 14px; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; margin-top: 8px;
-  }
+  .status-bar { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; margin-top: 8px; }
   .status-ok { background: var(--green-bg); color: var(--green-text); }
   .status-err { background: var(--red-bg); color: var(--red-text); }
   .status-info { background: var(--blue-bg); color: var(--blue-text); }
 
   /* INSTRUCTION */
-  .step {
-    display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start;
-  }
+  .step { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
   .step-num {
     min-width: 28px; height: 28px;
     background: var(--blue); color: #fff;
@@ -252,20 +273,10 @@
   .dash-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 12px; margin-bottom: 12px;
   }
-  .machine-card {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  .machine-card-header {
-    padding: 10px 14px;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 0.5px solid var(--border);
-  }
+  .machine-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .machine-card-header { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border); }
   .machine-name { font-size: 15px; font-weight: 700; }
   .machine-type { font-size: 11px; color: var(--text2); margin-top: 1px; }
   .machine-card-body { padding: 12px 14px; }
@@ -284,15 +295,12 @@
   .machine-detail-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
   .machine-detail-row span:last-child { color: var(--text); font-weight: 500; }
   .no-data-card { opacity: 0.45; }
-  .status-dot-ok { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green); margin-right:5px; }
+  .status-dot-ok   { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green);      margin-right:5px; }
   .status-dot-warn { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--amber-text); margin-right:5px; }
-  .status-dot-err { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--red); margin-right:5px; }
-  .status-dot-off { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--text3); margin-right:5px; }
+  .status-dot-err  { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--red);        margin-right:5px; }
+  .status-dot-off  { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--text3);      margin-right:5px; }
 
-  .sync-status {
-    font-size: 12px; color: var(--text2);
-    display: flex; align-items: center; gap: 6px; margin-top: 8px;
-  }
+  .sync-status { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; margin-top: 8px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
   .dot.connected { background: var(--green); }
   .dot.syncing { background: var(--amber-text); animation: pulse 1s infinite; }
@@ -301,12 +309,28 @@
 </head>
 <body>
 
+<!-- ✅ НОВОЕ: Баннер офлайн -->
+<div class="offline-banner" id="offline-banner">
+  📵 Нет подключения к интернету — записи сохраняются локально и будут отправлены автоматически при восстановлении связи
+</div>
+
 <div class="topbar">
   <div>
     <div class="topbar-title">⚙️ Учёт продукции ТПА</div>
     <div class="topbar-sub" id="topbar-sub">Загрузка...</div>
   </div>
-  <div class="shift-badge" id="shift-badge">Смена 1</div>
+  <div class="topbar-right">
+    <!-- ✅ НОВОЕ: Счётчик неотправленных -->
+    <div class="pending-badge" id="pending-badge" onclick="showTab('setup', document.querySelectorAll('.tab')[6])" title="Перейти к синхронизации">
+      📤 <span id="pending-count">0</span> не отпр.
+    </div>
+    <!-- ✅ НОВОЕ: Индикатор сети -->
+    <div class="net-badge online" id="net-badge">
+      <div class="net-dot"></div>
+      <span id="net-text">Онлайн</span>
+    </div>
+    <div class="shift-badge" id="shift-badge">Смена 1</div>
+  </div>
 </div>
 
 <div class="tabs">
@@ -323,7 +347,6 @@
 
 <!-- ===== ВВОД ДАННЫХ ===== -->
 <div class="section active" id="tab-entry">
-
   <div class="card">
     <div class="card-title">👤 Смена и оператор</div>
     <div class="grid2">
@@ -396,30 +419,12 @@
       </div>
     </div>
     <div class="grid3">
-      <div class="field">
-        <label>Кол-во гнёзд</label>
-        <input type="number" id="cavities" min="1" value="1">
-      </div>
-      <div class="field">
-        <label>Выпущено циклов</label>
-        <input type="number" id="cycles" min="0" placeholder="0">
-      </div>
-      <div class="field">
-        <label>Время цикла (сек)</label>
-        <input type="number" id="cycle-time" min="0" step="0.1" placeholder="45.5">
-      </div>
-      <div class="field">
-        <label>Годные детали (шт)</label>
-        <input type="number" id="good-parts" min="0" placeholder="0">
-      </div>
-      <div class="field">
-        <label>Брак (шт)</label>
-        <input type="number" id="defect-parts" min="0" value="0">
-      </div>
-      <div class="field">
-        <label>Вес детали (г)</label>
-        <input type="number" id="part-weight" min="0" step="0.1" placeholder="0.0">
-      </div>
+      <div class="field"><label>Кол-во гнёзд</label><input type="number" id="cavities" min="1" value="1"></div>
+      <div class="field"><label>Выпущено циклов</label><input type="number" id="cycles" min="0" placeholder="0"></div>
+      <div class="field"><label>Время цикла (сек)</label><input type="number" id="cycle-time" min="0" step="0.1" placeholder="45.5"></div>
+      <div class="field"><label>Годные детали (шт)</label><input type="number" id="good-parts" min="0" placeholder="0"></div>
+      <div class="field"><label>Брак (шт)</label><input type="number" id="defect-parts" min="0" value="0"></div>
+      <div class="field"><label>Вес детали (г)</label><input type="number" id="part-weight" min="0" step="0.1" placeholder="0.0"></div>
     </div>
     <div class="field">
       <label>Причина брака / Примечание</label>
@@ -430,18 +435,9 @@
   <div class="card">
     <div class="card-title">🔧 Простои</div>
     <div class="grid3">
-      <div class="field">
-        <label>Плановые (мин)</label>
-        <input type="number" id="planned-down" min="0" value="0">
-      </div>
-      <div class="field">
-        <label>Неплановые (мин)</label>
-        <input type="number" id="unplanned-down" min="0" value="0">
-      </div>
-      <div class="field">
-        <label>Причина остановки</label>
-        <input type="text" id="downtime-reason" placeholder="поломка, наладка...">
-      </div>
+      <div class="field"><label>Плановые (мин)</label><input type="number" id="planned-down" min="0" value="0"></div>
+      <div class="field"><label>Неплановые (мин)</label><input type="number" id="unplanned-down" min="0" value="0"></div>
+      <div class="field"><label>Причина остановки</label><input type="text" id="downtime-reason" placeholder="поломка, наладка..."></div>
     </div>
   </div>
 
@@ -456,71 +452,47 @@
     </div>
   </div>
 
-  <button class="btn-primary" onclick="addEntry()">
-    💾 Сохранить запись
-  </button>
+  <button class="btn-primary" onclick="addEntry()">💾 Сохранить запись</button>
   <div id="save-msg" style="display:none"></div>
 </div>
 
 <!-- ===== ЖУРНАЛ ===== -->
 <div class="section" id="tab-log">
   <div class="filter-row">
-    <div class="field">
-      <label>Оператор</label>
-      <input type="text" id="filter-op" placeholder="поиск..." oninput="renderLog()">
-    </div>
+    <div class="field"><label>Оператор</label><input type="text" id="filter-op" placeholder="поиск..." oninput="renderLog()"></div>
     <div class="field">
       <label>Машина</label>
       <select id="filter-machine" onchange="renderLog()">
         <option value="">Все</option>
         <optgroup label="Литьё">
-          <option>T1 — Hwamda 170</option>
-          <option>T2 — Hwamda 170</option>
-          <option>T3 — Airfa 130</option>
-          <option>T4 — Airfa 130</option>
-          <option>T5 — Yongjian 160</option>
-          <option>T6 — Yongjian 160</option>
-          <option>T7 — Hanplas 130</option>
-          <option>T8 — Hanplas 170</option>
+          <option>T1 — Hwamda 170</option><option>T2 — Hwamda 170</option>
+          <option>T3 — Airfa 130</option><option>T4 — Airfa 130</option>
+          <option>T5 — Yongjian 160</option><option>T6 — Yongjian 160</option>
+          <option>T7 — Hanplas 130</option><option>T8 — Hanplas 170</option>
           <option>T9 — Airfa 220</option>
         </optgroup>
         <optgroup label="Выдув">
-          <option>V1 — Juneng 5L</option>
-          <option>V2 — Juneng 5L</option>
-          <option>V3 — Eski kok 5L</option>
-          <option>V4 — Yashil 2L</option>
+          <option>V1 — Juneng 5L</option><option>V2 — Juneng 5L</option>
+          <option>V3 — Eski kok 5L</option><option>V4 — Yashil 2L</option>
           <option>V5 — Juneng 5L</option>
         </optgroup>
       </select>
     </div>
-    <div class="field">
-      <label>Дата</label>
-      <input type="date" id="filter-date" oninput="renderLog()">
-    </div>
+    <div class="field"><label>Дата</label><input type="date" id="filter-date" oninput="renderLog()"></div>
   </div>
-
-  <div class="card" style="padding:0; overflow:hidden;">
+  <div class="card" style="padding:0;overflow:hidden;">
     <div class="table-scroll">
       <table>
-        <thead>
-          <tr>
-            <th>Дата</th><th>Оператор</th><th>ТПА</th>
-            <th>Деталь</th><th>Годные</th><th>Брак</th>
-            <th>% брак</th><th>Статус</th><th></th>
-          </tr>
-        </thead>
-        <tbody id="log-body">
-          <tr><td colspan="9" class="empty">Нет записей</td></tr>
-        </tbody>
+        <thead><tr><th>Дата</th><th>Оператор</th><th>ТПА</th><th>Деталь</th><th>Годные</th><th>Брак</th><th>% брак</th><th>Статус</th><th></th></tr></thead>
+        <tbody id="log-body"><tr><td colspan="9" class="empty">Нет записей</td></tr></tbody>
       </table>
     </div>
   </div>
-
-  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
     <button class="btn-green" onclick="loadFromSheets()" id="btn-load-sheets">☁️ Загрузить из Google Sheets</button>
     <button class="btn-secondary" onclick="exportCSV()">📥 Скачать CSV</button>
   </div>
-  <div id="load-msg" style="display:none; margin-top:8px;"></div>
+  <div id="load-msg" style="display:none;margin-top:8px;"></div>
 </div>
 
 <!-- ===== ИТОГИ ===== -->
@@ -531,20 +503,12 @@
     <div class="metric"><div class="metric-label">Уровень брака</div><div class="metric-value" id="s-rate">0<span class="metric-unit">%</span></div></div>
     <div class="metric"><div class="metric-label">Простои</div><div class="metric-value" id="s-down">0<span class="metric-unit">мин</span></div></div>
   </div>
-
-  <div class="card">
-    <div class="card-title">🏭 По машинам</div>
-    <div id="machine-stats" class="empty">Нет данных</div>
-  </div>
-  <div class="card">
-    <div class="card-title">👷 По операторам</div>
-    <div id="op-stats" class="empty">Нет данных</div>
-  </div>
+  <div class="card"><div class="card-title">🏭 По машинам</div><div id="machine-stats" class="empty">Нет данных</div></div>
+  <div class="card"><div class="card-title">👷 По операторам</div><div id="op-stats" class="empty">Нет данных</div></div>
 </div>
 
 <!-- ===== ДАШБОРД ===== -->
 <div class="section" id="tab-dashboard">
-
   <div class="filter-row" style="margin-bottom:12px;">
     <div class="field">
       <label>Период</label>
@@ -555,47 +519,24 @@
         <option value="all">Всё время</option>
       </select>
     </div>
-    <div class="field">
-      <label>Дата (для фильтра)</label>
-      <input type="date" id="dash-date" oninput="renderDashboard()">
-    </div>
+    <div class="field"><label>Дата (для фильтра)</label><input type="date" id="dash-date" oninput="renderDashboard()"></div>
   </div>
-
-  <div id="dashboard-content">
-    <div class="empty">Нет данных. Загрузите данные из Google Sheets.</div>
-  </div>
-
+  <div id="dashboard-content"><div class="empty">Нет данных. Загрузите данные из Google Sheets.</div></div>
 </div>
 
 <!-- ===== СПРАВОЧНИК ПРЕСС-ФОРМ ===== -->
 <div class="section" id="tab-molds">
-
   <div class="card">
     <div class="card-title">➕ Добавить пресс-форму</div>
     <div class="grid2">
-      <div class="field">
-        <label>№ Пресс-формы</label>
-        <input type="text" id="new-mold-id" placeholder="ПФ-01">
-      </div>
-      <div class="field">
-        <label>Артикул детали</label>
-        <input type="text" id="new-mold-article" placeholder="sds, pp, krishka...">
-      </div>
-      <div class="field">
-        <label>Название / Описание</label>
-        <input type="text" id="new-mold-label" placeholder="Крышка 500мл">
-      </div>
-      <div class="field">
-        <label>Станок (необязательно)</label>
-        <input type="text" id="new-mold-machine" placeholder="T1, T2...">
-      </div>
+      <div class="field"><label>№ Пресс-формы</label><input type="text" id="new-mold-id" placeholder="ПФ-01"></div>
+      <div class="field"><label>Артикул детали</label><input type="text" id="new-mold-article" placeholder="sds, pp, krishka..."></div>
+      <div class="field"><label>Название / Описание</label><input type="text" id="new-mold-label" placeholder="Крышка 500мл"></div>
+      <div class="field"><label>Станок (необязательно)</label><input type="text" id="new-mold-machine" placeholder="T1, T2..."></div>
     </div>
-    <button class="btn-primary" onclick="addMold()" style="margin-top:4px;">
-      ➕ Добавить
-    </button>
+    <button class="btn-primary" onclick="addMold()" style="margin-top:4px;">➕ Добавить</button>
     <div id="mold-add-msg" style="display:none;margin-top:8px;"></div>
   </div>
-
   <div class="card" style="padding:0;overflow:hidden;">
     <div style="padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:14px;font-weight:600;">Список пресс-форм</span>
@@ -603,16 +544,11 @@
     </div>
     <div class="table-scroll">
       <table>
-        <thead>
-          <tr><th>№ Пресс-формы</th><th>Артикул</th><th>Название</th><th>Станок</th><th></th></tr>
-        </thead>
-        <tbody id="molds-table-body">
-          <tr><td colspan="4" class="empty">Нет пресс-форм. Добавьте выше.</td></tr>
-        </tbody>
+        <thead><tr><th>№ Пресс-формы</th><th>Артикул</th><th>Название</th><th>Станок</th><th></th></tr></thead>
+        <tbody id="molds-table-body"><tr><td colspan="4" class="empty">Нет пресс-форм.</td></tr></tbody>
       </table>
     </div>
   </div>
-
   <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
     <button class="btn-secondary" onclick="exportMoldsCSV()">📥 Экспорт CSV</button>
     <button class="btn-secondary" onclick="importMoldsPrompt()">📤 Импорт (вставить список)</button>
@@ -622,39 +558,25 @@
       <div class="card-title">📤 Импорт списка</div>
       <div class="field" style="margin-bottom:8px;">
         <label>Вставьте список (каждая строка: № пресс-формы, Название)</label>
-        <textarea id="import-text" rows="6" style="width:100%;padding:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;resize:vertical;" placeholder="ПФ-01, Крышка 500мл&#10;ПФ-02, Корпус&#10;ПФ-03"></textarea>
+        <textarea id="import-text" rows="6" style="width:100%;padding:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;resize:vertical;" placeholder="ПФ-01, Крышка 500мл&#10;ПФ-02, Корпус"></textarea>
       </div>
       <button class="btn-primary" onclick="importMolds()">Импортировать</button>
     </div>
   </div>
-
 </div>
 
 <!-- ===== СПРАВОЧНИК ОПЕРАТОРОВ ===== -->
 <div class="section" id="tab-operators">
-
   <div class="card">
     <div class="card-title">➕ Добавить оператора</div>
     <div class="grid3">
-      <div class="field">
-        <label>ФИО оператора</label>
-        <input type="text" id="new-op-name" placeholder="Иванов И.И.">
-      </div>
-      <div class="field">
-        <label>Табельный № (необязательно)</label>
-        <input type="text" id="new-op-num" placeholder="ТН-001">
-      </div>
-      <div class="field">
-        <label>Станок (необязательно)</label>
-        <input type="text" id="new-op-machine" placeholder="T1, T2...">
-      </div>
+      <div class="field"><label>ФИО оператора</label><input type="text" id="new-op-name" placeholder="Иванов И.И."></div>
+      <div class="field"><label>Табельный № (необязательно)</label><input type="text" id="new-op-num" placeholder="ТН-001"></div>
+      <div class="field"><label>Станок (необязательно)</label><input type="text" id="new-op-machine" placeholder="T1, T2..."></div>
     </div>
-    <button class="btn-primary" onclick="addOperator()" style="margin-top:4px;">
-      ➕ Добавить
-    </button>
+    <button class="btn-primary" onclick="addOperator()" style="margin-top:4px;">➕ Добавить</button>
     <div id="op-add-msg" style="display:none;margin-top:8px;"></div>
   </div>
-
   <div class="card" style="padding:0;overflow:hidden;">
     <div style="padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:14px;font-weight:600;">Список операторов</span>
@@ -662,27 +584,20 @@
     </div>
     <div class="table-scroll">
       <table>
-        <thead>
-          <tr><th>ФИО</th><th>Таб. №</th><th>Станок</th><th></th></tr>
-        </thead>
-        <tbody id="operators-table-body">
-          <tr><td colspan="4" class="empty">Нет операторов. Добавьте выше.</td></tr>
-        </tbody>
+        <thead><tr><th>ФИО</th><th>Таб. №</th><th>Станок</th><th></th></tr></thead>
+        <tbody id="operators-table-body"><tr><td colspan="4" class="empty">Нет операторов.</td></tr></tbody>
       </table>
     </div>
   </div>
-
 </div>
 
 <!-- ===== НАСТРОЙКА GOOGLE SHEETS ===== -->
 <div class="section" id="tab-setup">
-
   <div class="card">
     <div class="card-title">🔗 Подключение к Google Sheets</div>
     <div class="field" style="margin-bottom:12px;">
       <label>URL скрипта (Apps Script Web App URL)</label>
-      <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/АА.../exec"
-        oninput="saveGsUrl()">
+      <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/АА.../exec" oninput="saveGsUrl()">
     </div>
     <div class="sync-status">
       <div class="dot" id="sync-dot"></div>
@@ -696,33 +611,29 @@
 
   <div class="card">
     <div class="card-title">📋 Пошаговая инструкция</div>
-
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
         <div class="step-title">Создайте новую Google Таблицу</div>
-        <div class="step-desc">Откройте <strong>sheets.google.com</strong>, нажмите «+» (Пустая таблица). Дайте название, например: <em>Журнал ТПА</em>.</div>
+        <div class="step-desc">Откройте <strong>sheets.google.com</strong>, нажмите «+». Дайте название: <em>Журнал ТПА</em>.</div>
       </div>
     </div>
-
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
         <div class="step-title">Откройте редактор скриптов</div>
-        <div class="step-desc">В меню таблицы: <strong>Расширения → Apps Script</strong>. Откроется редактор кода.</div>
+        <div class="step-desc">В меню таблицы: <strong>Расширения → Apps Script</strong>.</div>
       </div>
     </div>
-
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <div class="step-title">Вставьте этот код (скопируйте целиком)</div>
+        <div class="step-title">Вставьте этот код</div>
         <button class="copy-btn" onclick="copyScript()">📋 Копировать код</button>
         <div class="code-block" id="apps-script-code">function doPost(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var d = JSON.parse(e.postData.contents);
-
     if (d.action === "addMold") {
       var sheet = ss.getSheetByName("Пресс-формы") || ss.insertSheet("Пресс-формы");
       if (sheet.getLastRow() === 0) sheet.appendRow(["№ Пресс-формы","Артикул","Название","Станок"]);
@@ -733,18 +644,14 @@
       sheet.appendRow([d.id, d.article||"", d.label||"", d.machine||""]);
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
-
     if (d.action === "deleteMold") {
       var sheet = ss.getSheetByName("Пресс-формы");
       if (sheet && sheet.getLastRow() > 1) {
         var data = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues();
-        for (var i = data.length-1; i >= 0; i--) {
-          if (String(data[i][0]) === String(d.id)) { sheet.deleteRow(i+2); break; }
-        }
+        for (var i = data.length-1; i >= 0; i--) { if (String(data[i][0]) === String(d.id)) { sheet.deleteRow(i+2); break; } }
       }
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
-
     if (d.action === "addOperator") {
       var sheet = ss.getSheetByName("Операторы") || ss.insertSheet("Операторы");
       if (sheet.getLastRow() === 0) sheet.appendRow(["ФИО","Таб. №","Станок"]);
@@ -755,18 +662,14 @@
       sheet.appendRow([d.name, d.num||"", d.machine||""]);
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
-
     if (d.action === "deleteOperator") {
       var sheet = ss.getSheetByName("Операторы");
       if (sheet && sheet.getLastRow() > 1) {
         var data = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues();
-        for (var i = data.length-1; i >= 0; i--) {
-          if (String(data[i][0]) === String(d.name)) { sheet.deleteRow(i+2); break; }
-        }
+        for (var i = data.length-1; i >= 0; i--) { if (String(data[i][0]) === String(d.name)) { sheet.deleteRow(i+2); break; } }
       }
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
-
     var sheet = ss.getSheetByName("Журнал") || ss.insertSheet("Журнал");
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(["Дата","Смена","Оператор","ТПА","Материал","Деталь","Пресс-форма","Гнёзда","Циклов","Время цикла (с)","Годные","Брак","% брака","Вес дет. (г)","Прич. брака","Пл. простой (мин)","Внепл. простой (мин)","Прич. простоя","Время отправки","Авто режим"]);
@@ -779,49 +682,32 @@
     return ContentService.createTextOutput(JSON.stringify({status:"error",msg:err.toString()})).setMimeType(ContentService.MimeType.JSON);
   }
 }
-
 function doGet(e) {
   try {
     var action = e&&e.parameter&&e.parameter.action;
     var callback = e&&e.parameter&&e.parameter.callback;
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-
     if (action === "getMolds") {
-      var sheet = ss.getSheetByName("Пресс-формы");
-      var molds = [];
-      if (sheet && sheet.getLastRow() > 1) {
-        var data = sheet.getRange(2,1,sheet.getLastRow()-1,4).getValues();
-        data.forEach(function(row){ if(row[0]) molds.push({id:String(row[0]),article:String(row[1]||""),label:String(row[2]||""),machine:String(row[3]||"")}); });
-      }
+      var sheet = ss.getSheetByName("Пресс-формы"); var molds = [];
+      if (sheet && sheet.getLastRow() > 1) { var data = sheet.getRange(2,1,sheet.getLastRow()-1,4).getValues(); data.forEach(function(row){ if(row[0]) molds.push({id:String(row[0]),article:String(row[1]||""),label:String(row[2]||""),machine:String(row[3]||"")}); }); }
       var json = JSON.stringify({status:"ok",molds:molds});
       if (callback) return ContentService.createTextOutput(callback+"("+json+")").setMimeType(ContentService.MimeType.JAVASCRIPT);
       return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
     }
-
     if (action === "getOperators") {
-      var sheet = ss.getSheetByName("Операторы");
-      var operators = [];
-      if (sheet && sheet.getLastRow() > 1) {
-        var data = sheet.getRange(2,1,sheet.getLastRow()-1,3).getValues();
-        data.forEach(function(row){ if(row[0]) operators.push({name:String(row[0]),num:String(row[1]||""),machine:String(row[2]||"")}); });
-      }
+      var sheet = ss.getSheetByName("Операторы"); var operators = [];
+      if (sheet && sheet.getLastRow() > 1) { var data = sheet.getRange(2,1,sheet.getLastRow()-1,3).getValues(); data.forEach(function(row){ if(row[0]) operators.push({name:String(row[0]),num:String(row[1]||""),machine:String(row[2]||"")}); }); }
       var json = JSON.stringify({status:"ok",operators:operators});
       if (callback) return ContentService.createTextOutput(callback+"("+json+")").setMimeType(ContentService.MimeType.JAVASCRIPT);
       return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
     }
-
     if (action === "getLog") {
-      var sheet = ss.getSheetByName("Журнал");
-      var rows = [];
-      if (sheet&&sheet.getLastRow()>1) {
-        var data = sheet.getRange(2,1,sheet.getLastRow()-1,20).getValues();
-        data.forEach(function(row){ if(row[0]) rows.push(row.map(function(v){return String(v||"");})); });
-      }
+      var sheet = ss.getSheetByName("Журнал"); var rows = [];
+      if (sheet&&sheet.getLastRow()>1) { var data = sheet.getRange(2,1,sheet.getLastRow()-1,20).getValues(); data.forEach(function(row){ if(row[0]) rows.push(row.map(function(v){return String(v||"");})); }); }
       var json = JSON.stringify({status:"ok",rows:rows});
       if (callback) return ContentService.createTextOutput(callback+"("+json+")").setMimeType(ContentService.MimeType.JAVASCRIPT);
       return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
     }
-
     return ContentService.createTextOutput(JSON.stringify({status:"ok",msg:"TPA Tracker ready v5"})).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({status:"error",msg:err.toString()})).setMimeType(ContentService.MimeType.JSON);
@@ -829,42 +715,23 @@ function doGet(e) {
 }</div>
       </div>
     </div>
-
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
         <div class="step-title">Сохраните и опубликуйте скрипт</div>
         <div class="step-desc">
-          1. Нажмите <strong>💾 Сохранить проект</strong> (Ctrl+S)<br>
-          2. Нажмите <strong>Развернуть → Новое развёртывание</strong><br>
-          3. Тип: <strong>Веб-приложение</strong><br>
-          4. «Выполнять как»: <strong>Я (ваш аккаунт)</strong><br>
-          5. «Доступ»: <strong>Все (Anyone)</strong><br>
-          6. Нажмите <strong>Развернуть</strong> → разрешите доступ<br>
-          7. Скопируйте <strong>URL веб-приложения</strong>
+          1. Нажмите <strong>💾 Сохранить проект</strong><br>
+          2. <strong>Развернуть → Новое развёртывание</strong><br>
+          3. Тип: <strong>Веб-приложение</strong>, Доступ: <strong>Все (Anyone)</strong><br>
+          4. Скопируйте <strong>URL веб-приложения</strong>
         </div>
       </div>
     </div>
-
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <div class="step-title">Создайте лист «Пресс-формы» в таблице</div>
-        <div class="step-desc">
-          Внизу таблицы нажмите «+» (добавить лист), назовите его точно: <strong>Пресс-формы</strong><br>
-          Заполните данные:<br>
-          — Столбец <strong>A</strong>: № пресс-формы (напр. ПФ-01, ПФ-02...)<br>
-          — Столбец <strong>B</strong>: Название / описание (необязательно)<br><br>
-          Приложение автоматически загрузит этот список при открытии. Кнопка 🔄 рядом с полем — обновить вручную.
-        </div>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">6</div>
-      <div class="step-body">
         <div class="step-title">Вставьте URL в поле выше</div>
-        <div class="step-desc">Вернитесь на вкладку «Google», вставьте скопированный URL в поле «URL скрипта» — и всё готово! Теперь каждая новая запись будет автоматически отправляться в таблицу, а список пресс-форм загружаться при открытии.</div>
+        <div class="step-desc">Вернитесь на вкладку «Google», вставьте скопированный URL.</div>
       </div>
     </div>
   </div>
@@ -874,104 +741,181 @@ function doGet(e) {
 
 <script>
 (function(){var s=JSON.parse(sessionStorage.getItem("tpa_session")||"null");if(!s)window.location.href="login.html";})();
+
 // ===== STORAGE =====
-function loadRecords() {
-  try { return JSON.parse(localStorage.getItem('tpa_v2') || '[]'); } catch(e){ return []; }
-}
-function saveRecords(r) {
-  try { localStorage.setItem('tpa_v2', JSON.stringify(r)); } catch(e){}
-}
-function loadGsUrl() { return localStorage.getItem('tpa_gs_url') || ''; }
-function saveGsUrl() {
-  var url = document.getElementById('gs-url').value.trim();
-  localStorage.setItem('tpa_gs_url', url);
+function loadRecords(){try{return JSON.parse(localStorage.getItem('tpa_v2')||'[]');}catch(e){return[];}}
+function saveRecords(r){try{localStorage.setItem('tpa_v2',JSON.stringify(r));}catch(e){}}
+function loadGsUrl(){return localStorage.getItem('tpa_gs_url')||'';}
+function saveGsUrl(){
+  var url=document.getElementById('gs-url').value.trim();
+  localStorage.setItem('tpa_gs_url',url);
   updateSyncStatus();
   loadMolds();
 }
 
+// =====================================================
+// ✅ ОНЛАЙН / ОФЛАЙН / АВТОСИНХРОНИЗАЦИЯ
+// =====================================================
+var _isOnline = navigator.onLine;
+var _autoSyncTimer = null;
+
+function updateNetBadge() {
+  var badge = document.getElementById('net-badge');
+  var text  = document.getElementById('net-text');
+  var banner = document.getElementById('offline-banner');
+  if (_isOnline) {
+    badge.className = 'net-badge online';
+    text.textContent = 'Онлайн';
+    banner.classList.remove('visible');
+  } else {
+    badge.className = 'net-badge offline';
+    text.textContent = 'Офлайн';
+    banner.classList.add('visible');
+  }
+}
+
+// ✅ Счётчик неотправленных — показывается в топбаре
+function updatePendingBadge() {
+  var records = loadRecords();
+  var pending = records.filter(function(r){ return !r.synced; }).length;
+  var badge = document.getElementById('pending-badge');
+  var cnt   = document.getElementById('pending-count');
+  cnt.textContent = pending;
+  if (pending > 0) {
+    badge.classList.add('visible');
+  } else {
+    badge.classList.remove('visible');
+  }
+}
+
+// ✅ Автоотправка при восстановлении интернета
+function onCameOnline() {
+  _isOnline = true;
+  updateNetBadge();
+  // Небольшая задержка чтобы сеть стабилизировалась
+  clearTimeout(_autoSyncTimer);
+  _autoSyncTimer = setTimeout(function() {
+    var url = loadGsUrl();
+    if (!url) return;
+    var records = loadRecords();
+    var pending = records.filter(function(r){ return !r.synced; });
+    if (!pending.length) return;
+
+    // Показать статус синхронизации в топбаре
+    var badge = document.getElementById('net-badge');
+    var text  = document.getElementById('net-text');
+    badge.className = 'net-badge syncing';
+    text.textContent = 'Синхронизация ' + pending.length + '...';
+
+    var sent = 0;
+    function next(i) {
+      if (i >= pending.length) {
+        // Готово
+        updateNetBadge();
+        updatePendingBadge();
+        updateSyncStatus();
+        // Показать уведомление
+        var msg = document.getElementById('save-msg');
+        msg.className = 'status-bar status-ok';
+        msg.style.display = 'block';
+        msg.textContent = '✅ Автосинхронизация: отправлено ' + sent + ' записей в Google Sheets';
+        setTimeout(function(){ msg.style.display='none'; }, 4000);
+        return;
+      }
+      sendToSheets(pending[i], function(ok) {
+        if (ok) {
+          sent++;
+          var recs = loadRecords();
+          for (var j=0; j<recs.length; j++) {
+            if (recs[j].id === pending[i].id) { recs[j].synced = true; break; }
+          }
+          saveRecords(recs);
+        }
+        next(i + 1);
+      });
+    }
+    next(0);
+  }, 2000);
+}
+
+function onWentOffline() {
+  _isOnline = false;
+  updateNetBadge();
+}
+
+// Слушаем события браузера
+window.addEventListener('online',  onCameOnline);
+window.addEventListener('offline', onWentOffline);
+
+// =====================================================
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('entry-date').value = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
-  document.getElementById('dash-date').value = (function(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');})();
+  document.getElementById('entry-date').value = todayStr();
+  document.getElementById('dash-date').value  = todayStr();
   document.getElementById('gs-url').value = loadGsUrl();
   updateClock();
   updateSyncStatus();
+  updateNetBadge();      // ✅
+  updatePendingBadge();  // ✅
   loadMolds();
   setInterval(updateClock, 30000);
-  // Auto-load from Google Sheets on startup
-  if (loadGsUrl()) {
-    autoLoadFromSheets();
-  }
+  if (loadGsUrl()) autoLoadFromSheets();
   renderMoldsTable();
   loadOperators();
 });
 
+function todayStr() {
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 
 function loadAndRender() {
   renderLog();
   if (loadGsUrl()) autoLoadFromSheets();
   setTimeout(function(){ renderLog(); updateStats(); }, 2000);
 }
+
 function autoLoadFromSheets() {
   var url = loadGsUrl();
   if (!url) return;
   var cbName = 'autoLogCb_' + Date.now();
   var script = document.createElement('script');
   var done = false;
-
   window[cbName] = function(data) {
-    done = true;
-    delete window[cbName];
+    done = true; delete window[cbName];
     if (document.body.contains(script)) document.body.removeChild(script);
     if (data && data.rows && data.rows.length) {
-      var imported = data.rows.map(function(r, i) {
+      var imported = data.rows.map(function(r,i){
         return {
-          id: Date.now() + i,
-          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p)){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r[0]), shift: r[1]||'', operator: r[2]||'',
-          machine: r[3]||'', material: r[4]||'', partName: r[5]||'',
-          moldId: r[6]||'', cavities: parseInt(r[7])||1,
-          cycles: parseInt(r[8])||0, cycleTime: parseFloat(r[9])||0,
-          good: parseInt(r[10])||0, defects: parseInt(r[11])||0,
-          weight: parseFloat(r[13])||0, defectNote: r[14]||'',
-          plannedDown: parseInt(r[15])||0, unplannedDown: parseInt(r[16])||0,
-          downtimeReason: r[17]||'', synced: true
+          id: Date.now()+i,
+          date:(function(d){if(!d)return'';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p))return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}catch(e){}return d;})(r[0]),
+          shift:r[1]||'', operator:r[2]||'', machine:r[3]||'', material:r[4]||'',
+          partName:r[5]||'', moldId:r[6]||'', cavities:parseInt(r[7])||1,
+          cycles:parseInt(r[8])||0, cycleTime:parseFloat(r[9])||0,
+          good:parseInt(r[10])||0, defects:parseInt(r[11])||0,
+          weight:parseFloat(r[13])||0, defectNote:r[14]||'',
+          plannedDown:parseInt(r[15])||0, unplannedDown:parseInt(r[16])||0,
+          downtimeReason:r[17]||'', synced:true
         };
       });
       saveRecords(imported);
-      // Update topbar to show sync status
-      document.getElementById('topbar-sub').textContent += ' · ☁️ ' + imported.length + ' записей';
+      updatePendingBadge(); // ✅
     }
   };
-
-  script.onerror = function() { if(!done){done=true; delete window[cbName];} };
-  setTimeout(function() { if(!done){done=true; delete window[cbName]; if(document.body.contains(script)) document.body.removeChild(script);} }, 8000);
+  script.onerror = function(){ if(!done){done=true;delete window[cbName];} };
+  setTimeout(function(){ if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);} },8000);
   script.src = url + '?action=getLog&callback=' + cbName;
   document.body.appendChild(script);
 }
 
-// ===== LOAD MOLDS FROM GOOGLE SHEETS =====
 function loadMolds() {
   var url = loadGsUrl();
   var sel = document.getElementById('mold-id');
   var statusEl = document.getElementById('mold-load-status');
-
-  if (!url) {
-    statusEl.textContent = '(настройте Google в ⚙)';
-    sel.innerHTML = '<option value="">— введите вручную —</option>';
-    sel.disabled = false;
-    // fallback: allow manual input by converting to text-like select
-    return;
-  }
-
-  statusEl.textContent = '⏳ загрузка...';
-  fetch(url + '?action=getMolds', { method: 'GET', mode: 'no-cors' })
-    .then(function() {
-      // no-cors returns opaque response, use JSONP approach instead
-      return fetchMoldsJsonp(url);
-    })
-    .catch(function() {
-      useCachedMolds(sel, statusEl);
-    });
+  if (!url) { statusEl.textContent='(настройте Google в ⚙)'; sel.innerHTML='<option value="">— введите вручную —</option>'; return; }
+  statusEl.textContent='⏳ загрузка...';
+  fetchMoldsJsonp(url);
 }
 
 function fetchMoldsJsonp(url) {
@@ -980,969 +924,537 @@ function fetchMoldsJsonp(url) {
   var cbName = 'moldsCb_' + Date.now();
   var script = document.createElement('script');
   var done = false;
-
   window[cbName] = function(data) {
-    done = true;
-    delete window[cbName];
-    document.body.removeChild(script);
+    done = true; delete window[cbName]; document.body.removeChild(script);
     if (data && data.molds && data.molds.length) {
       var cached = data.molds;
       try { localStorage.setItem('tpa_molds_cache', JSON.stringify(cached)); } catch(e){}
       populateMolds(sel, cached);
       statusEl.textContent = '✅ ' + cached.length + ' шт.';
-    } else {
-      useCachedMolds(sel, statusEl);
-    }
+    } else { useCachedMolds(sel, statusEl); }
   };
-
-  script.onerror = function() {
-    if (!done) { done = true; delete window[cbName]; useCachedMolds(sel, statusEl); }
-  };
-  setTimeout(function() {
-    if (!done) { done = true; delete window[cbName]; useCachedMolds(sel, statusEl); }
-  }, 5000);
-
+  script.onerror = function(){ if(!done){done=true;delete window[cbName];useCachedMolds(sel,statusEl);} };
+  setTimeout(function(){ if(!done){done=true;delete window[cbName];useCachedMolds(sel,statusEl);} },5000);
   script.src = url + '?action=getMolds&callback=' + cbName;
   document.body.appendChild(script);
 }
 
 function useCachedMolds(sel, statusEl) {
-  if (moldsCache.length) {
-    updateMoldSelect();
-    statusEl.textContent = '📦 ' + moldsCache.length + ' шт.';
-  } else {
-    sel.innerHTML = '<option value="">— нет данных —</option>';
-    statusEl.textContent = '⚠️ нет данных';
-  }
+  if (moldsCache.length) { updateMoldSelect(); statusEl.textContent='📦 '+moldsCache.length+' шт.'; }
+  else { sel.innerHTML='<option value="">— нет данных —</option>'; statusEl.textContent='⚠️ нет данных'; }
 }
-
-function populateMolds(sel, molds) {
-  moldsCache = molds;
-  updateMoldSelect();
-  renderMoldsTable();
-}
-
+function populateMolds(sel, molds) { moldsCache = molds; updateMoldSelect(); renderMoldsTable(); }
 function reloadMolds() {
-  var sel = document.getElementById('mold-id');
-  var statusEl = document.getElementById('mold-load-status');
-  sel.innerHTML = '<option value="">— загрузка... —</option>';
-  statusEl.textContent = '⏳';
+  document.getElementById('mold-id').innerHTML='<option value="">— загрузка... —</option>';
+  document.getElementById('mold-load-status').textContent='⏳';
   loadMolds();
 }
 
 function updateClock() {
-  var now = new Date();
-  var h = now.getHours(), m = now.getMinutes();
-  var hh = String(h).padStart(2,'0'), mm = String(m).padStart(2,'0');
-  var d = now.toLocaleDateString('ru-RU');
-  document.getElementById('topbar-sub').textContent = d + ' · ' + hh + ':' + mm;
-  var isShift1 = h >= 8 && h < 18;
-  var badge = document.getElementById('shift-badge');
-  badge.textContent = isShift1 ? 'Смена 1 (08–18)' : 'Смена 2 (18–08)';
+  var now=new Date(), h=now.getHours(), m=now.getMinutes();
+  document.getElementById('topbar-sub').textContent=now.toLocaleDateString('ru-RU')+' · '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  var isS1=h>=8&&h<18;
+  var badge=document.getElementById('shift-badge');
+  badge.textContent=isS1?'Смена 1 (08–18)':'Смена 2 (18–08)';
 }
 
 function updateSyncStatus() {
-  var url = loadGsUrl();
-  var dot = document.getElementById('sync-dot');
-  var txt = document.getElementById('sync-status-text');
-  var btn = document.getElementById('btn-sync');
-  var records = loadRecords();
-  var pending = records.filter(function(r){ return !r.synced; }).length;
-
+  var url=loadGsUrl();
+  var dot=document.getElementById('sync-dot');
+  var txt=document.getElementById('sync-status-text');
+  var btn=document.getElementById('btn-sync');
+  var records=loadRecords();
+  var pending=records.filter(function(r){return !r.synced;}).length;
   if (!url) {
-    dot.className = 'dot';
-    txt.textContent = 'Не настроено — введите URL скрипта';
-    btn.disabled = true;
+    dot.className='dot'; txt.textContent='Не настроено — введите URL скрипта'; btn.disabled=true;
   } else {
-    dot.className = 'dot connected';
-    txt.textContent = url ? ('URL настроен · Ожидают отправки: ' + pending + ' записей') : '';
-    btn.disabled = pending === 0;
-    btn.textContent = pending > 0 ? ('☁️ Отправить ' + pending + ' записей') : '✅ Все записи синхронизированы';
+    dot.className='dot connected';
+    txt.textContent='URL настроен · Ожидают отправки: '+pending+' записей';
+    btn.disabled=pending===0;
+    btn.textContent=pending>0?('☁️ Отправить '+pending+' записей'):'✅ Все записи синхронизированы';
   }
+  updatePendingBadge(); // ✅ синхронизируем счётчик
 }
 
 // ===== TABS =====
 function showTab(id, btn) {
-  document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
-  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
-  document.getElementById('tab-' + id).classList.add('active');
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('tab-'+id).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (id === 'stats') { loadAndRender(); updateStats(); }
-  if (id === 'dashboard') { renderDashboard(); }
-  if (id === 'log') { loadAndRender(); }
-  if (id === 'setup') updateSyncStatus();
-  if (id === 'molds') { renderMoldsTable(); }
-  if (id === 'operators') { renderOperatorsTable(); }
+  if (id==='stats')     { loadAndRender(); updateStats(); }
+  if (id==='dashboard') { renderDashboard(); }
+  if (id==='log')       { loadAndRender(); }
+  if (id==='setup')     { updateSyncStatus(); }
+  if (id==='molds')     { renderMoldsTable(); }
+  if (id==='operators') { renderOperatorsTable(); }
 }
 
 // ===== ADD ENTRY =====
 function addEntry() {
-  var op = document.getElementById('operator').value.trim();
-  var machine = document.getElementById('machine').value;
-  var date = document.getElementById('entry-date').value;
-  var partName = document.getElementById('part-name').value.trim();
-
-  var missing = [];
+  var op=document.getElementById('operator').value.trim();
+  var machine=document.getElementById('machine').value;
+  var date=document.getElementById('entry-date').value;
+  var partName=document.getElementById('part-name').value.trim();
+  var missing=[];
   if (!op) missing.push('Оператор');
   if (!machine) missing.push('Машина (ТПА)');
   if (!date) missing.push('Дата');
   if (!document.getElementById('material').value.trim()) missing.push('Материал');
   if (!partName) missing.push('Наименование детали');
   if (!document.getElementById('mold-id').value) missing.push('Пресс-форма');
-  if (!document.getElementById('cavities').value || parseInt(document.getElementById('cavities').value) < 1) missing.push('Кол-во гнёзд');
-  if (!document.getElementById('cycles').value || parseInt(document.getElementById('cycles').value) < 1) missing.push('Выпущено циклов');
-  if (!document.getElementById('cycle-time').value || parseFloat(document.getElementById('cycle-time').value) <= 0) missing.push('Время цикла');
-  if (!document.getElementById('good-parts').value && document.getElementById('good-parts').value !== '0') missing.push('Годные детали');
-  if (!document.getElementById('part-weight').value || parseFloat(document.getElementById('part-weight').value) <= 0) missing.push('Вес детали');
+  if (!document.getElementById('cavities').value || parseInt(document.getElementById('cavities').value)<1) missing.push('Кол-во гнёзд');
+  if (!document.getElementById('cycles').value || parseInt(document.getElementById('cycles').value)<1) missing.push('Выпущено циклов');
+  if (!document.getElementById('cycle-time').value || parseFloat(document.getElementById('cycle-time').value)<=0) missing.push('Время цикла');
+  if (!document.getElementById('good-parts').value && document.getElementById('good-parts').value!=='0') missing.push('Годные детали');
+  if (!document.getElementById('part-weight').value || parseFloat(document.getElementById('part-weight').value)<=0) missing.push('Вес детали');
+  if (missing.length>0) { alert('Заполните обязательные поля:\n\n• '+missing.join('\n• ')); return; }
 
-  if (missing.length > 0) {
-    alert('Заполните обязательные поля:\n\n• ' + missing.join('\n• '));
-    return;
-  }
-
-  var now_ts = new Date();
-  var timeStr = now_ts.toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  var rec = {
-    id: Date.now(),
-    date: date,
-    sentAt: date + ' ' + timeStr,
-    shift: document.getElementById('shift').value,
-    operator: op,
-    machine: machine,
-    material: document.getElementById('material').value.trim(),
-    partName: partName,
-    moldId: document.getElementById('mold-id').value.trim(),
-    cavities: parseInt(document.getElementById('cavities').value) || 1,
-    cycles: parseInt(document.getElementById('cycles').value) || 0,
-    cycleTime: parseFloat(document.getElementById('cycle-time').value) || 0,
-    good: parseInt(document.getElementById('good-parts').value) || 0,
-    defects: parseInt(document.getElementById('defect-parts').value) || 0,
-    weight: parseFloat(document.getElementById('part-weight').value) || 0,
-    defectNote: document.getElementById('defect-note').value.trim(),
-    plannedDown: parseInt(document.getElementById('planned-down').value) || 0,
-    unplannedDown: parseInt(document.getElementById('unplanned-down').value) || 0,
-    downtimeReason: document.getElementById('downtime-reason').value.trim(),
-    autoMode: document.getElementById('auto-mode').checked ? 1 : 0,
-    synced: false
+  var now_ts=new Date();
+  var timeStr=now_ts.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  var rec={
+    id:Date.now(), date:date, sentAt:date+' '+timeStr,
+    shift:document.getElementById('shift').value,
+    operator:op, machine:machine,
+    material:document.getElementById('material').value.trim(),
+    partName:partName,
+    moldId:document.getElementById('mold-id').value.trim(),
+    cavities:parseInt(document.getElementById('cavities').value)||1,
+    cycles:parseInt(document.getElementById('cycles').value)||0,
+    cycleTime:parseFloat(document.getElementById('cycle-time').value)||0,
+    good:parseInt(document.getElementById('good-parts').value)||0,
+    defects:parseInt(document.getElementById('defect-parts').value)||0,
+    weight:parseFloat(document.getElementById('part-weight').value)||0,
+    defectNote:document.getElementById('defect-note').value.trim(),
+    plannedDown:parseInt(document.getElementById('planned-down').value)||0,
+    unplannedDown:parseInt(document.getElementById('unplanned-down').value)||0,
+    downtimeReason:document.getElementById('downtime-reason').value.trim(),
+    autoMode:document.getElementById('auto-mode').checked?1:0,
+    synced:false
   };
 
-  var records = loadRecords();
-  records.push(rec);
-  saveRecords(records);
+  var records=loadRecords(); records.push(rec); saveRecords(records);
+  updatePendingBadge(); // ✅
 
-  // show success
-  var msg = document.getElementById('save-msg');
-  msg.className = 'status-bar status-ok';
-  msg.style.display = 'block';
+  var msg=document.getElementById('save-msg');
+  msg.className='status-bar status-ok'; msg.style.display='block';
 
-  var gsUrl = loadGsUrl();
-  if (gsUrl) {
-    msg.textContent = '💾 Сохранено, отправляем в Google Sheets...';
+  var gsUrl=loadGsUrl();
+  if (gsUrl && _isOnline) { // ✅ отправляем только если онлайн
+    msg.textContent='💾 Сохранено, отправляем в Google Sheets...';
     sendToSheets(rec, function(ok) {
       if (ok) {
-        rec.synced = true;
-        var recs = loadRecords();
-        var idx = recs.findIndex(function(r){ return r.id === rec.id; });
-        if (idx >= 0) { recs[idx].synced = true; saveRecords(recs); }
-        msg.textContent = '✅ Сохранено и отправлено в Google Sheets!';
+        rec.synced=true;
+        var recs=loadRecords();
+        for(var i=0;i<recs.length;i++){if(recs[i].id===rec.id){recs[i].synced=true;break;}}
+        saveRecords(recs);
+        msg.textContent='✅ Сохранено и отправлено в Google Sheets!';
       } else {
-        msg.className = 'status-bar status-err';
-        msg.textContent = '💾 Сохранено локально. Ошибка отправки в Google Sheets (отправьте позже во вкладке «Google»).';
+        msg.className='status-bar status-err';
+        msg.textContent='💾 Сохранено локально. Отправится автоматически при восстановлении связи.';
       }
-      setTimeout(function(){ msg.style.display = 'none'; }, 4000);
+      updatePendingBadge(); // ✅
+      setTimeout(function(){msg.style.display='none';},4000);
     });
+  } else if (gsUrl && !_isOnline) { // ✅ офлайн — честно говорим что отправится потом
+    msg.className='status-bar status-err';
+    msg.textContent='📵 Нет интернета — запись сохранена локально. Отправится автоматически при подключении.';
+    setTimeout(function(){msg.style.display='none';},5000);
   } else {
-    msg.textContent = '💾 Запись сохранена (Google Sheets не настроен)';
-    setTimeout(function(){ msg.style.display = 'none'; }, 3000);
+    msg.textContent='💾 Запись сохранена (Google Sheets не настроен)';
+    setTimeout(function(){msg.style.display='none';},3000);
   }
 
-  // reset fields
-  ['good-parts','defect-parts','cycles','cycle-time','defect-note',
-   'unplanned-down','downtime-reason','part-name'].forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.value = '';
+  ['good-parts','defect-parts','cycles','cycle-time','defect-note','unplanned-down','downtime-reason','part-name'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
   });
-  document.getElementById('planned-down').value = '0';
-  document.getElementById('defect-parts').value = '0';
-  document.getElementById('mold-id').value = '';
-  document.getElementById('auto-mode').checked = false;
-  document.getElementById('operator').value = '';
+  document.getElementById('planned-down').value='0';
+  document.getElementById('defect-parts').value='0';
+  document.getElementById('mold-id').value='';
+  document.getElementById('auto-mode').checked=false;
+  document.getElementById('operator').value='';
   updateSyncStatus();
 }
 
 // ===== GOOGLE SHEETS =====
 function sendToSheets(rec, callback) {
-  var url = loadGsUrl();
-  if (!url) { callback(false); return; }
-  fetch(url, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(rec)
-  }).then(function() {
-    callback(true);
-  }).catch(function() {
-    callback(false);
-  });
+  var url=loadGsUrl(); if(!url){callback(false);return;}
+  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(rec)})
+    .then(function(){callback(true);}).catch(function(){callback(false);});
 }
 
 function syncPending() {
-  var url = loadGsUrl();
-  if (!url) { alert('Сначала введите URL скрипта'); return; }
-  var records = loadRecords();
-  var pending = records.filter(function(r){ return !r.synced; });
-  if (!pending.length) { alert('Все записи уже синхронизированы'); return; }
-
-  var btn = document.getElementById('btn-sync');
-  btn.disabled = true;
-  btn.textContent = '⏳ Отправка...';
-
-  var msg = document.getElementById('sync-msg');
-  msg.style.display = 'block';
-  msg.className = 'status-bar status-info';
-  msg.textContent = 'Отправка ' + pending.length + ' записей...';
-
-  var sent = 0;
-  function next(i) {
-    if (i >= pending.length) {
-      msg.className = 'status-bar status-ok';
-      msg.textContent = '✅ Отправлено записей: ' + sent + ' из ' + pending.length;
+  var url=loadGsUrl(); if(!url){alert('Сначала введите URL скрипта');return;}
+  var records=loadRecords();
+  var pending=records.filter(function(r){return !r.synced;});
+  if(!pending.length){alert('Все записи уже синхронизированы');return;}
+  var btn=document.getElementById('btn-sync');
+  btn.disabled=true; btn.textContent='⏳ Отправка...';
+  var msg=document.getElementById('sync-msg');
+  msg.style.display='block'; msg.className='status-bar status-info';
+  msg.textContent='Отправка '+pending.length+' записей...';
+  var sent=0;
+  function next(i){
+    if(i>=pending.length){
+      msg.className='status-bar status-ok';
+      msg.textContent='✅ Отправлено записей: '+sent+' из '+pending.length;
       updateSyncStatus();
+      updatePendingBadge(); // ✅
       return;
     }
-    sendToSheets(pending[i], function(ok) {
-      if (ok) {
+    sendToSheets(pending[i],function(ok){
+      if(ok){
         sent++;
-        var recs = loadRecords();
-        var idx = recs.findIndex(function(r){ return r.id === pending[i].id; });
-        if (idx >= 0) { recs[idx].synced = true; saveRecords(recs); }
+        var recs=loadRecords();
+        for(var j=0;j<recs.length;j++){if(recs[j].id===pending[i].id){recs[j].synced=true;break;}}
+        saveRecords(recs);
       }
-      next(i + 1);
+      next(i+1);
     });
   }
   next(0);
 }
 
 // ===== LOG =====
-function renderLog() {
-  var tbody = document.getElementById('log-body');
-  var filterOp = (document.getElementById('filter-op').value || '').toLowerCase();
-  var filterM = document.getElementById('filter-machine').value;
-  var filterD = document.getElementById('filter-date').value;
-  var records = loadRecords();
+function normalizeDate(d){if(!d)return'';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p))return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}catch(e){}return d;}
 
-  var filtered = records.filter(function(r) {
-    if (filterOp && r.operator.toLowerCase().indexOf(filterOp) < 0) return false;
-    if (filterM && r.machine !== filterM) return false;
-    var rd2 = (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p)){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r.date);
-    if (filterD && rd2 !== filterD) return false;
+function renderLog() {
+  var tbody=document.getElementById('log-body');
+  var filterOp=(document.getElementById('filter-op').value||'').toLowerCase();
+  var filterM=document.getElementById('filter-machine').value;
+  var filterD=document.getElementById('filter-date').value;
+  var records=loadRecords();
+  var filtered=records.filter(function(r){
+    if(filterOp&&r.operator.toLowerCase().indexOf(filterOp)<0)return false;
+    if(filterM&&r.machine!==filterM)return false;
+    if(filterD&&normalizeDate(r.date)!==filterD)return false;
     return true;
   });
-
-  if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty">Нет записей</td></tr>';
-    return;
-  }
-
-  filtered.sort(function(a,b){ return b.id - a.id; });
-  tbody.innerHTML = filtered.map(function(r) {
-    var total = r.good + r.defects;
-    var rate = total ? Math.round(r.defects / total * 100) : 0;
-    var bc = rate === 0 ? 'badge-ok' : rate < 5 ? 'badge-warn' : 'badge-err';
-    var bt = rate === 0 ? 'Норма' : rate < 5 ? 'Внимание' : 'Брак';
-    var syncIcon = r.synced ? '☁️' : '📱';
-    return '<tr>' +
-      '<td>' + (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p))return p.toLocaleDateString('ru-RU');}catch(e){}return d;})(r.date) + '</td>' +
-      '<td>' + r.operator + '</td>' +
-      '<td><strong>' + r.machine + '</strong></td>' +
-      '<td>' + r.partName + '</td>' +
-      '<td style="color:var(--green)">' + r.good.toLocaleString() + '</td>' +
-      '<td>' + r.defects + '</td>' +
-      '<td>' + rate + '%</td>' +
-      '<td><span class="badge ' + bc + '">' + bt + '</span> ' + syncIcon + '</td>' +
-      '<td><button class="btn-danger" onclick="deleteRecord(' + r.id + ')">🗑</button></td>' +
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="9" class="empty">Нет записей</td></tr>';return;}
+  filtered.sort(function(a,b){return b.id-a.id;});
+  tbody.innerHTML=filtered.map(function(r){
+    var total=r.good+r.defects, rate=total?Math.round(r.defects/total*100):0;
+    var bc=rate===0?'badge-ok':rate<5?'badge-warn':'badge-err';
+    var bt=rate===0?'Норма':rate<5?'Внимание':'Брак';
+    var syncIcon=r.synced?'☁️':'📱';
+    return'<tr>'+
+      '<td>'+(function(d){if(!d)return'';try{var p=new Date(d);if(!isNaN(p))return p.toLocaleDateString('ru-RU');}catch(e){}return d;})(r.date)+'</td>'+
+      '<td>'+r.operator+'</td><td><strong>'+r.machine+'</strong></td><td>'+r.partName+'</td>'+
+      '<td style="color:var(--green)">'+r.good.toLocaleString()+'</td><td>'+r.defects+'</td>'+
+      '<td>'+rate+'%</td>'+
+      '<td><span class="badge '+bc+'">'+bt+'</span> '+syncIcon+'</td>'+
+      '<td><button class="btn-danger" onclick="deleteRecord('+r.id+')">🗑</button></td>'+
       '</tr>';
   }).join('');
 }
 
-function deleteRecord(id) {
-  if (!confirm('Удалить запись?')) return;
-  var records = loadRecords().filter(function(r){ return r.id !== id; });
-  saveRecords(records);
-  renderLog();
-  updateSyncStatus();
+function deleteRecord(id){
+  if(!confirm('Удалить запись?'))return;
+  saveRecords(loadRecords().filter(function(r){return r.id!==id;}));
+  renderLog(); updateSyncStatus(); updatePendingBadge(); // ✅
 }
 
 // ===== STATS =====
+function calcNorm(cycleTime,cavities,shiftNum){if(!cycleTime||cycleTime<=0||!cavities)return 0;return Math.floor((3600/cycleTime)*cavities*(shiftNum===1?10:12));}
+function calcNormDay(cycleTime,cavities){if(!cycleTime||cycleTime<=0||!cavities)return 0;return Math.floor((3600/cycleTime)*cavities*22);}
+
 function updateStats() {
-  var records = loadRecords();
-  var total = records.reduce(function(s,r){ return s + r.good; }, 0);
-  var defects = records.reduce(function(s,r){ return s + r.defects; }, 0);
-  var rate = (total + defects) ? Math.round(defects / (total + defects) * 100) : 0;
-  var down = records.reduce(function(s,r){ return s + (r.plannedDown||0) + (r.unplannedDown||0); }, 0);
-
-  document.getElementById('s-total').innerHTML = total.toLocaleString() + '<span class="metric-unit">шт</span>';
-  document.getElementById('s-defects').innerHTML = defects.toLocaleString() + '<span class="metric-unit">шт</span>';
-  document.getElementById('s-rate').innerHTML = rate + '<span class="metric-unit">%</span>';
-  document.getElementById('s-down').innerHTML = down + '<span class="metric-unit">мин</span>';
-
-  // Table with norm per machine
-  var mm = {}, om = {};
-  records.forEach(function(r) {
-    var key = r.machine || '—';
-    if (!mm[key]) mm[key] = { good:0, defects:0, s1:{good:0,cycleTime:0,cavities:0,count:0}, s2:{good:0,cycleTime:0,cavities:0,count:0} };
-    mm[key].good += r.good||0;
-    mm[key].defects += r.defects||0;
-    var isS1 = r.shift && (r.shift.indexOf('Смена 1') >= 0 || r.shift.trim().startsWith('1'));
-    var sd = isS1 ? mm[key].s1 : mm[key].s2;
-    sd.good += r.good||0;
-    if (r.cycleTime > 0) {
-      sd.cycleTime = sd.count > 0 ? (sd.cycleTime * sd.count + r.cycleTime) / (sd.count+1) : r.cycleTime;
-      sd.cavities = r.cavities||1;
-      sd.count++;
-    }
-    if (!om[r.operator]) om[r.operator] = { good:0, defects:0 };
-    om[r.operator].good += r.good||0; om[r.operator].defects += r.defects||0;
+  var records=loadRecords();
+  var total=records.reduce(function(s,r){return s+r.good;},0);
+  var defects=records.reduce(function(s,r){return s+r.defects;},0);
+  var rate=(total+defects)?Math.round(defects/(total+defects)*100):0;
+  var down=records.reduce(function(s,r){return s+(r.plannedDown||0)+(r.unplannedDown||0);},0);
+  document.getElementById('s-total').innerHTML=total.toLocaleString()+'<span class="metric-unit">шт</span>';
+  document.getElementById('s-defects').innerHTML=defects.toLocaleString()+'<span class="metric-unit">шт</span>';
+  document.getElementById('s-rate').innerHTML=rate+'<span class="metric-unit">%</span>';
+  document.getElementById('s-down').innerHTML=down+'<span class="metric-unit">мин</span>';
+  var mm={},om={};
+  records.forEach(function(r){
+    var key=r.machine||'—';
+    if(!mm[key])mm[key]={good:0,defects:0,s1:{good:0,cycleTime:0,cavities:0,count:0},s2:{good:0,cycleTime:0,cavities:0,count:0}};
+    mm[key].good+=r.good||0; mm[key].defects+=r.defects||0;
+    var isS1=r.shift&&(r.shift.indexOf('Смена 1')>=0||r.shift.trim().startsWith('1'));
+    var sd=isS1?mm[key].s1:mm[key].s2;
+    sd.good+=r.good||0;
+    if(r.cycleTime>0){sd.cycleTime=sd.count>0?(sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1):r.cycleTime;sd.cavities=r.cavities||1;sd.count++;}
+    if(!om[r.operator])om[r.operator]={good:0,defects:0};
+    om[r.operator].good+=r.good||0; om[r.operator].defects+=r.defects||0;
   });
-
-  // Machine table with norm
-  var msEl = document.getElementById('machine-stats');
-  if (!Object.keys(mm).length) {
-    msEl.innerHTML = '<div class="empty">Нет данных</div>';
-  } else {
-    var rows = Object.entries(mm).sort().map(function(e) {
-      var n = e[0], v = e[1];
-      var r2 = (v.good + v.defects) ? Math.round(v.defects / (v.good + v.defects) * 100) : 0;
-      var norm1 = v.s1.cycleTime > 0 ? calcNorm(v.s1.cycleTime, v.s1.cavities, 1) : 0;
-      var norm2 = v.s2.cycleTime > 0 ? calcNorm(v.s2.cycleTime, v.s2.cavities, 2) : 0;
-      var ct = v.s1.cycleTime > 0 ? v.s1.cycleTime : v.s2.cycleTime;
-      var cav = v.s1.cycleTime > 0 ? v.s1.cavities : v.s2.cavities;
-      if (norm1 === 0 && ct > 0) norm1 = calcNorm(ct, cav, 1);
-      if (norm2 === 0 && ct > 0) norm2 = calcNorm(ct, cav, 2);
-      var normDay = norm1 + norm2; // суточная норма 22ч
-      var pct = normDay > 0 ? Math.round(v.good / normDay * 100) : null;
-      var pctCell = pct !== null
-        ? '<span class="badge ' + (pct>=100?'badge-ok':pct>=80?'badge-warn':'badge-err') + '">' + (pct>=100?'✅':pct>=80?'⚠️':'❌') + ' ' + pct + '%</span>'
-        : '<span style="color:var(--text3)">—</span>';
-      var normCell = normDay > 0 ? normDay.toLocaleString() : '—';
-      return '<tr>' +
-        '<td><strong>' + n + '</strong></td>' +
-        '<td style="color:var(--green)">' + v.good.toLocaleString() + '</td>' +
-        '<td>' + v.defects + '</td>' +
-        '<td>' + r2 + '%</td>' +
-        '<td>' + normCell + '</td>' +
-        '<td>' + pctCell + '</td>' +
-        '</tr>';
+  var msEl=document.getElementById('machine-stats');
+  if(!Object.keys(mm).length){msEl.innerHTML='<div class="empty">Нет данных</div>';}
+  else{
+    var rows=Object.entries(mm).sort().map(function(e){
+      var n=e[0],v=e[1];
+      var r2=(v.good+v.defects)?Math.round(v.defects/(v.good+v.defects)*100):0;
+      var norm1=v.s1.cycleTime>0?calcNorm(v.s1.cycleTime,v.s1.cavities,1):0;
+      var norm2=v.s2.cycleTime>0?calcNorm(v.s2.cycleTime,v.s2.cavities,2):0;
+      var ct=v.s1.cycleTime>0?v.s1.cycleTime:v.s2.cycleTime, cav=v.s1.cycleTime>0?v.s1.cavities:v.s2.cavities;
+      if(norm1===0&&ct>0)norm1=calcNorm(ct,cav,1);
+      if(norm2===0&&ct>0)norm2=calcNorm(ct,cav,2);
+      var normDay=norm1+norm2;
+      var pct=normDay>0?Math.round(v.good/normDay*100):null;
+      var pctCell=pct!==null?'<span class="badge '+(pct>=100?'badge-ok':pct>=80?'badge-warn':'badge-err')+'">'+(pct>=100?'✅':pct>=80?'⚠️':'❌')+' '+pct+'%</span>':'<span style="color:var(--text3)">—</span>';
+      return'<tr><td><strong>'+n+'</strong></td><td style="color:var(--green)">'+v.good.toLocaleString()+'</td><td>'+v.defects+'</td><td>'+r2+'%</td><td>'+(normDay>0?normDay.toLocaleString():'—')+'</td><td>'+pctCell+'</td></tr>';
     }).join('');
-    msEl.innerHTML = '<div class="table-scroll"><table><thead><tr>' +
-      '<th>Машина</th><th>Годные</th><th>Брак</th><th>% брак</th><th>Норма/сутки</th><th>Выполнение</th>' +
-      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    msEl.innerHTML='<div class="table-scroll"><table><thead><tr><th>Машина</th><th>Годные</th><th>Брак</th><th>% брак</th><th>Норма/сутки</th><th>Выполнение</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
-
-  // Operator table
-  var osEl = document.getElementById('op-stats');
-  if (!Object.keys(om).length) {
-    osEl.innerHTML = '<div class="empty">Нет данных</div>';
-  } else {
-    var rows2 = Object.entries(om).sort().map(function(e) {
-      var n = e[0], v = e[1];
-      var r2 = (v.good + v.defects) ? Math.round(v.defects / (v.good + v.defects) * 100) : 0;
-      return '<tr><td>' + n + '</td>' +
-        '<td style="color:var(--green)">' + v.good.toLocaleString() + '</td>' +
-        '<td>' + v.defects + '</td><td>' + r2 + '%</td></tr>';
+  var osEl=document.getElementById('op-stats');
+  if(!Object.keys(om).length){osEl.innerHTML='<div class="empty">Нет данных</div>';}
+  else{
+    var rows2=Object.entries(om).sort().map(function(e){
+      var n=e[0],v=e[1];var r2=(v.good+v.defects)?Math.round(v.defects/(v.good+v.defects)*100):0;
+      return'<tr><td>'+n+'</td><td style="color:var(--green)">'+v.good.toLocaleString()+'</td><td>'+v.defects+'</td><td>'+r2+'%</td></tr>';
     }).join('');
-    osEl.innerHTML = '<div class="table-scroll"><table><thead><tr><th>Оператор</th><th>Годные</th><th>Брак</th><th>% брак</th></tr></thead><tbody>' + rows2 + '</tbody></table></div>';
+    osEl.innerHTML='<div class="table-scroll"><table><thead><tr><th>Оператор</th><th>Годные</th><th>Брак</th><th>% брак</th></tr></thead><tbody>'+rows2+'</tbody></table></div>';
   }
 }
 
-
-// ===== LOAD FROM GOOGLE SHEETS =====
+// ===== LOAD FROM SHEETS =====
 function loadFromSheets() {
-  var url = loadGsUrl();
-  var msg = document.getElementById('load-msg');
-  if (!url) {
-    msg.style.display = 'block';
-    msg.className = 'status-bar status-err';
-    msg.textContent = '⚠️ Google Sheets не настроен. Перейдите во вкладку 🔗 Google.';
-    setTimeout(function(){ msg.style.display='none'; }, 3000);
-    return;
-  }
-  var btn = document.getElementById('btn-load-sheets');
-  btn.disabled = true;
-  btn.textContent = '⏳ Загрузка...';
-  msg.style.display = 'block';
-  msg.className = 'status-bar status-info';
-  msg.textContent = 'Загружаем данные из Google Sheets...';
-
-  var cbName = 'logCb_' + Date.now();
-  var script = document.createElement('script');
-  var done = false;
-
-  window[cbName] = function(data) {
-    done = true;
-    delete window[cbName];
-    if (document.body.contains(script)) document.body.removeChild(script);
-    btn.disabled = false;
-    btn.textContent = '☁️ Загрузить из Google Sheets';
-
-    if (data && data.rows && data.rows.length) {
-      // Convert sheet rows to record objects
-      var imported = data.rows.map(function(r, i) {
-        return {
-          id: Date.now() + i,
-          date: r[0] || '',
-          shift: r[1] || '',
-          operator: r[2] || '',
-          machine: r[3] || '',
-          material: r[4] || '',
-          partName: r[5] || '',
-          moldId: r[6] || '',
-          cavities: parseInt(r[7]) || 1,
-          cycles: parseInt(r[8]) || 0,
-          cycleTime: parseFloat(r[9]) || 0,
-          good: parseInt(r[10]) || 0,
-          defects: parseInt(r[11]) || 0,
-          weight: parseFloat(r[13]) || 0,
-          defectNote: r[14] || '',
-          plannedDown: parseInt(r[15]) || 0,
-          unplannedDown: parseInt(r[16]) || 0,
-          downtimeReason: r[17] || '',
-          synced: true
-        };
+  var url=loadGsUrl();
+  var msg=document.getElementById('load-msg');
+  if(!url){msg.style.display='block';msg.className='status-bar status-err';msg.textContent='⚠️ Google Sheets не настроен.';setTimeout(function(){msg.style.display='none';},3000);return;}
+  var btn=document.getElementById('btn-load-sheets');
+  btn.disabled=true; btn.textContent='⏳ Загрузка...';
+  msg.style.display='block'; msg.className='status-bar status-info'; msg.textContent='Загружаем данные...';
+  var cbName='logCb_'+Date.now(), script=document.createElement('script'), done=false;
+  window[cbName]=function(data){
+    done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);
+    btn.disabled=false; btn.textContent='☁️ Загрузить из Google Sheets';
+    if(data&&data.rows&&data.rows.length){
+      var imported=data.rows.map(function(r,i){
+        return{id:Date.now()+i,date:normalizeDate(r[0]),shift:r[1]||'',operator:r[2]||'',machine:r[3]||'',material:r[4]||'',partName:r[5]||'',moldId:r[6]||'',
+          cavities:parseInt(r[7])||1,cycles:parseInt(r[8])||0,cycleTime:parseFloat(r[9])||0,
+          good:parseInt(r[10])||0,defects:parseInt(r[11])||0,weight:parseFloat(r[13])||0,
+          defectNote:r[14]||'',plannedDown:parseInt(r[15])||0,unplannedDown:parseInt(r[16])||0,
+          downtimeReason:r[17]||'',synced:true};
       });
-      saveRecords(imported);
-      renderLog();
-      updateStats();
-      msg.className = 'status-bar status-ok';
-      msg.textContent = '✅ Загружено ' + imported.length + ' записей из Google Sheets';
-    } else {
-      msg.className = 'status-bar status-err';
-      msg.textContent = '⚠️ Нет данных в таблице или ошибка загрузки';
-    }
-    setTimeout(function(){ msg.style.display='none'; }, 4000);
+      saveRecords(imported); renderLog(); updateStats();
+      updatePendingBadge(); // ✅
+      msg.className='status-bar status-ok';msg.textContent='✅ Загружено '+imported.length+' записей';
+    }else{msg.className='status-bar status-err';msg.textContent='⚠️ Нет данных';}
+    setTimeout(function(){msg.style.display='none';},4000);
   };
-
-  script.onerror = function() {
-    if (!done) {
-      done = true; delete window[cbName];
-      btn.disabled = false; btn.textContent = '☁️ Загрузить из Google Sheets';
-      msg.className = 'status-bar status-err';
-      msg.textContent = '❌ Ошибка соединения с Google Sheets';
-      setTimeout(function(){ msg.style.display='none'; }, 3000);
-    }
-  };
-  setTimeout(function() {
-    if (!done) {
-      done = true; delete window[cbName];
-      if (document.body.contains(script)) document.body.removeChild(script);
-      btn.disabled = false; btn.textContent = '☁️ Загрузить из Google Sheets';
-      msg.className = 'status-bar status-err';
-      msg.textContent = '❌ Превышено время ожидания. Проверьте подключение.';
-      setTimeout(function(){ msg.style.display='none'; }, 3000);
-    }
-  }, 8000);
-
-  script.src = url + '?action=getLog&callback=' + cbName;
+  script.onerror=function(){if(!done){done=true;delete window[cbName];btn.disabled=false;btn.textContent='☁️ Загрузить из Google Sheets';msg.className='status-bar status-err';msg.textContent='❌ Ошибка соединения';setTimeout(function(){msg.style.display='none';},3000);}};
+  setTimeout(function(){if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);btn.disabled=false;btn.textContent='☁️ Загрузить из Google Sheets';msg.className='status-bar status-err';msg.textContent='❌ Превышено время ожидания';setTimeout(function(){msg.style.display='none';},3000);}},8000);
+  script.src=url+'?action=getLog&callback='+cbName;
   document.body.appendChild(script);
 }
-
 
 // ===== DASHBOARD =====
-// Норма: (3600 / время_цикла) * гнёзда * часы_смены
-// Смена 1 (08-18) = 10 рабочих часов из 22
-// Смена 2 (18-08) = 12 рабочих часов из 22
-
-var MACHINES = [
-  {id:'T1',name:'T1',type:'Hwamda 170'},
-  {id:'T2',name:'T2',type:'Hwamda 170'},
-  {id:'T3',name:'T3',type:'Airfa 130'},
-  {id:'T4',name:'T4',type:'Airfa 130'},
-  {id:'T5',name:'T5',type:'Yongjian 160'},
-  {id:'T6',name:'T6',type:'Yongjian 160'},
-  {id:'T7',name:'T7',type:'Hanplas 130'},
-  {id:'T8',name:'T8',type:'Hanplas 170'},
-  {id:'T9',name:'T9',type:'Airfa 220'},
-  {id:'V1',name:'V1',type:'Juneng 5L'},
-  {id:'V2',name:'V2',type:'Juneng 5L'},
-  {id:'V3',name:'V3',type:'Eski kok 5L'},
-  {id:'V4',name:'V4',type:'Yashil 2L'},
-  {id:'V5',name:'V5',type:'Juneng 5L'}
+var MACHINES=[
+  {id:'T1',name:'T1',type:'Hwamda 170'},{id:'T2',name:'T2',type:'Hwamda 170'},
+  {id:'T3',name:'T3',type:'Airfa 130'},{id:'T4',name:'T4',type:'Airfa 130'},
+  {id:'T5',name:'T5',type:'Yongjian 160'},{id:'T6',name:'T6',type:'Yongjian 160'},
+  {id:'T7',name:'T7',type:'Hanplas 130'},{id:'T8',name:'T8',type:'Hanplas 170'},
+  {id:'T9',name:'T9',type:'Airfa 220'},{id:'V1',name:'V1',type:'Juneng 5L'},
+  {id:'V2',name:'V2',type:'Juneng 5L'},{id:'V3',name:'V3',type:'Eski kok 5L'},
+  {id:'V4',name:'V4',type:'Yashil 2L'},{id:'V5',name:'V5',type:'Juneng 5L'}
 ];
 
-function calcNorm(cycleTime, cavities, shiftNum) {
-  if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
-  var hours = shiftNum === 1 ? 10 : 12;
-  return Math.floor((3600 / cycleTime) * cavities * hours);
-}
-
-function calcNormDay(cycleTime, cavities) {
-  // Full day norm = 22 hours (shift1=10 + shift2=12)
-  if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
-  return Math.floor((3600 / cycleTime) * cavities * 22);
-}
-
 function renderDashboard() {
-  var period = document.getElementById('dash-period').value;
-  var dashDate = document.getElementById('dash-date').value;
-  var records = loadRecords();
-  var now = new Date();
-  var todayStr = now.toISOString().slice(0,10);
-  var h = now.getHours();
-  var isShift1Now = h >= 8 && h < 18;
-
-  var filtered = records.filter(function(r) {
-    if (period === 'today') return r.date === todayStr;
-    if (period === 'shift') {
-      var wantShift = isShift1Now ? 'Смена 1' : 'Смена 2';
-      return r.date === todayStr && r.shift.indexOf(wantShift) >= 0;
-    }
-    if (period === 'week') {
-      var weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate()-7);
-      return new Date(r.date) >= weekAgo;
-    }
-    if (dashDate) return r.date === dashDate;
+  var period=document.getElementById('dash-period').value;
+  var dashDate=document.getElementById('dash-date').value;
+  var records=loadRecords();
+  var now=new Date(), todStr=todayStr(), h=now.getHours(), isS1now=h>=8&&h<18;
+  var filtered=records.filter(function(r){
+    if(period==='today')return r.date===todStr;
+    if(period==='shift'){var ws=isS1now?'Смена 1':'Смена 2';return r.date===todStr&&r.shift.indexOf(ws)>=0;}
+    if(period==='week'){var wa=new Date(now);wa.setDate(wa.getDate()-7);return new Date(r.date)>=wa;}
+    if(dashDate)return r.date===dashDate;
     return true;
   });
-
-  var container = document.getElementById('dashboard-content');
-  if (!filtered.length) {
-    container.innerHTML = '<div class="empty">Нет данных за выбранный период</div>';
-    return;
-  }
-
-  // Build stats per machine
-  var machineStats = {};
-  MACHINES.forEach(function(m) {
-    machineStats[m.id] = {
-      good:0, defects:0, cycles:0,
-      plannedDown:0, unplannedDown:0,
-      parts:[], operators:{},
-      // per shift
-      s1:{good:0,cycles:0,cycleTime:0,cavities:0,count:0},
-      s2:{good:0,cycles:0,cycleTime:0,cavities:0,count:0}
-    };
+  var container=document.getElementById('dashboard-content');
+  if(!filtered.length){container.innerHTML='<div class="empty">Нет данных за выбранный период</div>';return;}
+  var machineStats={};
+  MACHINES.forEach(function(m){machineStats[m.id]={good:0,defects:0,cycles:0,plannedDown:0,unplannedDown:0,parts:[],operators:{},s1:{good:0,cycles:0,cycleTime:0,cavities:0,count:0},s2:{good:0,cycles:0,cycleTime:0,cavities:0,count:0}};});
+  filtered.forEach(function(r){
+    var key=r.machine?r.machine.split(' ')[0]:null;
+    if(!key||!machineStats[key])return;
+    var s=machineStats[key];
+    s.good+=r.good||0;s.defects+=r.defects||0;s.cycles+=r.cycles||0;s.plannedDown+=r.plannedDown||0;s.unplannedDown+=r.unplannedDown||0;
+    if(r.partName)s.parts.push(r.partName);
+    if(r.operator)s.operators[r.operator]=(s.operators[r.operator]||0)+(r.good||0);
+    var isS1=r.shift&&(r.shift.indexOf('Смена 1')>=0||r.shift.trim().startsWith('1'));
+    var sd=isS1?s.s1:s.s2; sd.good+=r.good||0; sd.cycles+=r.cycles||0;
+    if(r.cycleTime>0){sd.cycleTime=sd.count>0?(sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1):r.cycleTime;sd.cavities=r.cavities||1;sd.count++;}
   });
-
-  filtered.forEach(function(r) {
-    var key = r.machine ? r.machine.split(' ')[0] : null;
-    if (!key || !machineStats[key]) return;
-    var s = machineStats[key];
-    s.good += r.good||0;
-    s.defects += r.defects||0;
-    s.cycles += r.cycles||0;
-    s.plannedDown += r.plannedDown||0;
-    s.unplannedDown += r.unplannedDown||0;
-    if (r.partName) s.parts.push(r.partName);
-    if (r.operator) s.operators[r.operator] = (s.operators[r.operator]||0) + (r.good||0);
-
-    // Determine shift number
-    var isS1 = r.shift && (r.shift.indexOf('Смена 1') >= 0 || r.shift.trim().startsWith('1'));
-    var sd = isS1 ? s.s1 : s.s2;
-    sd.good += r.good||0;
-    sd.cycles += r.cycles||0;
-    // average cycle time weighted
-    if (r.cycleTime > 0) {
-      sd.cycleTime = sd.count > 0 ? (sd.cycleTime * sd.count + r.cycleTime) / (sd.count+1) : r.cycleTime;
-      sd.cavities = r.cavities||1;
-      sd.count++;
-    }
+  var outerHtml='<div class="dash-grid">';
+  MACHINES.forEach(function(m){
+    var s=machineStats[m.id];
+    var total=s.good+s.defects,defRate=total?Math.round(s.defects/total*100):0,hasData=total>0;
+    var downTotal=s.plannedDown+s.unplannedDown;
+    var topOp=Object.keys(s.operators).sort(function(a,b){return s.operators[b]-s.operators[a];})[0]||'—';
+    var uniqueParts=s.parts.filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,2).join(', ')||'—';
+    var norm1=s.s1.cycleTime>0?calcNorm(s.s1.cycleTime,s.s1.cavities,1):0;
+    var norm2=s.s2.cycleTime>0?calcNorm(s.s2.cycleTime,s.s2.cavities,2):0;
+    var ct=s.s1.cycleTime>0?s.s1.cycleTime:s.s2.cycleTime,cav=s.s1.cycleTime>0?s.s1.cavities:s.s2.cavities;
+    if(norm1===0&&ct>0)norm1=calcNorm(ct,cav,1);
+    if(norm2===0&&ct>0)norm2=calcNorm(ct,cav,2);
+    var normDay=norm1+norm2;
+    var pct1=normDay>0?Math.round(s.s1.good/normDay*100):null;
+    var pct2=normDay>0?Math.round(s.s2.good/normDay*100):null;
+    var pctDay=normDay>0?Math.round(s.good/normDay*100):null;
+    function normBadge(pct,label){if(pct===null)return'';var cls=pct>=100?'badge-ok':pct>=80?'badge-warn':'badge-err';var icon=pct>=100?'✅':pct>=80?'⚠️':'❌';return'<span class="badge '+cls+'" style="margin-right:4px">'+icon+' '+label+': '+pct+'%</span>';}
+    function normBar(good,norm,label){if(!norm)return'';var pct=Math.min(Math.round(good/norm*100),100);var over=good>norm;var fillCls=over?'fill-green':good>=norm*0.8?'fill-amber':'fill-red';return'<div class="progress-bar-wrap"><div class="progress-bar-label"><span>'+label+'</span><span>'+good.toLocaleString()+' / '+norm.toLocaleString()+' шт ('+Math.round(good/norm*100)+'%)</span></div><div class="progress-bar-bg"><div class="progress-bar-fill '+fillCls+'" style="width:'+pct+'%"></div></div></div>';}
+    var dotClass=!hasData?'status-dot-off':(pctDay!==null?(pctDay>=100?'status-dot-ok':pctDay>=80?'status-dot-warn':'status-dot-err'):(defRate===0?'status-dot-ok':defRate<5?'status-dot-warn':'status-dot-err'));
+    var statusText=!hasData?'Нет данных':(pctDay!==null?(pctDay>=100?'Норма выполнена':pctDay>=80?'Почти норма':'Норма не выполнена'):'Норма: нет данных');
+    outerHtml+='<div class="machine-card'+((!hasData)?' no-data-card':'')+'">'+
+      '<div class="machine-card-header"><div><div class="machine-name">'+m.name+'</div><div class="machine-type">'+m.type+'</div></div><div style="text-align:right"><span class="'+dotClass+'"></span><span style="font-size:12px;color:var(--text2)">'+statusText+'</span></div></div>'+
+      '<div class="machine-card-body">'+
+        '<div class="machine-metrics"><div class="m-metric"><div class="m-metric-val" style="color:var(--green)">'+(hasData?s.good.toLocaleString():'—')+'</div><div class="m-metric-lbl">Годные</div></div><div class="m-metric"><div class="m-metric-val" style="color:var(--red)">'+(hasData?s.defects:'—')+'</div><div class="m-metric-lbl">Брак</div></div><div class="m-metric"><div class="m-metric-val">'+(hasData?defRate+'%':'—')+'</div><div class="m-metric-lbl">% брака</div></div></div>'+
+        (hasData&&normDay?'<div style="margin-bottom:8px">'+(s.s1.count>0?normBar(s.s1.good,normDay,'☀️ С1 — '+Math.round(s.s1.good/normDay*100)+'%'):'')+(s.s2.count>0?normBar(s.s2.good,normDay,'🌙 С2 — '+Math.round(s.s2.good/normDay*100)+'%'):'')+normBar(s.good,normDay,'📅 За сутки')+'</div>':'')+
+        (hasData?'<div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px">'+normBadge(pct1,'☀️С1')+normBadge(pct2,'🌙С2')+'</div>':'')+
+        '<div class="machine-detail">'+(norm1?'<div class="machine-detail-row"><span>☀️ Норма смена 1</span><span>'+norm1.toLocaleString()+' шт</span></div>':'')+
+        (norm2?'<div class="machine-detail-row"><span>🌙 Норма смена 2</span><span>'+norm2.toLocaleString()+' шт</span></div>':'')+
+        '<div class="machine-detail-row"><span>Циклов</span><span>'+(s.cycles||'—')+'</span></div>'+
+        '<div class="machine-detail-row"><span>Простой</span><span>'+(downTotal?downTotal+' мин':'—')+'</span></div>'+
+        '<div class="machine-detail-row"><span>Оператор</span><span>'+topOp+'</span></div>'+
+        '<div class="machine-detail-row"><span>Деталь</span><span style="max-width:140px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+uniqueParts+'</span></div></div>'+
+      '</div></div>';
   });
-
-  var outerHtml = '<div class="dash-grid">';
-  MACHINES.forEach(function(m) {
-    var s = machineStats[m.id];
-    var total = s.good + s.defects;
-    var defRate = total ? Math.round(s.defects/total*100) : 0;
-    var hasData = total > 0;
-    var downTotal = s.plannedDown + s.unplannedDown;
-    var topOp = Object.keys(s.operators).sort(function(a,b){return s.operators[b]-s.operators[a];})[0] || '—';
-    var uniqueParts = s.parts.filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,2).join(', ') || '—';
-
-    // Norm calculations - always use full 22h day
-    var norm1 = s.s1.cycleTime > 0 ? calcNorm(s.s1.cycleTime, s.s1.cavities, 1) : 0;
-    var norm2 = s.s2.cycleTime > 0 ? calcNorm(s.s2.cycleTime, s.s2.cavities, 2) : 0;
-    // If one shift has no data, use other shift's cycle time for full day norm
-    var ct = s.s1.cycleTime > 0 ? s.s1.cycleTime : s.s2.cycleTime;
-    var cav = s.s1.cycleTime > 0 ? s.s1.cavities : s.s2.cavities;
-    if (norm1 === 0 && ct > 0) norm1 = calcNorm(ct, cav, 1);
-    if (norm2 === 0 && ct > 0) norm2 = calcNorm(ct, cav, 2);
-    var normDay = norm1 + norm2; // всегда 22 часа
-
-    // % от суточной нормы (22ч = 100%)
-    var pct1 = normDay > 0 ? Math.round(s.s1.good / normDay * 100) : null;
-    var pct2 = normDay > 0 ? Math.round(s.s2.good / normDay * 100) : null;
-    var pctDay = normDay > 0 ? Math.round(s.good / normDay * 100) : null;
-
-    function normBadge(pct, label) {
-      if (pct === null) return '';
-      var cls = pct >= 100 ? 'badge-ok' : pct >= 80 ? 'badge-warn' : 'badge-err';
-      var icon = pct >= 100 ? '✅' : pct >= 80 ? '⚠️' : '❌';
-      return '<span class="badge ' + cls + '" style="margin-right:4px">' + icon + ' ' + label + ': ' + pct + '%</span>';
-    }
-
-    function normBar(good, norm, label) {
-      if (!norm) return '';
-      var pct = Math.min(Math.round(good/norm*100), 100);
-      var over = good > norm;
-      var fillCls = over ? 'fill-green' : good >= norm*0.8 ? 'fill-amber' : 'fill-red';
-      return '<div class="progress-bar-wrap">' +
-        '<div class="progress-bar-label">' +
-          '<span>' + label + '</span>' +
-          '<span>' + good.toLocaleString() + ' / ' + norm.toLocaleString() + ' шт (' + Math.round(good/norm*100) + '%)</span>' +
-        '</div>' +
-        '<div class="progress-bar-bg"><div class="progress-bar-fill ' + fillCls + '" style="width:' + pct + '%"></div></div>' +
-      '</div>';
-    }
-
-    var dotClass = !hasData ? 'status-dot-off' :
-      (pctDay !== null ? (pctDay >= 100 ? 'status-dot-ok' : pctDay >= 80 ? 'status-dot-warn' : 'status-dot-err') :
-      (defRate === 0 ? 'status-dot-ok' : defRate < 5 ? 'status-dot-warn' : 'status-dot-err'));
-    var statusText = !hasData ? 'Нет данных' :
-      (pctDay !== null ? (pctDay >= 100 ? 'Норма выполнена' : pctDay >= 80 ? 'Почти норма' : 'Норма не выполнена') : 'Норма: нет данных');
-
-    outerHtml += '<div class="machine-card' + (!hasData?' no-data-card':'') + '">' +
-      '<div class="machine-card-header">' +
-        '<div><div class="machine-name">' + m.name + '</div><div class="machine-type">' + m.type + '</div></div>' +
-        '<div style="text-align:right"><span class="' + dotClass + '"></span><span style="font-size:12px;color:var(--text2)">' + statusText + '</span></div>' +
-      '</div>' +
-      '<div class="machine-card-body">' +
-        // Main metrics
-        '<div class="machine-metrics">' +
-          '<div class="m-metric"><div class="m-metric-val" style="color:var(--green)">' + (hasData?s.good.toLocaleString():'—') + '</div><div class="m-metric-lbl">Годные</div></div>' +
-          '<div class="m-metric"><div class="m-metric-val" style="color:var(--red)">' + (hasData?s.defects:'—') + '</div><div class="m-metric-lbl">Брак</div></div>' +
-          '<div class="m-metric"><div class="m-metric-val">' + (hasData?defRate+'%':'—') + '</div><div class="m-metric-lbl">% брака</div></div>' +
-        '</div>' +
-        // Norm progress bars
-        (hasData && normDay ? '<div style="margin-bottom:8px">' +
-          (s.s1.count>0 ? normBar(s.s1.good, normDay, '☀️ С1 — '+Math.round(s.s1.good/normDay*100)+'%') : '') +
-          (s.s2.count>0 ? normBar(s.s2.good, normDay, '🌙 С2 — '+Math.round(s.s2.good/normDay*100)+'%') : '') +
-          normBar(s.good, normDay, '📅 За сутки') +
-        '</div>' : '') +
-        // Norm badges
-        (hasData ? '<div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px">' +
-          normBadge(pct1, '☀️С1') + normBadge(pct2, '🌙С2') +
-        '</div>' : '') +
-        // Details
-        '<div class="machine-detail">' +
-          (norm1 ? '<div class="machine-detail-row"><span>☀️ Норма смена 1</span><span>' + norm1.toLocaleString() + ' шт</span></div>' : '') +
-          (norm2 ? '<div class="machine-detail-row"><span>🌙 Норма смена 2</span><span>' + norm2.toLocaleString() + ' шт</span></div>' : '') +
-          '<div class="machine-detail-row"><span>Циклов</span><span>' + (s.cycles||'—') + '</span></div>' +
-          '<div class="machine-detail-row"><span>Простой</span><span>' + (downTotal?downTotal+' мин':'—') + '</span></div>' +
-          '<div class="machine-detail-row"><span>Оператор</span><span>' + topOp + '</span></div>' +
-          '<div class="machine-detail-row"><span>Деталь</span><span style="max-width:140px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + uniqueParts + '</span></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  });
-  outerHtml += '</div>';
-  container.innerHTML = outerHtml;
+  outerHtml+='</div>';
+  container.innerHTML=outerHtml;
 }
 
-
-
-// ===== OPERATORS MANAGER (Google Sheets) =====
-var operatorsCache = [];
-
-function addOperator() {
-  var url = loadGsUrl();
-  if (!url) { alert('Сначала настройте подключение к Google Sheets во вкладке 🔗 Google'); return; }
-  var name = document.getElementById('new-op-name').value.trim();
-  var num = document.getElementById('new-op-num').value.trim();
-  var machine = document.getElementById('new-op-machine').value.trim();
-  if (!name) { alert('Введите ФИО оператора'); return; }
-  var msg = document.getElementById('op-add-msg');
-  msg.style.display = 'block'; msg.className = 'status-bar status-info';
-  msg.textContent = '⏳ Сохранение...';
-  fetch(url, {
-    method:'POST', mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'addOperator', name:name, num:num, machine:machine})
-  }).then(function() {
-    operatorsCache.push({name:name, num:num, machine:machine});
-    document.getElementById('new-op-name').value='';
-    document.getElementById('new-op-num').value='';
-    document.getElementById('new-op-machine').value='';
-    msg.className='status-bar status-ok';
-    msg.textContent='✅ Оператор '+name+' добавлен';
-    setTimeout(function(){msg.style.display='none';},2500);
-    renderOperatorsTable();
-    updateOperatorSelect();
-  }).catch(function(){
-    msg.className='status-bar status-err';
-    msg.textContent='❌ Ошибка при сохранении';
-    setTimeout(function(){msg.style.display='none';},2500);
-  });
+// ===== OPERATORS =====
+var operatorsCache=[];
+function addOperator(){
+  var url=loadGsUrl();if(!url){alert('Сначала настройте Google Sheets');return;}
+  var name=document.getElementById('new-op-name').value.trim();
+  var num=document.getElementById('new-op-num').value.trim();
+  var machine=document.getElementById('new-op-machine').value.trim();
+  if(!name){alert('Введите ФИО оператора');return;}
+  var msg=document.getElementById('op-add-msg');msg.style.display='block';msg.className='status-bar status-info';msg.textContent='⏳ Сохранение...';
+  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addOperator',name:name,num:num,machine:machine})})
+    .then(function(){
+      operatorsCache.push({name:name,num:num,machine:machine});
+      document.getElementById('new-op-name').value='';document.getElementById('new-op-num').value='';document.getElementById('new-op-machine').value='';
+      msg.className='status-bar status-ok';msg.textContent='✅ Оператор '+name+' добавлен';
+      setTimeout(function(){msg.style.display='none';},2500);
+      renderOperatorsTable();updateOperatorSelect();
+    }).catch(function(){msg.className='status-bar status-err';msg.textContent='❌ Ошибка';setTimeout(function(){msg.style.display='none';},2500);});
 }
-
-function deleteOperator(name) {
-  var url = loadGsUrl();
-  if (!url) { alert('Настройте Google Sheets'); return; }
-  if (!confirm('Удалить оператора ' + name + '?')) return;
-  fetch(url, {
-    method:'POST', mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'deleteOperator', name:name})
-  }).then(function() {
-    operatorsCache = operatorsCache.filter(function(o){return o.name!==name;});
-    renderOperatorsTable();
-    updateOperatorSelect();
-  });
+function deleteOperator(btn){
+  var name=btn&&btn.getAttribute?btn.getAttribute('data-name'):btn;
+  var url=loadGsUrl();if(!url){alert('Настройте Google Sheets');return;}
+  if(!confirm('Удалить оператора '+name+'?'))return;
+  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'deleteOperator',name:name})})
+    .then(function(){operatorsCache=operatorsCache.filter(function(o){return o.name!==name;});renderOperatorsTable();updateOperatorSelect();});
 }
-
-function renderOperatorsTable() {
-  var tbody = document.getElementById('operators-table-body');
-  if (!tbody) return;
-  document.getElementById('op-count').textContent = operatorsCache.length + ' человек';
-  if (!operatorsCache.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty">Нет операторов. Добавьте выше.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = operatorsCache.map(function(o) {
-    var safeName = o.name.replace(/'/g, "\'");
-    return '<tr>'+
-      '<td><strong>'+o.name+'</strong></td>'+
-      '<td>'+(o.num||'—')+'</td>'+
-      '<td>'+(o.machine||'—')+'</td>'+
-      '<td><button class="btn-danger" onclick="deleteOperator(this)" data-name="'+o.name.replace(/"/g,'&quot;')+'">🗑</button></td>'+
-      '</tr>';
+function renderOperatorsTable(){
+  var tbody=document.getElementById('operators-table-body');if(!tbody)return;
+  document.getElementById('op-count').textContent=operatorsCache.length+' человек';
+  if(!operatorsCache.length){tbody.innerHTML='<tr><td colspan="4" class="empty">Нет операторов.</td></tr>';return;}
+  tbody.innerHTML=operatorsCache.map(function(o){
+    return'<tr><td><strong>'+o.name+'</strong></td><td>'+(o.num||'—')+'</td><td>'+(o.machine||'—')+'</td><td><button class="btn-danger" onclick="deleteOperator(this)" data-name="'+o.name.replace(/"/g,'&quot;')+'">🗑</button></td></tr>';
   }).join('');
 }
-
-function updateOperatorSelect() {
-  var sel = document.getElementById('operator');
-  if (!sel) return;
-  var current = sel.value;
-  sel.innerHTML = '<option value="">— выбрать оператора —</option>';
-  operatorsCache.forEach(function(o) {
-    var opt = document.createElement('option');
-    opt.value = o.name;
-    opt.textContent = (o.num ? o.num+' — ' : '') + o.name + (o.machine ? ' ('+o.machine+')' : '');
-    sel.appendChild(opt);
-  });
-  if (current) sel.value = current;
-  var statusEl = document.getElementById('op-load-status');
-  if (statusEl) statusEl.textContent = operatorsCache.length ? '✅ '+operatorsCache.length+' чел.' : '(нет данных)';
+function updateOperatorSelect(){
+  var sel=document.getElementById('operator');if(!sel)return;
+  var current=sel.value;
+  sel.innerHTML='<option value="">— выбрать оператора —</option>';
+  operatorsCache.forEach(function(o){var opt=document.createElement('option');opt.value=o.name;opt.textContent=(o.num?o.num+' — ':'')+o.name+(o.machine?' ('+o.machine+')':'');sel.appendChild(opt);});
+  if(current)sel.value=current;
+  var statusEl=document.getElementById('op-load-status');
+  if(statusEl)statusEl.textContent=operatorsCache.length?'✅ '+operatorsCache.length+' чел.':'(нет данных)';
 }
-
-function loadOperators() {
-  var url = loadGsUrl();
-  if (!url) return;
-  var cbName = 'opsCb_' + Date.now();
-  var script = document.createElement('script');
-  var done = false;
-  window[cbName] = function(data) {
-    done = true; delete window[cbName];
-    if (document.body.contains(script)) document.body.removeChild(script);
-    if (data && data.operators) {
-      operatorsCache = data.operators;
-      renderOperatorsTable();
-      updateOperatorSelect();
-    }
-  };
-  script.onerror = function(){ if(!done){done=true;delete window[cbName];} };
-  setTimeout(function(){ if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);} },5000);
-  script.src = url + '?action=getOperators&callback=' + cbName;
+function loadOperators(){
+  var url=loadGsUrl();if(!url)return;
+  var cbName='opsCb_'+Date.now(),script=document.createElement('script'),done=false;
+  window[cbName]=function(data){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);if(data&&data.operators){operatorsCache=data.operators;renderOperatorsTable();updateOperatorSelect();}};
+  script.onerror=function(){if(!done){done=true;delete window[cbName];}};
+  setTimeout(function(){if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);}},5000);
+  script.src=url+'?action=getOperators&callback='+cbName;
   document.body.appendChild(script);
 }
 
-// Fix deleteOperator to use data-name
-var _origDeleteOp = deleteOperator;
-deleteOperator = function(btn) {
-  var name = btn && btn.getAttribute ? btn.getAttribute('data-name') : btn;
-  _origDeleteOp(name);
-};
-
-// ===== MOLDS MANAGER (Google Sheets) =====
-var moldsCache = []; // in-memory cache
-
-function addMold() {
-  var url = loadGsUrl();
-  if (!url) { alert('Сначала настройте подключение к Google Sheets во вкладке 🔗 Google'); return; }
-  var id = document.getElementById('new-mold-id').value.trim();
-  var label = document.getElementById('new-mold-label').value.trim();
-  var machine = document.getElementById('new-mold-machine').value.trim();
-  if (!id) { alert('Введите № пресс-формы'); return; }
-  var msg = document.getElementById('mold-add-msg');
-  msg.style.display = 'block'; msg.className = 'status-bar status-info';
-  msg.textContent = '⏳ Сохранение...';
-  var article = document.getElementById('new-mold-article').value.trim();
-  fetch(url, {
-    method:'POST', mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'addMold', id:id, label:label, machine:machine, article:article})
-  }).then(function() {
-    moldsCache.push({id:id, label:label, machine:machine, article:article});
-    document.getElementById('new-mold-id').value='';
-    document.getElementById('new-mold-article').value='';
-    document.getElementById('new-mold-label').value='';
-    document.getElementById('new-mold-machine').value='';
-    msg.className='status-bar status-ok';
-    msg.textContent='✅ Пресс-форма '+id+' добавлена в Google Sheets';
-    setTimeout(function(){msg.style.display='none';},2500);
-    renderMoldsTable();
-    updateMoldSelect();
-  }).catch(function(){
-    msg.className='status-bar status-err';
-    msg.textContent='❌ Ошибка при сохранении';
-    setTimeout(function(){msg.style.display='none';},2500);
-  });
+// ===== MOLDS =====
+var moldsCache=[];
+function addMold(){
+  var url=loadGsUrl();if(!url){alert('Сначала настройте Google Sheets');return;}
+  var id=document.getElementById('new-mold-id').value.trim();
+  var label=document.getElementById('new-mold-label').value.trim();
+  var machine=document.getElementById('new-mold-machine').value.trim();
+  var article=document.getElementById('new-mold-article').value.trim();
+  if(!id){alert('Введите № пресс-формы');return;}
+  var msg=document.getElementById('mold-add-msg');msg.style.display='block';msg.className='status-bar status-info';msg.textContent='⏳ Сохранение...';
+  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addMold',id:id,label:label,machine:machine,article:article})})
+    .then(function(){
+      moldsCache.push({id:id,label:label,machine:machine,article:article});
+      document.getElementById('new-mold-id').value='';document.getElementById('new-mold-article').value='';document.getElementById('new-mold-label').value='';document.getElementById('new-mold-machine').value='';
+      msg.className='status-bar status-ok';msg.textContent='✅ Пресс-форма '+id+' добавлена';
+      setTimeout(function(){msg.style.display='none';},2500);renderMoldsTable();updateMoldSelect();
+    }).catch(function(){msg.className='status-bar status-err';msg.textContent='❌ Ошибка';setTimeout(function(){msg.style.display='none';},2500);});
 }
-
-function deleteMold(btn) {
-  var id = btn ? (btn.getAttribute ? btn.getAttribute('data-id') : btn) : btn;
-  var url = loadGsUrl();
-  if (!url) { alert('Настройте Google Sheets'); return; }
-  if (!confirm('Удалить пресс-форму ' + id + ' из Google Sheets?')) return;
-  fetch(url, {
-    method:'POST', mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({action:'deleteMold', id:id})
-  }).then(function() {
-    moldsCache = moldsCache.filter(function(m){return m.id!==id;});
-    renderMoldsTable();
-    updateMoldSelect();
-  });
+function deleteMold(btn){
+  var id=btn&&btn.getAttribute?btn.getAttribute('data-id'):btn;
+  var url=loadGsUrl();if(!url){alert('Настройте Google Sheets');return;}
+  if(!confirm('Удалить пресс-форму '+id+'?'))return;
+  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'deleteMold',id:id})})
+    .then(function(){moldsCache=moldsCache.filter(function(m){return m.id!==id;});renderMoldsTable();updateMoldSelect();});
 }
-
-function renderMoldsTable() {
-  var tbody = document.getElementById('molds-table-body');
-  if (!tbody) return;
-  document.getElementById('mold-count').textContent = moldsCache.length + ' позиций';
-  if (!moldsCache.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty">Нет пресс-форм. Добавьте выше или нажмите 🔄 для загрузки из Google Sheets.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = moldsCache.map(function(m) {
-    return '<tr>'+
-      '<td><strong>'+m.id+'</strong></td>'+
-      '<td>'+(m.label||'—')+'</td>'+
-      '<td>'+(m.machine||'—')+'</td>'+
-      '<td><button class="btn-danger" onclick="deleteMold(this)" data-id="'+m.id+'">🗑</button></td>'+
-      '</tr>';
+function renderMoldsTable(){
+  var tbody=document.getElementById('molds-table-body');if(!tbody)return;
+  document.getElementById('mold-count').textContent=moldsCache.length+' позиций';
+  if(!moldsCache.length){tbody.innerHTML='<tr><td colspan="4" class="empty">Нет пресс-форм. Нажмите 🔄 для загрузки.</td></tr>';return;}
+  tbody.innerHTML=moldsCache.map(function(m){
+    return'<tr><td><strong>'+m.id+'</strong></td><td>'+(m.label||'—')+'</td><td>'+(m.machine||'—')+'</td><td><button class="btn-danger" onclick="deleteMold(this)" data-id="'+m.id+'">🗑</button></td></tr>';
   }).join('');
 }
-
-function updateMoldSelect() {
-  var sel = document.getElementById('mold-id');
-  if (!sel) return;
-  var current = sel.value;
-  sel.innerHTML = '<option value="">— выбрать пресс-форму —</option>';
-  moldsCache.forEach(function(m) {
-    var opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = m.label ? (m.id+' — '+m.label) : m.id;
-    sel.appendChild(opt);
-  });
-  if (current) sel.value = current;
-  var statusEl = document.getElementById('mold-load-status');
-  if (statusEl) statusEl.textContent = moldsCache.length ? '✅ '+moldsCache.length+' шт.' : '(нет данных)';
+function updateMoldSelect(){
+  var sel=document.getElementById('mold-id');if(!sel)return;
+  var current=sel.value;
+  sel.innerHTML='<option value="">— выбрать пресс-форму —</option>';
+  moldsCache.forEach(function(m){var opt=document.createElement('option');opt.value=m.id;opt.textContent=m.label?(m.id+' — '+m.label):m.id;sel.appendChild(opt);});
+  if(current)sel.value=current;
+  var statusEl=document.getElementById('mold-load-status');
+  if(statusEl)statusEl.textContent=moldsCache.length?'✅ '+moldsCache.length+' шт.':'(нет данных)';
 }
-
-function exportMoldsCSV() {
-  if (!moldsCache.length) { alert('Нет пресс-форм'); return; }
-  var rows = moldsCache.map(function(m){
-    return '"'+m.id+'","'+(m.label||'')+'","'+(m.machine||'')+'"';
-  });
-  var csv = '\uFEFF' + '№ Пресс-формы,Название,Станок' + '\n' + rows.join('\n');
-  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'press_formy.csv';
-  a.click();
+function onMoldSelected(){
+  var moldId=document.getElementById('mold-id').value;if(!moldId)return;
+  var mold=moldsCache.find(function(m){return m.id===moldId;});
+  if(mold&&mold.article)document.getElementById('part-name').value=mold.article;
 }
-
-function importMoldsPrompt() {
-  var area = document.getElementById('import-area');
-  area.style.display = area.style.display==='none'?'block':'none';
+function onPartNameInput(){
+  var partName=document.getElementById('part-name').value.trim();if(!partName)return;
+  var mold=moldsCache.find(function(m){return m.article&&m.article.toLowerCase()===partName.toLowerCase();});
+  if(mold)document.getElementById('mold-id').value=mold.id;
 }
-
-function importMolds() {
-  var url = loadGsUrl();
-  if (!url) { alert('Настройте Google Sheets'); return; }
-  var text = document.getElementById('import-text').value.trim();
-  if (!text) return;
-  var lines = text.split('\n');
-  var toAdd = [];
-  lines.forEach(function(line){
-    var parts = line.split(',');
-    var id=(parts[0]||'').trim(), label=(parts[1]||'').trim(), machine=(parts[2]||'').trim();
-    if (id && !moldsCache.find(function(m){return m.id===id;})) toAdd.push({id:id,label:label,machine:machine});
-  });
-  if (!toAdd.length) { alert('Нет новых пресс-форм для добавления'); return; }
-  var done = 0;
-  toAdd.forEach(function(m){
-    fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'addMold',id:m.id,label:m.label,machine:m.machine})
-    }).then(function(){ moldsCache.push(m); done++; if(done===toAdd.length){renderMoldsTable();updateMoldSelect();} });
-  });
-  document.getElementById('import-text').value='';
-  document.getElementById('import-area').style.display='none';
-  alert('Отправляем '+toAdd.length+' пресс-форм в Google Sheets...');
+function exportMoldsCSV(){
+  if(!moldsCache.length){alert('Нет пресс-форм');return;}
+  var rows=moldsCache.map(function(m){return'"'+m.id+'","'+(m.label||'')+'","'+(m.machine||'')+'"';});
+  var csv='\uFEFF'+'№ Пресс-формы,Название,Станок\n'+rows.join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='press_formy.csv';a.click();
 }
-
-
-// ===== MOLD <-> ARTICLE SYNC =====
-function onMoldSelected() {
-  var sel = document.getElementById('mold-id');
-  var moldId = sel.value;
-  if (!moldId) return;
-  var mold = moldsCache.find(function(m){ return m.id === moldId; });
-  if (mold && mold.article) {
-    document.getElementById('part-name').value = mold.article;
-  }
-}
-
-function onPartNameInput() {
-  var partName = document.getElementById('part-name').value.trim();
-  if (!partName) return;
-  // Find mold with matching article
-  var mold = moldsCache.find(function(m){
-    return m.article && m.article.toLowerCase() === partName.toLowerCase();
-  });
-  if (mold) {
-    document.getElementById('mold-id').value = mold.id;
-  }
+function importMoldsPrompt(){var area=document.getElementById('import-area');area.style.display=area.style.display==='none'?'block':'none';}
+function importMolds(){
+  var url=loadGsUrl();if(!url){alert('Настройте Google Sheets');return;}
+  var text=document.getElementById('import-text').value.trim();if(!text)return;
+  var lines=text.split('\n');var toAdd=[];
+  lines.forEach(function(line){var parts=line.split(',');var id=(parts[0]||'').trim(),label=(parts[1]||'').trim(),machine=(parts[2]||'').trim();if(id&&!moldsCache.find(function(m){return m.id===id;}))toAdd.push({id:id,label:label,machine:machine});});
+  if(!toAdd.length){alert('Нет новых пресс-форм');return;}
+  var done=0;
+  toAdd.forEach(function(m){fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addMold',id:m.id,label:m.label,machine:m.machine})}).then(function(){moldsCache.push(m);done++;if(done===toAdd.length){renderMoldsTable();updateMoldSelect();}});});
+  document.getElementById('import-text').value='';document.getElementById('import-area').style.display='none';
+  alert('Отправляем '+toAdd.length+' пресс-форм...');
 }
 
 // ===== EXPORT CSV =====
-function exportCSV() {
-  var records = loadRecords();
-  if (!records.length) { alert('Нет данных'); return; }
-  var head = ['Дата','Смена','Оператор','ТПА','Материал','Деталь','ПФ','Гнёзда',
-              'Циклов','Время цикла(с)','Годные','Брак','% брака','Вес(г)',
-              'Прич.брака','Пл.простой','Внепл.простой','Прич.простоя'];
-  var rows = records.map(function(r) {
-    var total = r.good + r.defects;
-    var rate = total ? Math.round(r.defects/total*100) : 0;
-    return [r.date,r.shift,r.operator,r.machine,r.material,r.partName,r.moldId,
-            r.cavities,r.cycles,r.cycleTime,r.good,r.defects,rate+'%',r.weight,
-            r.defectNote,r.plannedDown,r.unplannedDown,r.downtimeReason]
-      .map(function(v){ return '"' + String(v||'').replace(/"/g,'""') + '"'; }).join(',');
-  });
-  var csv = '\uFEFF' + [head.join(',')].concat(rows).join('\n');
-  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'tpa_journal.csv'; a.click();
-  URL.revokeObjectURL(url);
+function exportCSV(){
+  var records=loadRecords();if(!records.length){alert('Нет данных');return;}
+  var head=['Дата','Смена','Оператор','ТПА','Материал','Деталь','ПФ','Гнёзда','Циклов','Время цикла(с)','Годные','Брак','% брака','Вес(г)','Прич.брака','Пл.простой','Внепл.простой','Прич.простоя'];
+  var rows=records.map(function(r){var total=r.good+r.defects,rate=total?Math.round(r.defects/total*100):0;return[r.date,r.shift,r.operator,r.machine,r.material,r.partName,r.moldId,r.cavities,r.cycles,r.cycleTime,r.good,r.defects,rate+'%',r.weight,r.defectNote,r.plannedDown,r.unplannedDown,r.downtimeReason].map(function(v){return'"'+String(v||'').replace(/"/g,'""')+'"';}).join(',');});
+  var csv='\uFEFF'+[head.join(',')].concat(rows).join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='tpa_journal.csv';a.click();URL.revokeObjectURL(url);
 }
 
 // ===== COPY SCRIPT =====
-function copyScript() {
-  var code = document.getElementById('apps-script-code').textContent;
-  navigator.clipboard.writeText(code).then(function() {
-    var btn = event.target;
-    btn.textContent = '✅ Скопировано!';
-    setTimeout(function(){ btn.textContent = '📋 Копировать код'; }, 2000);
-  }).catch(function() {
-    var ta = document.createElement('textarea');
-    ta.value = code;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    alert('Скопировано!');
-  });
+function copyScript(){
+  var code=document.getElementById('apps-script-code').textContent;
+  navigator.clipboard.writeText(code).then(function(){var btn=event.target;btn.textContent='✅ Скопировано!';setTimeout(function(){btn.textContent='📋 Копировать код';},2000);}).catch(function(){var ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('Скопировано!');});
 }
 </script>
 </body>

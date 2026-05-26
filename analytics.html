@@ -81,16 +81,12 @@
   th { text-align: left; padding: 9px 12px; background: var(--surface2); color: var(--text2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
   td { padding: 9px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-
-  /* === НОВОЕ: таблица норм по станкам === */
   .machine-norm-table th, .machine-norm-table td { padding: 7px 10px; font-size: 12px; }
   .machine-norm-table td.pct-cell { font-weight: 700; text-align: center; }
   .pct-ok   { color: var(--green-text); background: var(--green-bg); border-radius: 4px; }
   .pct-warn { color: var(--amber-text); background: var(--amber-bg); border-radius: 4px; }
   .pct-bad  { color: var(--red-text);   background: var(--red-bg);   border-radius: 4px; }
   .pct-off  { color: var(--text3); }
-
-  /* === НОВОЕ: карточки операторов === */
   .op-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 12px; }
   .op-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px; }
   .op-card-name { font-size: 15px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
@@ -99,14 +95,10 @@
   .op-norm-bar { margin-top: 8px; }
   .op-norm-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 3px; }
   .op-norm-pct { font-weight: 700; }
-
-  /* === НОВОЕ: сводка месяца === */
   .month-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 10px; margin-bottom: 12px; }
   .month-metric { background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; text-align: center; }
   .month-metric-val { font-size: 20px; font-weight: 800; margin-bottom: 3px; }
   .month-metric-lbl { font-size: 11px; color: var(--text2); }
-
-  /* === дни-бары === */
   .day-bars { display: flex; flex-direction: column; gap: 4px; }
   .day-bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
   .day-bar-date { width: 72px; color: var(--text2); flex-shrink: 0; }
@@ -120,11 +112,9 @@
 <meta name="apple-mobile-web-app-title" content="ТПА Трекер">
 </head>
 <body>
-
 <script>
 (function(){var s=JSON.parse(sessionStorage.getItem('tpa_session')||'null');if(!s)window.location.href='login.html';})();
 </script>
-
 <div class="topbar">
   <div>
     <div class="topbar-title">🏆 Аналитика</div>
@@ -135,7 +125,6 @@
     <button class="btn-logout" onclick="sessionStorage.removeItem('tpa_session');location.href='login.html'">Выйти</button>
   </div>
 </div>
-
 <div class="content">
   <div class="filter-bar">
     <div class="field">
@@ -157,18 +146,13 @@
     <button class="btn-primary" onclick="render()">🔄 Обновить</button>
     <button class="btn-primary" style="background:var(--green)" onclick="loadFromSheets()">☁️ Загрузить</button>
   </div>
-
   <div id="status-msg" style="display:none"></div>
-
-  <!-- Метрики -->
   <div class="metrics">
     <div class="metric"><div class="metric-label">Всего записей</div><div class="metric-value" id="m-records" style="color:var(--blue)">—</div></div>
     <div class="metric"><div class="metric-label">Годных деталей</div><div class="metric-value" id="m-good" style="color:var(--green)">—</div></div>
     <div class="metric"><div class="metric-label">Брак</div><div class="metric-value" id="m-bad" style="color:var(--red)">—</div></div>
     <div class="metric"><div class="metric-label">Простои (мин)</div><div class="metric-value" id="m-down" style="color:var(--amber-text)">—</div></div>
   </div>
-
-  <!-- ✅ НОВОЕ: Сводка по периоду -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">📊 Сводка по периоду</div>
@@ -188,11 +172,9 @@
       </div>
     </div>
   </div>
-
-  <!-- Рейтинги (старые) -->
   <div class="grid2">
     <div class="card">
-      <div class="card-header"><div class="card-title">🏆 Рейтинг операторов</div><span style="font-size:12px;color:var(--text2)">по % нормы</span></div>
+      <div class="card-header"><div class="card-title">🏆 Рейтинг операторов</div><span style="font-size:12px;color:var(--text2)">по % нормы смены</span></div>
       <div class="card-body"><div class="rank-list" id="op-rating"><div class="empty">Нет данных</div></div></div>
     </div>
     <div class="card">
@@ -200,7 +182,7 @@
       <div class="card-body"><div class="rank-list" id="op-days"><div class="empty">Нет данных</div></div></div>
     </div>
     <div class="card">
-      <div class="card-header"><div class="card-title">⚙️ Загруженность станков</div><span style="font-size:12px;color:var(--text2)">по % нормы</span></div>
+      <div class="card-header"><div class="card-title">⚙️ Загруженность станков</div><span style="font-size:12px;color:var(--text2)">по % суточной нормы (22ч)</span></div>
       <div class="card-body"><div class="rank-list" id="machine-rating"><div class="empty">Нет данных</div></div></div>
     </div>
     <div class="card">
@@ -208,12 +190,10 @@
       <div class="card-body"><div class="downtime-list" id="downtime-list"><div class="empty">Нет данных</div></div></div>
     </div>
   </div>
-
-  <!-- ✅ НОВОЕ: % нормы по станкам за период -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">📈 % нормы по станкам — по дням</div>
-      <span style="font-size:12px;color:var(--text2)">каждый день отдельно</span>
+      <span style="font-size:12px;color:var(--text2)">суточная норма (22ч)</span>
     </div>
     <div class="card-body">
       <div class="table-scroll">
@@ -223,19 +203,15 @@
       </div>
     </div>
   </div>
-
-  <!-- ✅ НОВОЕ: Загрузка операторов -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">👷 Загрузка операторов</div>
-      <span style="font-size:12px;color:var(--text2)">смены, выпуск, % нормы</span>
+      <span style="font-size:12px;color:var(--text2)">смены, выпуск, % нормы смены</span>
     </div>
     <div class="card-body">
       <div class="op-cards" id="op-cards"><div class="empty">Нет данных</div></div>
     </div>
   </div>
-
-  <!-- Старые разделы -->
   <div class="card">
     <div class="card-header"><div class="card-title">📦 Топ деталей по выпуску</div></div>
     <div class="card-body">
@@ -247,7 +223,6 @@
       </div>
     </div>
   </div>
-
   <div class="card">
     <div class="card-header"><div class="card-title">🔴 Проблемные пресс-формы</div><span style="font-size:12px;color:var(--text2)">брак > 2%</span></div>
     <div class="card-body">
@@ -262,10 +237,19 @@
 </div>
 
 <script>
-function loadRecords() { try { return JSON.parse(localStorage.getItem('tpa_v2') || '[]'); } catch(e){ return []; } }
-function saveRecords(r) { try { localStorage.setItem('tpa_v2', JSON.stringify(r)); } catch(e){} }
-function loadGsUrl() { return localStorage.getItem('tpa_gs_url') || ''; }
+function loadRecords(){try{return JSON.parse(localStorage.getItem('tpa_v2')||'[]');}catch(e){return[];}}
+function saveRecords(r){try{localStorage.setItem('tpa_v2',JSON.stringify(r));}catch(e){}}
+function loadGsUrl(){return localStorage.getItem('tpa_gs_url')||'';}
 
+// ✅ СУТОЧНАЯ норма станка = С1(10ч) + С2(12ч) = 22ч за день
+// Используется для станков
+function calcNormDay(cycleTime, cavities) {
+  if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
+  return Math.floor((3600 / cycleTime) * cavities * 22);
+}
+
+// ✅ СМЕННАЯ норма оператора = 10ч или 12ч
+// Используется для операторов
 function calcNormShift(cycleTime, cavities, shiftStr) {
   if (!cycleTime || cycleTime <= 0 || !cavities) return 0;
   var hours = (shiftStr && shiftStr.indexOf('Смена 2') >= 0) ? 12 : 10;
@@ -284,24 +268,24 @@ function getFilteredRecords() {
   var p = document.getElementById('filter-period').value;
   var now = new Date();
   if (p === 'last') {
-    var dates = records.map(function(r){ return r.date; }).filter(Boolean).sort();
-    var lastDate = dates[dates.length - 1];
-    return records.filter(function(r){ return r.date === lastDate; });
+    var dates = records.map(function(r){return r.date;}).filter(Boolean).sort();
+    var lastDate = dates[dates.length-1];
+    return records.filter(function(r){return r.date===lastDate;});
   }
   if (p === 'week') {
-    var from = new Date(now); from.setDate(from.getDate() - 7);
-    return records.filter(function(r){ return r.date && new Date(r.date) >= from; });
+    var from = new Date(now); from.setDate(from.getDate()-7);
+    return records.filter(function(r){return r.date&&new Date(r.date)>=from;});
   }
   if (p === 'month') {
-    var from = new Date(now); from.setDate(from.getDate() - 30);
-    return records.filter(function(r){ return r.date && new Date(r.date) >= from; });
+    var from = new Date(now); from.setDate(from.getDate()-30);
+    return records.filter(function(r){return r.date&&new Date(r.date)>=from;});
   }
   if (p === 'custom') {
     var from = document.getElementById('filter-from').value;
-    var to = document.getElementById('filter-to').value;
+    var to   = document.getElementById('filter-to').value;
     return records.filter(function(r){
       if (from && r.date < from) return false;
-      if (to && r.date > to) return false;
+      if (to   && r.date > to)   return false;
       return true;
     });
   }
@@ -309,33 +293,24 @@ function getFilteredRecords() {
 }
 
 function rankNum(i) {
-  if (i === 0) return '<span class="rank-num">🥇</span>';
-  if (i === 1) return '<span class="rank-num">🥈</span>';
-  if (i === 2) return '<span class="rank-num">🥉</span>';
-  return '<span class="rank-num">' + (i+1) + '</span>';
+  if(i===0)return'<span class="rank-num">🥇</span>';
+  if(i===1)return'<span class="rank-num">🥈</span>';
+  if(i===2)return'<span class="rank-num">🥉</span>';
+  return'<span class="rank-num">'+(i+1)+'</span>';
 }
+function pctClass(p){return p>=90?'pct-ok':p>=70?'pct-warn':p>0?'pct-bad':'pct-off';}
 
-function pctClass(pct) {
-  return pct >= 90 ? 'pct-ok' : pct >= 70 ? 'pct-warn' : pct > 0 ? 'pct-bad' : 'pct-off';
-}
-
-// ===================== RENDER MAIN =====================
 function render() {
   var records = getFilteredRecords();
-  var totalGood = 0, totalBad = 0, totalDown = 0;
-  records.forEach(function(r){
-    totalGood += r.good || 0;
-    totalBad += r.defects || 0;
-    totalDown += (r.plannedDown || 0) + (r.unplannedDown || 0);
-  });
-  document.getElementById('m-records').textContent = records.length;
-  document.getElementById('m-good').textContent = totalGood.toLocaleString();
-  document.getElementById('m-bad').textContent = totalBad.toLocaleString();
-  document.getElementById('m-down').textContent = totalDown;
-  var dates = records.map(function(r){ return r.date; }).filter(Boolean).sort();
-  var dateRange = dates.length ? (dates[0] === dates[dates.length-1] ? dates[0] : dates[0] + ' — ' + dates[dates.length-1]) : '—';
-  document.getElementById('topbar-sub').textContent = 'Записей: ' + records.length + ' · ' + dateRange;
-
+  var tG=0,tB=0,tD=0;
+  records.forEach(function(r){tG+=r.good||0;tB+=r.defects||0;tD+=(r.plannedDown||0)+(r.unplannedDown||0);});
+  document.getElementById('m-records').textContent=records.length;
+  document.getElementById('m-good').textContent=tG.toLocaleString();
+  document.getElementById('m-bad').textContent=tB.toLocaleString();
+  document.getElementById('m-down').textContent=tD;
+  var dates=records.map(function(r){return r.date;}).filter(Boolean).sort();
+  var dr=dates.length?(dates[0]===dates[dates.length-1]?dates[0]:dates[0]+' — '+dates[dates.length-1]):'—';
+  document.getElementById('topbar-sub').textContent='Записей: '+records.length+' · '+dr;
   renderSummary(records);
   renderOpRating(records);
   renderOpDays(records);
@@ -347,426 +322,351 @@ function render() {
   renderMolds(records);
 }
 
-// ===================== ✅ НОВОЕ: СВОДКА =====================
+// ===================== СВОДКА =====================
 function renderSummary(records) {
   if (!records.length) {
-    document.getElementById('month-summary').innerHTML = '<div class="empty">Нет данных</div>';
-    document.getElementById('day-bars').innerHTML = '';
-    document.getElementById('summary-downtime').innerHTML = '';
+    document.getElementById('month-summary').innerHTML='<div class="empty">Нет данных</div>';
+    document.getElementById('day-bars').innerHTML='';
+    document.getElementById('summary-downtime').innerHTML='';
     return;
   }
+  var dates=[...new Set(records.map(function(r){return r.date;}).filter(Boolean))].sort();
+  var dayCount=dates.length;
+  var totalGood=records.reduce(function(s,r){return s+(r.good||0);},0);
+  var totalBad=records.reduce(function(s,r){return s+(r.defects||0);},0);
+  var totalDown=records.reduce(function(s,r){return s+(r.plannedDown||0)+(r.unplannedDown||0);},0);
 
-  var dates = [...new Set(records.map(function(r){ return r.date; }).filter(Boolean))].sort();
-  var dayCount = dates.length;
-  var totalGood = records.reduce(function(s,r){return s+(r.good||0);},0);
-  var totalBad  = records.reduce(function(s,r){return s+(r.defects||0);},0);
-  var totalDown = records.reduce(function(s,r){return s+(r.plannedDown||0)+(r.unplannedDown||0);},0);
-
-  // Общая норма (суммируем по уникальным сменам)
-  var shiftNorms = {};
+  // Сводка использует суточную норму станков (22ч)
+  // Для каждой (дата, станок) берём лучший cycleTime и считаем 22ч
+  var dayMachineNorm={};
   records.forEach(function(r){
-    if (!r.cycleTime || !r.date) return;
-    var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
-    var sk = r.date + '_' + (r.machine||'') + (isS2?'_s2':'_s1');
-    var n = Math.floor((3600/r.cycleTime)*(r.cavities||1)*(isS2?12:10));
-    if (!shiftNorms[sk] || n > shiftNorms[sk]) shiftNorms[sk] = n;
+    if(!r.cycleTime||!r.date||!r.machine)return;
+    var m=r.machine.split(' ')[0];
+    var key=r.date+'_'+m;
+    var n=calcNormDay(r.cycleTime,r.cavities||1);
+    if(!dayMachineNorm[key]||n>dayMachineNorm[key])dayMachineNorm[key]=n;
   });
-  var totalNorm = Object.values(shiftNorms).reduce(function(s,v){return s+v;},0);
-  var normPct = totalNorm > 0 ? Math.round(totalGood/totalNorm*100) : 0;
+  var totalNorm=Object.values(dayMachineNorm).reduce(function(s,v){return s+v;},0);
+  var normPct=totalNorm>0?Math.round(totalGood/totalNorm*100):0;
 
-  // По дням
-  var byDate = {};
+  // По дням — тоже суточная норма
+  var byDate={};
   records.forEach(function(r){
-    if (!r.date) return;
-    if (!byDate[r.date]) byDate[r.date] = {good:0,norm:0,shiftNorms:{}};
-    byDate[r.date].good += r.good||0;
-    if (r.cycleTime > 0) {
-      var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
-      var sk = (r.machine||'') + (isS2?'_s2':'_s1');
-      var n = Math.floor((3600/r.cycleTime)*(r.cavities||1)*(isS2?12:10));
-      if (!byDate[r.date].shiftNorms[sk] || n > byDate[r.date].shiftNorms[sk]) byDate[r.date].shiftNorms[sk] = n;
+    if(!r.date)return;
+    if(!byDate[r.date])byDate[r.date]={good:0,machineNorms:{}};
+    byDate[r.date].good+=r.good||0;
+    if(r.cycleTime>0&&r.machine){
+      var m=r.machine.split(' ')[0];
+      var n=calcNormDay(r.cycleTime,r.cavities||1);
+      if(!byDate[r.date].machineNorms[m]||n>byDate[r.date].machineNorms[m])byDate[r.date].machineNorms[m]=n;
     }
   });
-
-  var dailyPcts = dates.map(function(d){
-    var v = byDate[d];
-    var dn = Object.values(v.shiftNorms).reduce(function(s,x){return s+x;},0);
-    return {date:d, good:v.good, norm:dn, pct: dn>0?Math.round(v.good/dn*100):0};
+  var dailyPcts=dates.map(function(d){
+    var v=byDate[d];
+    var dn=Object.values(v.machineNorms).reduce(function(s,x){return s+x;},0);
+    return{date:d,good:v.good,norm:dn,pct:dn>0?Math.round(v.good/dn*100):0};
   });
-  var bestDay  = dailyPcts.reduce(function(a,b){return b.pct>a.pct?b:a;}, dailyPcts[0]);
-  var worstDay = dailyPcts.reduce(function(a,b){return b.pct<a.pct?b:a;}, dailyPcts[0]);
-  var avgPct   = dayCount > 0 ? Math.round(dailyPcts.reduce(function(s,d){return s+d.pct;},0)/dayCount) : 0;
+  var bestDay=dailyPcts.reduce(function(a,b){return b.pct>a.pct?b:a;},dailyPcts[0]);
+  var worstDay=dailyPcts.reduce(function(a,b){return b.pct<a.pct?b:a;},dailyPcts[0]);
+  var avgPct=dayCount>0?Math.round(dailyPcts.reduce(function(s,d){return s+d.pct;},0)/dayCount):0;
 
-  document.getElementById('summary-days-badge').textContent = '📅 ' + dayCount + ' ' + (dayCount===1?'день':dayCount<5?'дня':'дней');
+  document.getElementById('summary-days-badge').textContent='📅 '+dayCount+' '+(dayCount===1?'день':dayCount<5?'дня':'дней');
+  var pc=normPct>=90?'var(--green)':normPct>=70?'var(--amber-text)':'var(--red)';
+  document.getElementById('month-summary').innerHTML=
+    '<div class="month-metric"><div class="month-metric-val" style="color:var(--blue)">'+dayCount+'</div><div class="month-metric-lbl">Рабочих дней</div></div>'+
+    '<div class="month-metric"><div class="month-metric-val" style="color:var(--green)">'+totalGood.toLocaleString()+'</div><div class="month-metric-lbl">Выпущено шт</div></div>'+
+    '<div class="month-metric"><div class="month-metric-val" style="color:var(--red)">'+totalBad.toLocaleString()+'</div><div class="month-metric-lbl">Брак шт</div></div>'+
+    '<div class="month-metric"><div class="month-metric-val" style="color:'+pc+'">'+normPct+'%</div><div class="month-metric-lbl">Выполнение нормы (22ч)</div></div>'+
+    '<div class="month-metric"><div class="month-metric-val">'+avgPct+'%</div><div class="month-metric-lbl">Средний % по дням</div></div>'+
+    '<div class="month-metric"><div class="month-metric-val" style="color:var(--green)">'+(bestDay?bestDay.date.slice(5)+' '+bestDay.pct+'%':'—')+'</div><div class="month-metric-lbl">Лучший день</div></div>'+
+    '<div class="month-metric"><div class="month-metric-val" style="color:var(--red)">'+(worstDay?worstDay.date.slice(5)+' '+worstDay.pct+'%':'—')+'</div><div class="month-metric-lbl">Худший день</div></div>'+
+    '<div class="month-metric"><div class="month-metric-val" style="color:var(--amber-text)">'+totalDown+'</div><div class="month-metric-lbl">Простои (мин)</div></div>';
 
-  var pctColor = normPct>=90?'var(--green)':normPct>=70?'var(--amber-text)':'var(--red)';
-  document.getElementById('month-summary').innerHTML =
-    '<div class="month-metric"><div class="month-metric-val" style="color:var(--blue)">' + dayCount + '</div><div class="month-metric-lbl">Рабочих дней</div></div>' +
-    '<div class="month-metric"><div class="month-metric-val" style="color:var(--green)">' + totalGood.toLocaleString() + '</div><div class="month-metric-lbl">Выпущено шт</div></div>' +
-    '<div class="month-metric"><div class="month-metric-val" style="color:var(--red)">' + totalBad.toLocaleString() + '</div><div class="month-metric-lbl">Брак шт</div></div>' +
-    '<div class="month-metric"><div class="month-metric-val" style="color:' + pctColor + '">' + normPct + '%</div><div class="month-metric-lbl">Выполнение нормы</div></div>' +
-    '<div class="month-metric"><div class="month-metric-val">' + avgPct + '%</div><div class="month-metric-lbl">Средний % по дням</div></div>' +
-    '<div class="month-metric"><div class="month-metric-val" style="color:var(--green)">' + (bestDay ? bestDay.date.slice(5) + ' ' + bestDay.pct + '%' : '—') + '</div><div class="month-metric-lbl">Лучший день</div></div>' +
-    '<div class="month-metric"><div class="month-metric-val" style="color:var(--red)">' + (worstDay ? worstDay.date.slice(5) + ' ' + worstDay.pct + '%' : '—') + '</div><div class="month-metric-lbl">Худший день</div></div>' +
-    '<div class="month-metric"><div class="month-metric-val" style="color:var(--amber-text)">' + totalDown + '</div><div class="month-metric-lbl">Простои (мин)</div></div>';
-
-  // Бары по дням
-  var maxGood = Math.max.apply(null, dailyPcts.map(function(d){return d.good;})) || 1;
-  document.getElementById('day-bars').innerHTML = dailyPcts.map(function(d){
-    var w = Math.min(d.pct, 100);
-    var cls = d.pct>=90?'fill-green':d.pct>=70?'fill-amber':'fill-red';
-    var flag = d.pct < 70 ? ' ⚠️' : '';
-    return '<div class="day-bar-row">' +
-      '<div class="day-bar-date">' + d.date.slice(5) + '</div>' +
-      '<div class="day-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill ' + cls + '" style="width:' + w + '%"></div></div></div>' +
-      '<div class="day-bar-pct" style="color:' + (d.pct>=90?'var(--green)':d.pct>=70?'var(--amber-text)':'var(--red)') + '">' + d.pct + '%' + flag + '</div>' +
+  document.getElementById('day-bars').innerHTML=dailyPcts.map(function(d){
+    var w=Math.min(d.pct,100);
+    var cls=d.pct>=90?'fill-green':d.pct>=70?'fill-amber':'fill-red';
+    var flag=d.pct<70?' ⚠️':'';
+    return'<div class="day-bar-row">'+
+      '<div class="day-bar-date">'+d.date.slice(5)+'</div>'+
+      '<div class="day-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill '+cls+'" style="width:'+w+'%"></div></div></div>'+
+      '<div class="day-bar-pct" style="color:'+(d.pct>=90?'var(--green)':d.pct>=70?'var(--amber-text)':'var(--red)')+'">'+d.pct+'%'+flag+'</div>'+
     '</div>';
   }).join('');
 
-  // Топ простоев
-  var reasons = {};
-  records.forEach(function(r){
-    if (r.unplannedDown > 0) {
-      var k = (r.downtimeReason||'Без причины').trim()||'Без причины';
-      reasons[k] = (reasons[k]||0) + r.unplannedDown;
-    }
-  });
-  var rList = Object.entries(reasons).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
-  if (!rList.length) {
-    document.getElementById('summary-downtime').innerHTML = '<div class="empty" style="padding:8px">Простоев нет ✅</div>';
-  } else {
-    var maxR = rList[0][1];
-    document.getElementById('summary-downtime').innerHTML = rList.map(function(e){
-      var w = Math.round(e[1]/maxR*100);
-      return '<div class="downtime-row" style="margin-bottom:6px">' +
-        '<div class="downtime-label">' + e[0] + '</div>' +
-        '<div class="downtime-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill fill-amber" style="width:' + w + '%"></div></div></div>' +
-        '<div class="downtime-val">' + e[1] + 'м</div></div>';
+  var reasons={};
+  records.forEach(function(r){if(r.unplannedDown>0){var k=(r.downtimeReason||'Без причины').trim()||'Без причины';reasons[k]=(reasons[k]||0)+r.unplannedDown;}});
+  var rList=Object.entries(reasons).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  if(!rList.length){document.getElementById('summary-downtime').innerHTML='<div class="empty" style="padding:8px">Простоев нет ✅</div>';}
+  else{
+    var maxR=rList[0][1];
+    document.getElementById('summary-downtime').innerHTML=rList.map(function(e){
+      var w=Math.round(e[1]/maxR*100);
+      return'<div class="downtime-row" style="margin-bottom:6px"><div class="downtime-label">'+e[0]+'</div>'+
+        '<div class="downtime-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill fill-amber" style="width:'+w+'%"></div></div></div>'+
+        '<div class="downtime-val">'+e[1]+'м</div></div>';
     }).join('');
   }
 }
 
-// ===================== ✅ НОВОЕ: ТАБЛИЦА % нормы по станкам по дням =====================
+// ===================== ТАБЛИЦА % нормы по станкам =====================
+// ✅ Норма станка = суточная (22ч) за каждый день
 function renderMachineNormTable(records) {
-  var MACHINES = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','V1','V2','V3','V4'];
-  var dates = [...new Set(records.map(function(r){return r.date;}).filter(Boolean))].sort();
+  var MACHINES=['T1','T2','T3','T4','T5','T6','T7','T8','T9','V1','V2','V3','V4'];
+  var dates=[...new Set(records.map(function(r){return r.date;}).filter(Boolean))].sort();
+  if(!dates.length){document.getElementById('machine-norm-table').innerHTML='<tbody><tr><td class="empty" colspan="20">Нет данных</td></tr></tbody>';return;}
 
-  if (!dates.length) {
-    document.getElementById('machine-norm-table').innerHTML = '<tbody><tr><td class="empty" colspan="20">Нет данных</td></tr></tbody>';
-    return;
-  }
-
-  // Для каждой (дата, станок) считаем норму и факт
-  var cell = {}; // cell[date][machine] = {good, norm}
+  // cell[date][machine] = {good, bestCt, bestCav}
+  var cell={};
   records.forEach(function(r){
-    if (!r.date) return;
-    var m = r.machine ? r.machine.split(' ')[0] : '';
-    if (!m) return;
-    if (!cell[r.date]) cell[r.date] = {};
-    if (!cell[r.date][m]) cell[r.date][m] = {good:0, shiftNorms:{}};
-    cell[r.date][m].good += r.good||0;
-    if (r.cycleTime > 0) {
-      var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
-      var sk = isS2?'s2':'s1';
-      var n = Math.floor((3600/r.cycleTime)*(r.cavities||1)*(isS2?12:10));
-      if (!cell[r.date][m].shiftNorms[sk] || n > cell[r.date][m].shiftNorms[sk]) cell[r.date][m].shiftNorms[sk] = n;
+    if(!r.date)return;
+    var m=r.machine?r.machine.split(' ')[0]:'';
+    if(!m)return;
+    if(!cell[r.date])cell[r.date]={};
+    if(!cell[r.date][m])cell[r.date][m]={good:0,bestCt:0,bestCav:1};
+    cell[r.date][m].good+=r.good||0;
+    // Берём лучший (максимальный) cycleTime как эталонный для нормы
+    if(r.cycleTime>0&&r.cycleTime>cell[r.date][m].bestCt){
+      cell[r.date][m].bestCt=r.cycleTime;
+      cell[r.date][m].bestCav=r.cavities||1;
     }
   });
 
-  // Показываем только даты которые влезут — максимум 14
-  var showDates = dates.slice(-14);
-
-  var thead = '<thead><tr><th>Станок</th>' +
-    showDates.map(function(d){ return '<th style="text-align:center">' + d.slice(5) + '</th>'; }).join('') +
+  var showDates=dates.slice(-14);
+  var thead='<thead><tr><th>Станок</th>'+
+    showDates.map(function(d){return'<th style="text-align:center">'+d.slice(5)+'</th>';}).join('')+
     '<th style="text-align:center">Итого</th></tr></thead>';
 
-  var tbody = '<tbody>' + MACHINES.map(function(m){
-    var totalGood = 0, totalNorm = 0;
-    var cells = showDates.map(function(d){
-      var v = cell[d] && cell[d][m];
-      if (!v) return '<td class="pct-cell pct-off" style="text-align:center">—</td>';
-      var norm = Object.values(v.shiftNorms).reduce(function(s,x){return s+x;},0);
-      totalGood += v.good;
-      totalNorm += norm;
-      var pct = norm > 0 ? Math.round(v.good/norm*100) : 0;
-      var cls = pctClass(pct);
-      return '<td class="pct-cell ' + cls + '" style="text-align:center">' + pct + '%</td>';
+  var tbody='<tbody>'+MACHINES.map(function(m){
+    var totalGood=0,totalNorm=0;
+    var cells=showDates.map(function(d){
+      var v=cell[d]&&cell[d][m];
+      if(!v||!v.bestCt)return'<td class="pct-cell pct-off" style="text-align:center">—</td>';
+      // ✅ Суточная норма 22ч
+      var norm=calcNormDay(v.bestCt,v.bestCav);
+      totalGood+=v.good;
+      totalNorm+=norm;
+      var pct=norm>0?Math.round(v.good/norm*100):0;
+      return'<td class="pct-cell '+pctClass(pct)+'" style="text-align:center">'+pct+'%</td>';
     }).join('');
-    var totalPct = totalNorm > 0 ? Math.round(totalGood/totalNorm*100) : 0;
-    var totalCls = pctClass(totalPct);
-    var type = m.startsWith('T') ? '🔵' : '🟢';
-    return '<tr><td><strong>' + type + ' ' + m + '</strong></td>' + cells +
-      '<td class="pct-cell ' + totalCls + '" style="text-align:center;font-size:13px">' +
-      (totalNorm>0 ? totalPct+'%' : '—') + '</td></tr>';
-  }).join('') + '</tbody>';
+    var totalPct=totalNorm>0?Math.round(totalGood/totalNorm*100):0;
+    var type=m.startsWith('T')?'🔵':'🟢';
+    return'<tr><td><strong>'+type+' '+m+'</strong></td>'+cells+
+      '<td class="pct-cell '+pctClass(totalPct)+'" style="text-align:center;font-size:13px">'+(totalNorm>0?totalPct+'%':'—')+'</td></tr>';
+  }).join('')+'</tbody>';
 
-  document.getElementById('machine-norm-table').innerHTML = thead + tbody;
+  document.getElementById('machine-norm-table').innerHTML=thead+tbody;
 }
 
-// ===================== ✅ НОВОЕ: КАРТОЧКИ ОПЕРАТОРОВ =====================
-function renderOpCards(records) {
-  if (!records.length) {
-    document.getElementById('op-cards').innerHTML = '<div class="empty">Нет данных</div>';
-    return;
-  }
-
-  var ops = {};
+// ===================== ✅ ЗАГРУЖЕННОСТЬ СТАНКОВ — суточная норма =====================
+function renderMachineRating(records) {
+  var machines={};
   records.forEach(function(r){
-    var op = r.operator || '—';
-    if (!ops[op]) ops[op] = { good:0, defects:0, shifts:0, days:{}, machines:{}, shiftNorms:{}, downtime:0 };
-    ops[op].good     += r.good||0;
-    ops[op].defects  += r.defects||0;
-    ops[op].downtime += (r.plannedDown||0)+(r.unplannedDown||0);
-    if (r.date) ops[op].days[r.date] = true;
-    if (r.machine) {
-      var m = r.machine.split(' ')[0];
-      ops[op].machines[m] = (ops[op].machines[m]||0) + (r.good||0);
+    var key=r.machine?r.machine.split(' ')[0]:'—';
+    if(!machines[key])machines[key]={good:0,dayNorms:{}};
+    machines[key].good+=r.good||0;
+    // ✅ Норма: суточная (22ч), уникальная за день
+    if(r.date&&r.cycleTime>0){
+      var n=calcNormDay(r.cycleTime,r.cavities||1);
+      if(!machines[key].dayNorms[r.date]||n>machines[key].dayNorms[r.date])
+        machines[key].dayNorms[r.date]=n;
     }
-    if (r.date && r.cycleTime > 0) {
-      var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
-      var sk = r.date + '_' + (r.machine||'') + (isS2?'_s2':'_s1');
-      var n = Math.floor((3600/r.cycleTime)*(r.cavities||1)*(isS2?12:10));
-      if (!ops[op].shiftNorms[sk] || n > ops[op].shiftNorms[sk]) ops[op].shiftNorms[sk] = n;
-    }
-    ops[op].shifts++;
   });
-
-  var list = Object.entries(ops).map(function(e){
-    var normTotal = Object.values(e[1].shiftNorms).reduce(function(s,v){return s+v;},0);
-    var pct = normTotal > 0 ? Math.round(e[1].good/normTotal*100) : 0;
-    var bestMachine = Object.entries(e[1].machines).sort(function(a,b){return b[1]-a[1];})[0];
-    return { name:e[0], good:e[1].good, defects:e[1].defects, days:Object.keys(e[1].days).length,
-      shifts:e[1].shifts, pct:pct, norm:normTotal, downtime:e[1].downtime,
-      bestMachine: bestMachine ? bestMachine[0] : '—' };
-  }).sort(function(a,b){return b.pct - a.pct;});
-
-  document.getElementById('op-cards').innerHTML = list.map(function(op, i){
-    var pctColor = op.pct>=100?'var(--green)':op.pct>=80?'var(--amber-text)':'var(--red)';
-    var barCls   = op.pct>=100?'fill-green':op.pct>=80?'fill-amber':'fill-red';
-    var barW     = Math.min(op.pct, 100);
-    var badge    = i===0?'🥇':i===1?'🥈':i===2?'🥉':'👷';
-    var defRate  = (op.good+op.defects)>0?Math.round(op.defects/(op.good+op.defects)*100):0;
-    return '<div class="op-card">' +
-      '<div class="op-card-name">' + badge + ' ' + op.name +
-        '<span class="badge ' + (op.pct>=100?'badge-ok':op.pct>=80?'badge-warn':'badge-err') + '" style="margin-left:auto">' + op.pct + '%</span>' +
-      '</div>' +
-      '<div class="op-stat-row"><span>Дней отработано</span><span class="op-stat-val">' + op.days + ' дн.</span></div>' +
-      '<div class="op-stat-row"><span>Записей (смен)</span><span class="op-stat-val">' + op.shifts + '</span></div>' +
-      '<div class="op-stat-row"><span>Выпущено</span><span class="op-stat-val" style="color:var(--green)">' + op.good.toLocaleString() + ' шт</span></div>' +
-      '<div class="op-stat-row"><span>Брак</span><span class="op-stat-val" style="color:' + (defRate>5?'var(--red)':'var(--text)') + '">' + op.defects.toLocaleString() + ' шт (' + defRate + '%)</span></div>' +
-      '<div class="op-stat-row"><span>Простои</span><span class="op-stat-val">' + op.downtime + ' мин</span></div>' +
-      '<div class="op-stat-row"><span>Лучший станок</span><span class="op-stat-val">' + op.bestMachine + '</span></div>' +
-      '<div class="op-norm-bar">' +
-        '<div class="op-norm-label"><span>Выполнение нормы</span><span class="op-norm-pct" style="color:' + pctColor + '">' + op.pct + '%</span></div>' +
-        '<div class="rank-bar-bg" style="height:8px"><div class="rank-bar-fill ' + barCls + '" style="width:' + barW + '%"></div></div>' +
-      '</div>' +
-    '</div>';
+  var list=Object.entries(machines).map(function(e){
+    var normTotal=Object.values(e[1].dayNorms).reduce(function(s,v){return s+v;},0);
+    var pct=normTotal>0?Math.round(e[1].good/normTotal*100):0;
+    return{name:e[0],good:e[1].good,pct:pct};
+  }).filter(function(m){return m.good>0;}).sort(function(a,b){return b.pct-a.pct;});
+  if(!list.length){document.getElementById('machine-rating').innerHTML='<div class="empty">Нет данных</div>';return;}
+  var maxPct=list[0].pct||1;
+  document.getElementById('machine-rating').innerHTML=list.map(function(m,i){
+    var w=Math.round(m.pct/Math.max(maxPct,100)*100);
+    var cls=m.pct>=100?'fill-green':m.pct>=80?'fill-amber':'fill-red';
+    var type=m.name.startsWith('T')?'🔵':'🟢';
+    return'<div class="rank-row">'+rankNum(i)+
+      '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+type+' '+m.name+
+      ' <span style="font-size:11px;color:var(--text2);font-weight:400">'+m.good.toLocaleString()+' шт</span></div>'+
+      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill '+cls+'" style="width:'+w+'%"></div></div></div></div>'+
+      '<div class="rank-val" style="color:'+(m.pct>=100?'var(--green)':m.pct>=80?'var(--amber-text)':'var(--red)')+'">'+m.pct+'%</div></div>';
   }).join('');
 }
 
-// ===================== СТАРЫЕ ФУНКЦИИ =====================
+// ===================== РЕЙТИНГ ОПЕРАТОРОВ — сменная норма =====================
 function renderOpRating(records) {
-  var ops = {};
-  records.forEach(function(r) {
-    var op = r.operator || '—';
-    if (!ops[op]) ops[op] = { good: 0, shifts: {} };
-    ops[op].good += r.good || 0;
-    if (r.date && r.cycleTime > 0) {
-      var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
-      var shiftKey = r.date + '_' + r.machine + (isS2 ? '_s2' : '_s1');
-      var shiftNorm = Math.floor((3600 / r.cycleTime) * (r.cavities || 1) * (isS2 ? 12 : 10));
-      if (!ops[op].shifts[shiftKey] || shiftNorm > ops[op].shifts[shiftKey]) ops[op].shifts[shiftKey] = shiftNorm;
+  var ops={};
+  records.forEach(function(r){
+    var op=r.operator||'—';
+    if(!ops[op])ops[op]={good:0,shiftNorms:{}};
+    ops[op].good+=r.good||0;
+    // ✅ Оператор: посменная норма (С1=10ч, С2=12ч)
+    if(r.date&&r.cycleTime>0){
+      var isS2=r.shift&&r.shift.indexOf('Смена 2')>=0;
+      var sk=r.date+'_'+(r.machine||'')+(isS2?'_s2':'_s1');
+      var n=calcNormShift(r.cycleTime,r.cavities||1,r.shift);
+      if(!ops[op].shiftNorms[sk]||n>ops[op].shiftNorms[sk])ops[op].shiftNorms[sk]=n;
     }
   });
-  var list = Object.entries(ops).map(function(e) {
-    var normTotal = Object.values(e[1].shifts).reduce(function(s,v){return s+v;},0);
-    var pct = normTotal > 0 ? Math.round(e[1].good / normTotal * 100) : 0;
-    return { name: e[0], good: e[1].good, pct: pct };
-  }).sort(function(a,b){ return b.pct - a.pct; });
-  if (!list.length) { document.getElementById('op-rating').innerHTML = '<div class="empty">Нет данных</div>'; return; }
-  var maxPct = list[0].pct || 1;
-  document.getElementById('op-rating').innerHTML = list.map(function(o, i) {
-    var w = Math.round(o.pct / Math.max(maxPct, 100) * 100);
-    var cls = o.pct >= 100 ? 'fill-green' : o.pct >= 80 ? 'fill-amber' : 'fill-red';
-    var badge = o.pct >= 100 ? '<span class="badge badge-ok">✅ Норма</span>' : o.pct >= 80 ? '<span class="badge badge-warn">⚠️ Близко</span>' : '<span class="badge badge-err">❌ Ниже</span>';
-    return '<div class="rank-row">' + rankNum(i) +
-      '<div style="flex:1"><div style="font-size:14px;font-weight:600">' + o.name + '</div>' +
-      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill ' + cls + '" style="width:' + w + '%"></div></div></div></div>' +
-      badge + '<div class="rank-val" style="color:' + (o.pct>=100?'var(--green)':o.pct>=80?'var(--amber-text)':'var(--red)') + '">' + o.pct + '%</div></div>';
+  var list=Object.entries(ops).map(function(e){
+    var normTotal=Object.values(e[1].shiftNorms).reduce(function(s,v){return s+v;},0);
+    var pct=normTotal>0?Math.round(e[1].good/normTotal*100):0;
+    return{name:e[0],good:e[1].good,pct:pct};
+  }).sort(function(a,b){return b.pct-a.pct;});
+  if(!list.length){document.getElementById('op-rating').innerHTML='<div class="empty">Нет данных</div>';return;}
+  var maxPct=list[0].pct||1;
+  document.getElementById('op-rating').innerHTML=list.map(function(o,i){
+    var w=Math.round(o.pct/Math.max(maxPct,100)*100);
+    var cls=o.pct>=100?'fill-green':o.pct>=80?'fill-amber':'fill-red';
+    var badge=o.pct>=100?'<span class="badge badge-ok">✅ Норма</span>':o.pct>=80?'<span class="badge badge-warn">⚠️ Близко</span>':'<span class="badge badge-err">❌ Ниже</span>';
+    return'<div class="rank-row">'+rankNum(i)+
+      '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+o.name+'</div>'+
+      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill '+cls+'" style="width:'+w+'%"></div></div></div></div>'+
+      badge+'<div class="rank-val" style="color:'+(o.pct>=100?'var(--green)':o.pct>=80?'var(--amber-text)':'var(--red)')+'">'+o.pct+'%</div></div>';
   }).join('');
 }
 
 function renderOpDays(records) {
-  var ops = {};
-  records.forEach(function(r) {
-    var op = r.operator || '—';
-    if (!ops[op]) ops[op] = {};
-    if (r.date) ops[op][r.date] = true;
-  });
-  var list = Object.entries(ops).map(function(e) {
-    return { name: e[0], days: Object.keys(e[1]).length };
-  }).sort(function(a,b){ return b.days - a.days; });
-  if (!list.length) { document.getElementById('op-days').innerHTML = '<div class="empty">Нет данных</div>'; return; }
-  var maxDays = list[0].days || 1;
-  document.getElementById('op-days').innerHTML = list.map(function(o, i) {
-    var w = Math.round(o.days / maxDays * 100);
-    return '<div class="rank-row">' + rankNum(i) +
-      '<div style="flex:1"><div style="font-size:14px;font-weight:600">' + o.name + '</div>' +
-      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill fill-blue" style="width:' + w + '%"></div></div></div></div>' +
-      '<div class="rank-val">' + o.days + ' дн.</div></div>';
+  var ops={};
+  records.forEach(function(r){var op=r.operator||'—';if(!ops[op])ops[op]={};if(r.date)ops[op][r.date]=true;});
+  var list=Object.entries(ops).map(function(e){return{name:e[0],days:Object.keys(e[1]).length};}).sort(function(a,b){return b.days-a.days;});
+  if(!list.length){document.getElementById('op-days').innerHTML='<div class="empty">Нет данных</div>';return;}
+  var maxDays=list[0].days||1;
+  document.getElementById('op-days').innerHTML=list.map(function(o,i){
+    var w=Math.round(o.days/maxDays*100);
+    return'<div class="rank-row">'+rankNum(i)+
+      '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+o.name+'</div>'+
+      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill fill-blue" style="width:'+w+'%"></div></div></div></div>'+
+      '<div class="rank-val">'+o.days+' дн.</div></div>';
   }).join('');
 }
 
-function renderMachineRating(records) {
-  var machines = {};
-  records.forEach(function(r) {
-    var key = r.machine ? r.machine.split(' ')[0] : '—';
-    if (!machines[key]) machines[key] = { good: 0, shifts: {} };
-    machines[key].good += r.good || 0;
-    if (r.date && r.cycleTime > 0) {
-      var isS2 = r.shift && r.shift.indexOf('Смена 2') >= 0;
-      var shiftKey = r.date + (isS2 ? '_s2' : '_s1');
-      var shiftNorm = Math.floor((3600 / r.cycleTime) * (r.cavities || 1) * (isS2 ? 12 : 10));
-      if (!machines[key].shifts[shiftKey] || shiftNorm > machines[key].shifts[shiftKey]) machines[key].shifts[shiftKey] = shiftNorm;
+// ===================== КАРТОЧКИ ОПЕРАТОРОВ — сменная норма =====================
+function renderOpCards(records) {
+  if(!records.length){document.getElementById('op-cards').innerHTML='<div class="empty">Нет данных</div>';return;}
+  var ops={};
+  records.forEach(function(r){
+    var op=r.operator||'—';
+    if(!ops[op])ops[op]={good:0,defects:0,shifts:0,days:{},machines:{},shiftNorms:{},downtime:0};
+    ops[op].good+=r.good||0;
+    ops[op].defects+=r.defects||0;
+    ops[op].downtime+=(r.plannedDown||0)+(r.unplannedDown||0);
+    if(r.date)ops[op].days[r.date]=true;
+    if(r.machine){var m=r.machine.split(' ')[0];ops[op].machines[m]=(ops[op].machines[m]||0)+(r.good||0);}
+    // ✅ Оператор: посменная норма
+    if(r.date&&r.cycleTime>0){
+      var isS2=r.shift&&r.shift.indexOf('Смена 2')>=0;
+      var sk=r.date+'_'+(r.machine||'')+(isS2?'_s2':'_s1');
+      var n=calcNormShift(r.cycleTime,r.cavities||1,r.shift);
+      if(!ops[op].shiftNorms[sk]||n>ops[op].shiftNorms[sk])ops[op].shiftNorms[sk]=n;
     }
+    ops[op].shifts++;
   });
-  var list = Object.entries(machines).map(function(e) {
-    var normTotal = Object.values(e[1].shifts).reduce(function(s, v){ return s + v; }, 0);
-    var pct = normTotal > 0 ? Math.round(e[1].good / normTotal * 100) : 0;
-    return { name: e[0], good: e[1].good, pct: pct };
-  }).filter(function(m){ return m.good > 0; }).sort(function(a,b){ return b.pct - a.pct; });
-  if (!list.length) { document.getElementById('machine-rating').innerHTML = '<div class="empty">Нет данных</div>'; return; }
-  var maxPct = list[0].pct || 1;
-  document.getElementById('machine-rating').innerHTML = list.map(function(m, i) {
-    var w = Math.round(m.pct / Math.max(maxPct, 100) * 100);
-    var cls = m.pct >= 100 ? 'fill-green' : m.pct >= 80 ? 'fill-amber' : 'fill-red';
-    var type = m.name.startsWith('T') ? '🔵' : '🟢';
-    return '<div class="rank-row">' + rankNum(i) +
-      '<div style="flex:1"><div style="font-size:14px;font-weight:600">' + type + ' ' + m.name +
-      ' <span style="font-size:11px;color:var(--text2);font-weight:400">' + m.good.toLocaleString() + ' шт</span></div>' +
-      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill ' + cls + '" style="width:' + w + '%"></div></div></div></div>' +
-      '<div class="rank-val" style="color:' + (m.pct>=100?'var(--green)':m.pct>=80?'var(--amber-text)':'var(--red)') + '">' + m.pct + '%</div></div>';
+  var list=Object.entries(ops).map(function(e){
+    var normTotal=Object.values(e[1].shiftNorms).reduce(function(s,v){return s+v;},0);
+    var pct=normTotal>0?Math.round(e[1].good/normTotal*100):0;
+    var bestMachine=Object.entries(e[1].machines).sort(function(a,b){return b[1]-a[1];})[0];
+    return{name:e[0],good:e[1].good,defects:e[1].defects,days:Object.keys(e[1].days).length,
+      shifts:e[1].shifts,pct:pct,norm:normTotal,downtime:e[1].downtime,
+      bestMachine:bestMachine?bestMachine[0]:'—'};
+  }).sort(function(a,b){return b.pct-a.pct;});
+  document.getElementById('op-cards').innerHTML=list.map(function(op,i){
+    var pc=op.pct>=100?'var(--green)':op.pct>=80?'var(--amber-text)':'var(--red)';
+    var bc=op.pct>=100?'fill-green':op.pct>=80?'fill-amber':'fill-red';
+    var bw=Math.min(op.pct,100);
+    var badge=i===0?'🥇':i===1?'🥈':i===2?'🥉':'👷';
+    var dr=(op.good+op.defects)>0?Math.round(op.defects/(op.good+op.defects)*100):0;
+    return'<div class="op-card">'+
+      '<div class="op-card-name">'+badge+' '+op.name+
+        '<span class="badge '+(op.pct>=100?'badge-ok':op.pct>=80?'badge-warn':'badge-err')+'" style="margin-left:auto">'+op.pct+'%</span>'+
+      '</div>'+
+      '<div class="op-stat-row"><span>Дней отработано</span><span class="op-stat-val">'+op.days+' дн.</span></div>'+
+      '<div class="op-stat-row"><span>Записей (смен)</span><span class="op-stat-val">'+op.shifts+'</span></div>'+
+      '<div class="op-stat-row"><span>Выпущено</span><span class="op-stat-val" style="color:var(--green)">'+op.good.toLocaleString()+' шт</span></div>'+
+      '<div class="op-stat-row"><span>Брак</span><span class="op-stat-val" style="color:'+(dr>5?'var(--red)':'var(--text)')+'">'+op.defects.toLocaleString()+' шт ('+dr+'%)</span></div>'+
+      '<div class="op-stat-row"><span>Простои</span><span class="op-stat-val">'+op.downtime+' мин</span></div>'+
+      '<div class="op-stat-row"><span>Лучший станок</span><span class="op-stat-val">'+op.bestMachine+'</span></div>'+
+      '<div class="op-norm-bar">'+
+        '<div class="op-norm-label"><span>Выполнение нормы смены</span><span class="op-norm-pct" style="color:'+pc+'">'+op.pct+'%</span></div>'+
+        '<div class="rank-bar-bg" style="height:8px"><div class="rank-bar-fill '+bc+'" style="width:'+bw+'%"></div></div>'+
+      '</div>'+
+    '</div>';
   }).join('');
 }
 
 function renderDowntime(records) {
-  var reasons = {};
-  var totalPlanned = 0, totalUnplanned = 0;
-  records.forEach(function(r) {
-    totalPlanned += r.plannedDown || 0;
-    totalUnplanned += r.unplannedDown || 0;
-    if (r.unplannedDown > 0) {
-      var reason = (r.downtimeReason || 'Без причины').trim() || 'Без причины';
-      reasons[reason] = (reasons[reason] || 0) + r.unplannedDown;
-    }
+  var reasons={},totalPlanned=0,totalUnplanned=0;
+  records.forEach(function(r){
+    totalPlanned+=r.plannedDown||0;totalUnplanned+=r.unplannedDown||0;
+    if(r.unplannedDown>0){var k=(r.downtimeReason||'Без причины').trim()||'Без причины';reasons[k]=(reasons[k]||0)+r.unplannedDown;}
   });
-  var list = Object.entries(reasons).sort(function(a,b){ return b[1]-a[1]; });
-  var maxVal = list.length ? list[0][1] : 1;
-  var html = '';
-  if (totalPlanned > 0 || totalUnplanned > 0) {
-    html += '<div style="display:flex;gap:10px;margin-bottom:12px;">' +
-      '<div class="badge badge-blue">Плановые: ' + totalPlanned + ' мин</div>' +
-      '<div class="badge badge-err">Неплановые: ' + totalUnplanned + ' мин</div></div>';
-  }
-  if (!list.length) html += '<div class="empty">Простоев нет</div>';
-  else html += list.map(function(e) {
-    var w = Math.round(e[1] / maxVal * 100);
-    return '<div class="downtime-row"><div class="downtime-label">' + e[0] + '</div>' +
-      '<div class="downtime-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill fill-amber" style="width:' + w + '%"></div></div></div>' +
-      '<div class="downtime-val">' + e[1] + ' мин</div></div>';
-  }).join('');
-  document.getElementById('downtime-list').innerHTML = html;
+  var list=Object.entries(reasons).sort(function(a,b){return b[1]-a[1];});
+  var maxVal=list.length?list[0][1]:1;
+  var html='';
+  if(totalPlanned>0||totalUnplanned>0)html+='<div style="display:flex;gap:10px;margin-bottom:12px;"><div class="badge badge-blue">Плановые: '+totalPlanned+' мин</div><div class="badge badge-err">Неплановые: '+totalUnplanned+' мин</div></div>';
+  if(!list.length)html+='<div class="empty">Простоев нет</div>';
+  else html+=list.map(function(e){var w=Math.round(e[1]/maxVal*100);return'<div class="downtime-row"><div class="downtime-label">'+e[0]+'</div><div class="downtime-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill fill-amber" style="width:'+w+'%"></div></div></div><div class="downtime-val">'+e[1]+' мин</div></div>';}).join('');
+  document.getElementById('downtime-list').innerHTML=html;
 }
 
 function renderParts(records) {
-  var parts = {};
-  records.forEach(function(r) {
-    var name = (r.partName || '—').trim();
-    if (!parts[name]) parts[name] = { good: 0, bad: 0 };
-    parts[name].good += r.good || 0;
-    parts[name].bad += r.defects || 0;
-  });
-  var list = Object.entries(parts).sort(function(a,b){ return b[1].good - a[1].good; }).slice(0, 15);
-  if (!list.length) { document.getElementById('parts-table').innerHTML = '<tr><td colspan="6" class="empty">Нет данных</td></tr>'; return; }
-  document.getElementById('parts-table').innerHTML = list.map(function(e, i) {
-    var total = e[1].good + e[1].bad;
-    var rate = total > 0 ? Math.round(e[1].bad / total * 100) : 0;
-    var badge = rate === 0 ? '<span class="badge badge-ok">Норма</span>' : rate < 3 ? '<span class="badge badge-warn">Внимание</span>' : '<span class="badge badge-err">Высокий</span>';
-    return '<tr><td style="color:var(--text3)">' + (i+1) + '</td><td><strong>' + e[0] + '</strong></td>' +
-      '<td style="color:var(--green)">' + e[1].good.toLocaleString() + '</td><td>' + e[1].bad.toLocaleString() + '</td>' +
-      '<td>' + rate + '%</td><td>' + badge + '</td></tr>';
+  var parts={};
+  records.forEach(function(r){var n=(r.partName||'—').trim();if(!parts[n])parts[n]={good:0,bad:0};parts[n].good+=r.good||0;parts[n].bad+=r.defects||0;});
+  var list=Object.entries(parts).sort(function(a,b){return b[1].good-a[1].good;}).slice(0,15);
+  if(!list.length){document.getElementById('parts-table').innerHTML='<tr><td colspan="6" class="empty">Нет данных</td></tr>';return;}
+  document.getElementById('parts-table').innerHTML=list.map(function(e,i){
+    var total=e[1].good+e[1].bad,rate=total>0?Math.round(e[1].bad/total*100):0;
+    var badge=rate===0?'<span class="badge badge-ok">Норма</span>':rate<3?'<span class="badge badge-warn">Внимание</span>':'<span class="badge badge-err">Высокий</span>';
+    return'<tr><td style="color:var(--text3)">'+(i+1)+'</td><td><strong>'+e[0]+'</strong></td><td style="color:var(--green)">'+e[1].good.toLocaleString()+'</td><td>'+e[1].bad.toLocaleString()+'</td><td>'+rate+'%</td><td>'+badge+'</td></tr>';
   }).join('');
 }
 
 function renderMolds(records) {
-  var molds = {};
-  records.forEach(function(r) {
-    var mold = (r.moldId || '—').trim();
-    if (!molds[mold]) molds[mold] = { good: 0, bad: 0, part: r.partName || '—' };
-    molds[mold].good += r.good || 0;
-    molds[mold].bad += r.defects || 0;
-    if (r.partName) molds[mold].part = r.partName;
-  });
-  var list = Object.entries(molds).map(function(e) {
-    var total = e[1].good + e[1].bad;
-    var rate = total > 0 ? Math.round(e[1].bad / total * 100) : 0;
-    return { mold: e[0], good: e[1].good, bad: e[1].bad, rate: rate, part: e[1].part };
-  }).filter(function(m){ return m.rate >= 2; }).sort(function(a,b){ return b.rate - a.rate; }).slice(0, 10);
-  if (!list.length) { document.getElementById('molds-table').innerHTML = '<tr><td colspan="6" class="empty">✅ Проблемных пресс-форм нет</td></tr>'; return; }
-  document.getElementById('molds-table').innerHTML = list.map(function(m, i) {
-    var badge = m.rate >= 10 ? '<span class="badge badge-err">🔴 Критично</span>' : m.rate >= 5 ? '<span class="badge badge-warn">🟡 Внимание</span>' : '<span class="badge badge-blue">🔵 Следить</span>';
-    return '<tr><td style="color:var(--text3)">' + (i+1) + '</td><td><strong>' + m.mold + '</strong></td>' +
-      '<td style="color:var(--text2)">' + m.part + '</td><td style="color:var(--green)">' + m.good.toLocaleString() + '</td>' +
-      '<td style="color:var(--red)">' + m.bad.toLocaleString() + '</td><td>' + m.rate + '% ' + badge + '</td></tr>';
+  var molds={};
+  records.forEach(function(r){var m=(r.moldId||'—').trim();if(!molds[m])molds[m]={good:0,bad:0,part:r.partName||'—'};molds[m].good+=r.good||0;molds[m].bad+=r.defects||0;if(r.partName)molds[m].part=r.partName;});
+  var list=Object.entries(molds).map(function(e){var t=e[1].good+e[1].bad,rate=t>0?Math.round(e[1].bad/t*100):0;return{mold:e[0],good:e[1].good,bad:e[1].bad,rate:rate,part:e[1].part};}).filter(function(m){return m.rate>=2;}).sort(function(a,b){return b.rate-a.rate;}).slice(0,10);
+  if(!list.length){document.getElementById('molds-table').innerHTML='<tr><td colspan="6" class="empty">✅ Проблемных пресс-форм нет</td></tr>';return;}
+  document.getElementById('molds-table').innerHTML=list.map(function(m,i){
+    var badge=m.rate>=10?'<span class="badge badge-err">🔴 Критично</span>':m.rate>=5?'<span class="badge badge-warn">🟡 Внимание</span>':'<span class="badge badge-blue">🔵 Следить</span>';
+    return'<tr><td style="color:var(--text3)">'+(i+1)+'</td><td><strong>'+m.mold+'</strong></td><td style="color:var(--text2)">'+m.part+'</td><td style="color:var(--green)">'+m.good.toLocaleString()+'</td><td style="color:var(--red)">'+m.bad.toLocaleString()+'</td><td>'+m.rate+'% '+badge+'</td></tr>';
   }).join('');
 }
 
 function loadFromSheets() {
-  var url = loadGsUrl();
-  if (!url) { showStatus('⚠️ Google Sheets не настроен', 'err'); return; }
-  showStatus('⏳ Загрузка данных из Google Sheets...', 'info');
-  var cbName = 'anCb_' + Date.now();
-  var script = document.createElement('script');
-  var done = false;
-  window[cbName] = function(data) {
-    done = true; delete window[cbName];
-    if (document.body.contains(script)) document.body.removeChild(script);
-    if (data && data.rows && data.rows.length) {
-      var imported = data.rows.map(function(r, i) {
-        return {
-          id: Date.now() + i,
-          date: (function(d){if(!d)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p)){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r[0]),
-          shift: r[1]||'', operator: r[2]||'', machine: r[3]||'',
-          material: r[4]||'', partName: r[5]||'', moldId: r[6]||'',
-          cavities: parseInt(r[7])||1, cycles: parseInt(r[8])||0,
-          cycleTime: parseFloat(r[9])||0, good: parseInt(r[10])||0,
-          defects: parseInt(r[11])||0, weight: parseFloat(r[13])||0,
-          defectNote: r[14]||'', plannedDown: parseInt(r[15])||0,
-          unplannedDown: parseInt(r[16])||0, downtimeReason: r[17]||'', synced: true
-        };
+  var url=loadGsUrl();
+  if(!url){showStatus('⚠️ Google Sheets не настроен','err');return;}
+  showStatus('⏳ Загрузка данных из Google Sheets...','info');
+  var cbName='anCb_'+Date.now(),script=document.createElement('script'),done=false;
+  window[cbName]=function(data){
+    done=true;delete window[cbName];
+    if(document.body.contains(script))document.body.removeChild(script);
+    if(data&&data.rows&&data.rows.length){
+      var imported=data.rows.map(function(r,i){
+        return{id:Date.now()+i,
+          date:(function(d){if(!d)return'';if(/^\d{4}-\d{2}-\d{2}$/.test(d))return d;try{var p=new Date(d);if(!isNaN(p)){return p.getFullYear()+'-'+String(p.getMonth()+1).padStart(2,'0')+'-'+String(p.getDate()).padStart(2,'0');}}catch(e){}return d;})(r[0]),
+          shift:r[1]||'',operator:r[2]||'',machine:r[3]||'',material:r[4]||'',
+          partName:r[5]||'',moldId:r[6]||'',cavities:parseInt(r[7])||1,cycles:parseInt(r[8])||0,
+          cycleTime:parseFloat(r[9])||0,good:parseInt(r[10])||0,defects:parseInt(r[11])||0,
+          weight:parseFloat(r[13])||0,defectNote:r[14]||'',plannedDown:parseInt(r[15])||0,
+          unplannedDown:parseInt(r[16])||0,downtimeReason:r[17]||'',synced:true};
       });
-      saveRecords(imported);
-      showStatus('✅ Загружено ' + imported.length + ' записей', 'ok');
-      render();
-    } else { showStatus('⚠️ Нет данных или ошибка загрузки', 'err'); }
+      saveRecords(imported);showStatus('✅ Загружено '+imported.length+' записей','ok');render();
+    }else{showStatus('⚠️ Нет данных или ошибка загрузки','err');}
   };
-  script.onerror = function(){ if(!done){done=true;delete window[cbName];showStatus('❌ Ошибка соединения','err');} };
-  setTimeout(function(){ if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);showStatus('❌ Превышено время ожидания','err');} }, 8000);
-  script.src = url + '?action=getLog&callback=' + cbName;
+  script.onerror=function(){if(!done){done=true;delete window[cbName];showStatus('❌ Ошибка соединения','err');}};
+  setTimeout(function(){if(!done){done=true;delete window[cbName];if(document.body.contains(script))document.body.removeChild(script);showStatus('❌ Превышено время ожидания','err');}},8000);
+  script.src=url+'?action=getLog&callback='+cbName;
   document.body.appendChild(script);
 }
 
-function showStatus(msg, type) {
-  var el = document.getElementById('status-msg');
-  el.style.display = 'block';
-  el.className = 'status-bar status-' + (type==='info'?'info':type==='ok'?'ok':'err');
-  el.textContent = msg;
-  if (type !== 'info') setTimeout(function(){ el.style.display='none'; }, 4000);
+function showStatus(msg,type){
+  var el=document.getElementById('status-msg');
+  el.style.display='block';
+  el.className='status-bar status-'+(type==='info'?'info':type==='ok'?'ok':'err');
+  el.textContent=msg;
+  if(type!=='info')setTimeout(function(){el.style.display='none';},4000);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded',function(){
   render();
-  if (loadGsUrl()) loadFromSheets();
+  if(loadGsUrl())loadFromSheets();
 });
 </script>
 </body>

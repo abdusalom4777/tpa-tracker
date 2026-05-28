@@ -533,6 +533,7 @@
       <div class="field"><label>Артикул детали</label><input type="text" id="new-mold-article" placeholder="Avkado 25gr"></div>
       <div class="field"><label>Название / Описание</label><input type="text" id="new-mold-label" placeholder="Крышка 500мл"></div>
       <div class="field"><label>Станок (необязательно)</label><input type="text" id="new-mold-machine" placeholder="T1, T2..."></div>
+      <div class="field"><label>🧪 Материал / Гранулят</label><input type="text" id="new-mold-material" placeholder="PP, ABS, PE-HD..."></div>
       <div class="field"><label>⏱ Время цикла (сек)</label><input type="number" id="new-mold-cycle" min="0" step="0.1" placeholder="26"></div>
       <div class="field"><label>🔲 Кол-во гнёзд</label><input type="number" id="new-mold-cavities" min="1" placeholder="4"></div>
       <div class="field"><label>⚖️ Вес детали (г)</label><input type="number" id="new-mold-weight" min="0" step="0.1" placeholder="25.0"></div>
@@ -547,8 +548,8 @@
     </div>
     <div class="table-scroll">
       <table>
-        <thead><tr><th>№ Пресс-формы</th><th>Артикул</th><th>Название</th><th>Станок</th><th>Цикл (с)</th><th>Гнёзда</th><th>Вес (г)</th><th></th></tr></thead>
-        <tbody id="molds-table-body"><tr><td colspan="8" class="empty">Нет пресс-форм.</td></tr></tbody>
+        <thead><tr><th>№ Пресс-формы</th><th>Артикул</th><th>Название</th><th>Станок</th><th>Материал</th><th>Цикл (с)</th><th>Гнёзда</th><th>Вес (г)</th><th></th></tr></thead>
+        <tbody id="molds-table-body"><tr><td colspan="9" class="empty">Нет пресс-форм.</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -639,12 +640,12 @@
     var d = JSON.parse(e.postData.contents);
     if (d.action === "addMold") {
       var sheet = ss.getSheetByName("Пресс-формы") || ss.insertSheet("Пресс-формы");
-      if (sheet.getLastRow() === 0) sheet.appendRow(["№ Пресс-формы","Артикул","Название","Станок","Цикл (сек)","Гнёзда","Вес (г)"]);
+      if (sheet.getLastRow() === 0) sheet.appendRow(["№ Пресс-формы","Артикул","Название","Станок","Цикл (сек)","Гнёзда","Вес (г)","Материал"]);
       if (sheet.getLastRow() > 1) {
         var ids = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues().map(function(r){return String(r[0]);});
         if (ids.indexOf(d.id) >= 0) return ContentService.createTextOutput(JSON.stringify({status:"error",msg:"Уже существует"})).setMimeType(ContentService.MimeType.JSON);
       }
-      sheet.appendRow([d.id, d.article||"", d.label||"", d.machine||"", d.cycleTime||"", d.cavities||"", d.weight||""]);
+      sheet.appendRow([d.id, d.article||"", d.label||"", d.machine||"", d.cycleTime||"", d.cavities||"", d.weight||"", d.material||""]);
       return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
     }
     if (d.action === "deleteMold") {
@@ -692,7 +693,7 @@ function doGet(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     if (action === "getMolds") {
       var sheet = ss.getSheetByName("Пресс-формы"); var molds = [];
-      if (sheet && sheet.getLastRow() > 1) { var data = sheet.getRange(2,1,sheet.getLastRow()-1,7).getValues(); data.forEach(function(row){ if(row[0]) molds.push({id:String(row[0]),article:String(row[1]||""),label:String(row[2]||""),machine:String(row[3]||""),cycleTime:String(row[4]||""),cavities:String(row[5]||""),weight:String(row[6]||"")}); }); }
+      if (sheet && sheet.getLastRow() > 1) { var data = sheet.getRange(2,1,sheet.getLastRow()-1,8).getValues(); data.forEach(function(row){ if(row[0]) molds.push({id:String(row[0]),article:String(row[1]||""),label:String(row[2]||""),machine:String(row[3]||""),cycleTime:String(row[4]||""),cavities:String(row[5]||""),weight:String(row[6]||""),material:String(row[7]||"")}); }); }
       var json = JSON.stringify({status:"ok",molds:molds});
       if (callback) return ContentService.createTextOutput(callback+"("+json+")").setMimeType(ContentService.MimeType.JAVASCRIPT);
       return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
@@ -1383,13 +1384,14 @@ function addMold(){
   var cycleTime=document.getElementById('new-mold-cycle').value.trim();
   var cavities=document.getElementById('new-mold-cavities').value.trim();
   var weight=document.getElementById('new-mold-weight').value.trim();
+  var material=document.getElementById('new-mold-material').value.trim();
   if(!id){alert('Введите № пресс-формы');return;}
   var msg=document.getElementById('mold-add-msg');msg.style.display='block';msg.className='status-bar status-info';msg.textContent='⏳ Сохранение...';
-  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addMold',id:id,label:label,machine:machine,article:article,cycleTime:cycleTime,cavities:cavities,weight:weight})})
+  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addMold',id:id,label:label,machine:machine,article:article,cycleTime:cycleTime,cavities:cavities,weight:weight,material:material})})
     .then(function(){
-      moldsCache.push({id:id,label:label,machine:machine,article:article,cycleTime:cycleTime,cavities:cavities,weight:weight});
+      moldsCache.push({id:id,label:label,machine:machine,article:article,cycleTime:cycleTime,cavities:cavities,weight:weight,material:material});
       document.getElementById('new-mold-id').value='';document.getElementById('new-mold-article').value='';document.getElementById('new-mold-label').value='';document.getElementById('new-mold-machine').value='';
-      document.getElementById('new-mold-cycle').value='';document.getElementById('new-mold-cavities').value='';document.getElementById('new-mold-weight').value='';
+      document.getElementById('new-mold-cycle').value='';document.getElementById('new-mold-cavities').value='';document.getElementById('new-mold-weight').value='';document.getElementById('new-mold-material').value='';
       msg.className='status-bar status-ok';msg.textContent='✅ Пресс-форма '+id+' добавлена';
       setTimeout(function(){msg.style.display='none';},2500);renderMoldsTable();updateMoldSelect();
     }).catch(function(){msg.className='status-bar status-err';msg.textContent='❌ Ошибка';setTimeout(function(){msg.style.display='none';},2500);});
@@ -1404,13 +1406,14 @@ function deleteMold(btn){
 function renderMoldsTable(){
   var tbody=document.getElementById('molds-table-body');if(!tbody)return;
   document.getElementById('mold-count').textContent=moldsCache.length+' позиций';
-  if(!moldsCache.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Нет пресс-форм. Нажмите 🔄 для загрузки.</td></tr>';return;}
+  if(!moldsCache.length){tbody.innerHTML='<tr><td colspan="9" class="empty">Нет пресс-форм. Нажмите 🔄 для загрузки.</td></tr>';return;}
   tbody.innerHTML=moldsCache.map(function(m){
     return'<tr>'+
       '<td><strong>'+m.id+'</strong></td>'+
       '<td>'+(m.article||'—')+'</td>'+
       '<td>'+(m.label||'—')+'</td>'+
       '<td>'+(m.machine||'—')+'</td>'+
+      '<td style="color:var(--text2)">'+(m.material||'—')+'</td>'+
       '<td style="text-align:center;color:var(--blue-text)">'+(m.cycleTime||'—')+'</td>'+
       '<td style="text-align:center;color:var(--blue-text)">'+(m.cavities||'—')+'</td>'+
       '<td style="text-align:center;color:var(--blue-text)">'+(m.weight||'—')+'</td>'+
@@ -1438,6 +1441,8 @@ function onMoldSelected(){
     ctEl.readOnly=false; ctEl.style.opacity=''; ctEl.style.background='';
     cavEl.readOnly=false; cavEl.style.opacity=''; cavEl.style.background='';
     wtEl.readOnly=false; wtEl.style.opacity=''; wtEl.style.background='';
+    var matEl2=document.getElementById('material');
+    matEl2.readOnly=false; matEl2.style.opacity=''; matEl2.style.background='';
     return;
   }
   var mold=moldsCache.find(function(m){return m.id===moldId;});
@@ -1445,6 +1450,15 @@ function onMoldSelected(){
 
   // Подтянуть артикул
   if(mold.article) document.getElementById('part-name').value=mold.article;
+
+  // ✅ Материал из справочника
+  var matEl=document.getElementById('material');
+  if(mold.material && mold.material.trim()){
+    matEl.value=mold.material;
+    matEl.readOnly=true; matEl.style.opacity='0.6'; matEl.style.background='var(--surface2)';
+  } else {
+    matEl.readOnly=false; matEl.style.opacity=''; matEl.style.background='';
+  }
 
   // ✅ Автозаполнение из справочника + блокировка
   if(mold.cycleTime && parseFloat(mold.cycleTime)>0){

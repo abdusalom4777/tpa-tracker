@@ -13,6 +13,7 @@
     --red: #f44336; --red-bg: rgba(244,67,54,0.15);
     --amber: #ff9800; --amber-bg: rgba(255,152,0,0.15);
     --blue: #2196f3; --blue-bg: rgba(33,150,243,0.15);
+    --purple: #ab47bc; --purple-bg: rgba(171,71,188,0.15);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
@@ -23,10 +24,11 @@
   .clock { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 2px; }
   .date-str { font-size: 13px; color: var(--text2); text-align: right; }
   .shift-tag { padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
-  .summary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
-  .summary-item { background: var(--surface); padding: 12px 20px; display: flex; flex-direction: column; align-items: center; }
-  .summary-val { font-size: 26px; font-weight: 700; }
-  .summary-lbl { font-size: 11px; color: var(--text2); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  /* ✅ summary теперь 7 колонок */
+  .summary { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .summary-item { background: var(--surface); padding: 10px 12px; display: flex; flex-direction: column; align-items: center; }
+  .summary-val { font-size: 22px; font-weight: 700; }
+  .summary-lbl { font-size: 10px; color: var(--text2); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
   .section-title { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; padding: 12px 20px 6px; }
   .machines-wrap { padding: 0 16px 16px; }
   .machines-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
@@ -44,9 +46,11 @@
   .status-fail { background: var(--red-bg);   color: var(--red); }
   .status-off  { background: var(--surface2); color: var(--text3); }
   .mcard-body { padding: 10px 14px; }
-  .big-nums { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; text-align: center; }
-  .big-num-val { font-size: 22px; font-weight: 800; line-height: 1; }
+  .big-nums { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; text-align: center; }
+  .big-num-val { font-size: 20px; font-weight: 800; line-height: 1; }
   .big-num-lbl { font-size: 10px; color: var(--text2); margin-top: 3px; }
+  .kg-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); margin-bottom: 6px; padding: 4px 0; border-top: 1px solid var(--border); }
+  .kg-val { font-weight: 700; }
   .norm-block { margin-bottom: 8px; }
   .norm-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
   .norm-label { font-size: 11px; color: var(--text2); }
@@ -71,6 +75,10 @@
   .auto-badge { font-size: 11px; color: var(--green); background: var(--green-bg); padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
   .days-badge { font-size: 11px; color: var(--blue); background: var(--blue-bg); padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
   .status-bar-bottom { padding: 4px 20px 60px; font-size: 11px; color: var(--text3); text-align: center; }
+  /* Таблица расхода материалов */
+  .mat-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 8px; }
+  .mat-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); }
+  .mat-table tr:last-child td { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -89,23 +97,31 @@
   </div>
 </div>
 
+<!-- ✅ Summary: 7 колонок — добавлены кг произведено и расход сырья -->
 <div class="summary">
-  <div class="summary-item"><div class="summary-val" id="s-total">—</div><div class="summary-lbl">Годные всего</div></div>
-  <div class="summary-item"><div class="summary-val" style="color:var(--red)" id="s-defects">—</div><div class="summary-lbl">Брак</div></div>
+  <div class="summary-item"><div class="summary-val" id="s-total">—</div><div class="summary-lbl">Годные шт</div></div>
+  <div class="summary-item"><div class="summary-val" style="color:var(--red)" id="s-defects">—</div><div class="summary-lbl">Брак шт</div></div>
   <div class="summary-item"><div class="summary-val" id="s-rate">—</div><div class="summary-lbl">% брака</div></div>
-  <div class="summary-item"><div class="summary-val" style="color:var(--green)" id="s-norm-pct">—</div><div class="summary-lbl">Выполнение нормы</div></div>
-  <div class="summary-item"><div class="summary-val" style="color:var(--amber)" id="s-down">—</div><div class="summary-lbl">Простои (мин)</div></div>
+  <div class="summary-item"><div class="summary-val" style="color:var(--green)" id="s-norm-pct">—</div><div class="summary-lbl">Норма</div></div>
+  <div class="summary-item"><div class="summary-val" style="color:var(--green)" id="s-kg-good">—</div><div class="summary-lbl">Произведено кг</div></div>
+  <div class="summary-item"><div class="summary-val" style="color:var(--purple)" id="s-kg-raw">—</div><div class="summary-lbl">Расход сырья</div></div>
+  <div class="summary-item"><div class="summary-val" style="color:var(--amber)" id="s-down">—</div><div class="summary-lbl">Простои мин</div></div>
 </div>
 
 <div style="padding:0 16px 8px;">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
       <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">📊 Выпущено vs Норма</div>
       <canvas id="chart-output" height="140"></canvas>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚡ Эффективность по станкам (%)</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚡ Эффективность (%)</div>
       <canvas id="chart-eff" height="140"></canvas>
+    </div>
+    <!-- ✅ Новый график: расход сырья по материалам -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">🧪 Расход сырья по материалам</div>
+      <div id="mat-breakdown"><div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">Нет данных</div></div>
     </div>
   </div>
 </div>
@@ -149,16 +165,12 @@
 var MACHINES_T=[{id:'T1',name:'T1',type:'Hwamda 170'},{id:'T2',name:'T2',type:'Hwamda 170'},{id:'T3',name:'T3',type:'Airfa 130'},{id:'T4',name:'T4',type:'Airfa 130'},{id:'T5',name:'T5',type:'Yongjian 160'},{id:'T6',name:'T6',type:'Yongjian 160'},{id:'T7',name:'T7',type:'Hanplas 130'},{id:'T8',name:'T8',type:'Hanplas 170'},{id:'T9',name:'T9',type:'Airfa 220'}];
 var MACHINES_V=[{id:'V1',name:'V1',type:'Juneng 5L'},{id:'V2',name:'V2',type:'Juneng 5L'},{id:'V3',name:'V3',type:'Eski kok 5L'},{id:'V4',name:'V4',type:'Yashil 2L'},{id:'V5',name:'V5',type:'Juneng 5L'}];
 var ALL_MACHINES=MACHINES_T.concat(MACHINES_V);
-var records=[];
-var nextRefresh=300;
+var records=[], nextRefresh=300;
 
 function loadGsUrl(){return localStorage.getItem('dash_gs_url')||'';}
 function saveGsUrl(u){localStorage.setItem('dash_gs_url',u);}
-
 function calcNorm(ct,cav,sn){if(!ct||ct<=0||!cav)return 0;return Math.floor((3600/ct)*cav*(sn===1?10:12));}
-
 function getTodayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-
 function normalizeDate(v){
   if(!v)return'';var s=String(v);
   if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
@@ -167,6 +179,14 @@ function normalizeDate(v){
   var m2=s.match(/[A-Za-z]{3}\s+([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})/);
   if(m2)return m2[3]+'-'+(mo[m2[1]]||'01')+'-'+String(m2[2]).padStart(2,'0');
   return s;
+}
+
+// ✅ Умное форматирование кг
+function fmtKg(kg) {
+  if (!kg || kg <= 0) return '—';
+  if (kg >= 1000) return (kg/1000).toFixed(2)+' т';
+  if (kg >= 1)    return kg.toFixed(1)+' кг';
+  return (kg*1000).toFixed(0)+' г';
 }
 
 function updateClock(){
@@ -192,21 +212,12 @@ function saveAndLoad(){
 function toggleDateInput(){
   var mode=document.getElementById('dash-date-mode').value;
   var d1=document.getElementById('dash-filter-date');
-  var dF=document.getElementById('dash-date-from');
-  var dT=document.getElementById('dash-date-to');
-  var lF=document.getElementById('lbl-from');
-  var lT=document.getElementById('lbl-to');
+  var dF=document.getElementById('dash-date-from'),dT=document.getElementById('dash-date-to');
+  var lF=document.getElementById('lbl-from'),lT=document.getElementById('lbl-to');
   var today=getTodayStr();
   d1.style.display=dF.style.display=dT.style.display=lF.style.display=lT.style.display='none';
-  if(mode==='custom'){
-    d1.style.display='inline-block';
-    if(!d1.value)d1.value=today;
-  } else if(mode==='range'){
-    lF.style.display=lT.style.display='inline';
-    dF.style.display=dT.style.display='inline-block';
-    if(!dF.value)dF.value=today;
-    if(!dT.value)dT.value=today;
-  }
+  if(mode==='custom'){d1.style.display='inline-block';if(!d1.value)d1.value=today;}
+  else if(mode==='range'){lF.style.display=lT.style.display='inline';dF.style.display=dT.style.display='inline-block';if(!dF.value)dF.value=today;if(!dT.value)dT.value=today;}
 }
 
 function fetchData(){
@@ -215,8 +226,7 @@ function fetchData(){
   document.getElementById('status-bottom').textContent='⏳ Загрузка данных...';
   var cb='dashCb_'+Date.now(),script=document.createElement('script'),done=false;
   window[cb]=function(data){
-    done=true;delete window[cb];
-    if(document.body.contains(script))document.body.removeChild(script);
+    done=true;delete window[cb];if(document.body.contains(script))document.body.removeChild(script);
     if(data&&data.rows){
       records=data.rows.map(function(r,i){
         return{id:i,date:normalizeDate(r[0]),shift:r[1]||'',operator:r[2]||'',machine:r[3]||'',
@@ -231,9 +241,7 @@ function fetchData(){
       document.getElementById('status-bottom').textContent='✅ Загружено: '+records.length+' записей · Обновлено: '+now;
       document.getElementById('hdr-sub').textContent='Записей: '+records.length+' · Последние данные: '+ld+' · Обновлено: '+now;
       renderAll();
-    } else {
-      document.getElementById('status-bottom').textContent='⚠️ Нет данных от Google Sheets';
-    }
+    } else { document.getElementById('status-bottom').textContent='⚠️ Нет данных от Google Sheets'; }
   };
   script.onerror=function(){if(!done){done=true;delete window[cb];document.getElementById('status-bottom').textContent='❌ Ошибка соединения';}};
   setTimeout(function(){if(!done){done=true;delete window[cb];if(document.body.contains(script))document.body.removeChild(script);document.getElementById('status-bottom').textContent='❌ Превышено время ожидания';}},8000);
@@ -246,48 +254,36 @@ function renderAll(){
   var mode=document.getElementById('dash-date-mode').value;
   var sf=document.getElementById('dash-shift').value;
   var d1=document.getElementById('dash-filter-date');
-  var dF=document.getElementById('dash-date-from');
-  var dT=document.getElementById('dash-date-to');
-
+  var dF=document.getElementById('dash-date-from'),dT=document.getElementById('dash-date-to');
   toggleDateInput();
-
   var ad=records.map(function(r){return r.date;}).filter(Boolean).sort();
   var lastDate=ad.length?ad[ad.length-1]:today;
-
-  // --- Фильтр по дате ---
   var filtered=records.filter(function(r){
     var rd=r.date;
     if(mode==='today') return rd===today;
     if(mode==='last')  return rd===lastDate;
     if(mode==='custom')return rd===(d1.value||today);
-    if(mode==='range'){
-      var from=dF.value||today, to=dT.value||today;
-      return rd>=from&&rd<=to;
-    }
+    if(mode==='range'){var from=dF.value||today,to=dT.value||today;return rd>=from&&rd<=to;}
     return true;
   });
-
-  // --- Фильтр по смене ---
   if(sf==='s1') filtered=filtered.filter(function(r){return r.shift.indexOf('Смена 1')>=0;});
   else if(sf==='s2') filtered=filtered.filter(function(r){return r.shift.indexOf('Смена 2')>=0;});
 
-  // --- Уникальные дни в выборке ---
-  var uDates={};
-  filtered.forEach(function(r){if(r.date)uDates[r.date]=true;});
+  var uDates={};filtered.forEach(function(r){if(r.date)uDates[r.date]=true;});
   var dayCount=Math.max(Object.keys(uDates).length,1);
-
-  // Значок дней
   var db=document.getElementById('days-badge');
-  if(mode==='all'||mode==='range'){
-    db.style.display='inline-block';
-    db.textContent='📅 '+dayCount+' '+(dayCount===1?'день':dayCount<5?'дня':'дней');
-  } else { db.style.display='none'; }
+  if(mode==='all'||mode==='range'){db.style.display='inline-block';db.textContent='📅 '+dayCount+' '+(dayCount===1?'день':dayCount<5?'дня':'дней');}
+  else{db.style.display='none';}
 
-  // --- Summary ---
   var tG=filtered.reduce(function(s,r){return s+r.good;},0);
   var tD=filtered.reduce(function(s,r){return s+r.defects;},0);
   var tDn=filtered.reduce(function(s,r){return s+(r.plannedDown||0)+(r.unplannedDown||0);},0);
   var dr=(tG+tD)?Math.round(tD/(tG+tD)*100):0;
+
+  // ✅ кг
+  var tKgGood=filtered.reduce(function(s,r){return s+(r.good||0)*(r.weight||0)/1000;},0);
+  var tKgRaw=filtered.reduce(function(s,r){return s+((r.good||0)+(r.defects||0))*(r.weight||0)/1000;},0);
+
   var tN=0,tP=0;
   ALL_MACHINES.forEach(function(m){var ms=getMachineStats(m.id,filtered,sf);if(ms.normTotal>0){tN+=ms.normTotal;tP+=ms.good;}});
   var np=tN>0?Math.round(tP/tN*100):null;
@@ -298,20 +294,59 @@ function renderAll(){
   document.getElementById('s-rate').style.color=dr===0?'var(--green)':dr<5?'var(--amber)':'var(--red)';
   document.getElementById('s-norm-pct').textContent=np!==null?np+'%':'—';
   document.getElementById('s-norm-pct').style.color=np===null?'var(--text2)':np>=100?'var(--green)':np>=80?'var(--amber)':'var(--red)';
+  document.getElementById('s-kg-good').textContent=fmtKg(tKgGood);
+  document.getElementById('s-kg-raw').textContent=fmtKg(tKgRaw);
   document.getElementById('s-down').textContent=tDn||'0';
+
+  // ✅ Расход по материалам
+  renderMaterialBreakdown(filtered);
 
   renderGrid('grid-t',MACHINES_T,filtered,sf);
   renderGrid('grid-v',MACHINES_V,filtered,sf);
   if(typeof renderCharts==='function')renderCharts(filtered,sf);
 }
 
-// ✅ Норма считается per-станок: норма_за_день × дней_работы_этого_станка
+// ✅ НОВОЕ: блок расхода сырья по материалам
+function renderMaterialBreakdown(filtered) {
+  var mats = {};
+  filtered.forEach(function(r){
+    if(!r.weight) return;
+    var mat = (r.material||'Неизвестно').trim()||'Неизвестно';
+    if(!mats[mat]) mats[mat]={kgGood:0,kgRaw:0};
+    mats[mat].kgGood += (r.good||0) * r.weight / 1000;
+    mats[mat].kgRaw  += ((r.good||0)+(r.defects||0)) * r.weight / 1000;
+  });
+  var list = Object.entries(mats).filter(function(e){return e[1].kgRaw>0;}).sort(function(a,b){return b[1].kgRaw-a[1].kgRaw;});
+  var el = document.getElementById('mat-breakdown');
+  if(!list.length){el.innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">Нет данных о весе/материале</div>';return;}
+  var maxRaw = list[0][1].kgRaw;
+  el.innerHTML = list.map(function(e){
+    var mat=e[0],v=e[1];
+    var w=Math.round(v.kgRaw/maxRaw*100);
+    var wastePct=v.kgRaw>0?Math.round((v.kgRaw-v.kgGood)/v.kgRaw*100):0;
+    return '<div style="margin-bottom:10px;">'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">'+
+        '<span style="color:var(--text);font-weight:600;">🧪 '+mat+'</span>'+
+        '<span style="color:var(--purple);font-weight:700;">'+fmtKg(v.kgRaw)+'</span>'+
+      '</div>'+
+      '<div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-bottom:3px;">'+
+        '<div style="height:100%;width:'+w+'%;background:var(--purple);border-radius:2px;"></div>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);">'+
+        '<span>✅ годных: <span style="color:var(--green)">'+fmtKg(v.kgGood)+'</span></span>'+
+        '<span>❌ потери: <span style="color:var(--red)">'+wastePct+'%</span></span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
 function getMachineStats(machineId,recs,sf){
   var s={good:0,defects:0,cycles:0,plannedDown:0,unplannedDown:0,
     operators:{},opShifts:{},parts:[],molds:{},
     s1:{good:0,cycleTime:0,cavities:0,count:0},
     s2:{good:0,cycleTime:0,cavities:0,count:0},
-    normDay:0,norm1:0,norm2:0,normTotal:0,machineDays:1};
+    normDay:0,norm1:0,norm2:0,normTotal:0,machineDays:1,
+    kgGood:0,kgRaw:0};
   var mDates={};
   recs.forEach(function(r){
     var key=r.machine?r.machine.split(' ')[0]:'';
@@ -319,6 +354,9 @@ function getMachineStats(machineId,recs,sf){
     if(r.date)mDates[r.date]=true;
     s.good+=r.good||0; s.defects+=r.defects||0; s.cycles+=r.cycles||0;
     s.plannedDown+=r.plannedDown||0; s.unplannedDown+=r.unplannedDown||0;
+    // ✅ кг
+    s.kgGood += (r.good||0)*(r.weight||0)/1000;
+    s.kgRaw  += ((r.good||0)+(r.defects||0))*(r.weight||0)/1000;
     if(r.partName)s.parts.push(r.partName);
     if(r.moldId||r.partName){var mk=(r.moldId||'')+(r.partName?' '+r.partName:'');s.molds[mk]=(s.molds[mk]||0)+(r.good||0);}
     if(r.operator){
@@ -327,8 +365,7 @@ function getMachineStats(machineId,recs,sf){
       var sl=(r.shift&&r.shift.indexOf('Смена 1')>=0)?'С1':'С2';
       s.opShifts[r.operator][sl]=(s.opShifts[r.operator][sl]||0)+(r.good||0);
     }
-    var isS1=r.shift&&r.shift.indexOf('Смена 1')>=0;
-    var sd=isS1?s.s1:s.s2;
+    var isS1=r.shift&&r.shift.indexOf('Смена 1')>=0,sd=isS1?s.s1:s.s2;
     sd.good+=r.good||0;
     if(r.cycleTime>0){sd.cycleTime=sd.count>0?(sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1):r.cycleTime;sd.cavities=r.cavities||1;sd.count++;}
   });
@@ -340,7 +377,6 @@ function getMachineStats(machineId,recs,sf){
   if(!sf||sf==='all') s.normDay=s.norm1+s.norm2;
   else if(sf==='s1')  s.normDay=s.norm1;
   else if(sf==='s2')  s.normDay=s.norm2;
-  // ✅ Норма × дней работы станка
   s.normTotal=s.normDay*s.machineDays;
   return s;
 }
@@ -358,19 +394,24 @@ function renderGrid(gridId,machines,recs,sf){
     function pBar(good,norm,label){
       if(!norm)return'';
       var p=Math.round(good/norm*100),pct=Math.min(p,100);
-      var cls=p>=100?'pbar-green':p>=80?'pbar-amber':'pbar-red';
-      var pc=p>=100?'ok':p>=80?'warn':'fail';
-      return '<div class="norm-row"><span class="norm-label">'+label+'</span><span class="norm-pct '+pc+'">'+p+'%</span></div>'+
+      var cls=p>=100?'pbar-green':p>=80?'pbar-amber':'pbar-red',pc=p>=100?'ok':p>=80?'warn':'fail';
+      return'<div class="norm-row"><span class="norm-label">'+label+'</span><span class="norm-pct '+pc+'">'+p+'%</span></div>'+
              '<div class="pbar"><div class="pbar-fill '+cls+'" style="width:'+pct+'%"></div></div>';
     }
     var dl=s.machineDays>1?' ('+s.machineDays+'д)':'';
     var nb='';
-    if(hasData&&normTotal>0){
-      var lbl=(!sf||sf==='all')?'📅 Норма':sf==='s1'?'☀️ С1':'🌙 С2';
-      nb=pBar(s.good,normTotal,lbl+dl);
-    } else if(hasData){
-      nb='<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">Норма: нет данных о цикле</div>';
+    if(hasData&&normTotal>0){var lbl=(!sf||sf==='all')?'📅 Норма':sf==='s1'?'☀️ С1':'🌙 С2';nb=pBar(s.good,normTotal,lbl+dl);}
+    else if(hasData){nb='<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">Норма: нет данных о цикле</div>';}
+
+    // ✅ Строка кг в карточке
+    var kgRow='';
+    if(hasData&&(s.kgGood>0||s.kgRaw>0)){
+      kgRow='<div class="kg-row">'+
+        '<span>⚖️ Произведено</span><span class="kg-val" style="color:var(--green)">'+fmtKg(s.kgGood)+'</span>'+
+        '<span>🧪 Сырьё</span><span class="kg-val" style="color:var(--purple)">'+fmtKg(s.kgRaw)+'</span>'+
+      '</div>';
     }
+
     html+='<div class="mcard '+cc+'">'+
       '<div class="mcard-header"><div><div class="mcard-name">'+m.name+'</div><div class="mcard-type">'+m.type+'</div></div><div class="mcard-status '+sc+'">'+st+'</div></div>'+
       '<div class="mcard-body">'+
@@ -379,6 +420,7 @@ function renderGrid(gridId,machines,recs,sf){
           '<div><div class="big-num-val" style="color:var(--red)">'+(hasData?s.defects:'—')+'</div><div class="big-num-lbl">Брак</div></div>'+
           '<div><div class="big-num-val">'+(hasData?dr+'%':'—')+'</div><div class="big-num-lbl">% брак</div></div>'+
         '</div>'+
+        kgRow+
         (nb?'<div class="norm-block">'+nb+'</div>':'')+
       '</div>'+
       '<div class="mcard-footer">'+
@@ -391,7 +433,7 @@ function renderGrid(gridId,machines,recs,sf){
         '<div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px">Пресс-формы</div>'+
         Object.keys(s.molds).sort(function(a,b){return s.molds[b]-s.molds[a];}).map(function(mold){
           var p=s.good>0?Math.round(s.molds[mold]/s.good*100):0;
-          return '<div style="display:flex;justify-content:space-between;margin-bottom:3px">'+
+          return'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'+
             '<span style="font-size:11px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">'+mold+'</span>'+
             '<span style="font-size:11px;font-weight:700;color:#fff;white-space:nowrap">'+s.molds[mold].toLocaleString()+' <span style="color:#555;font-weight:400">'+p+'%</span></span>'+
           '</div>';

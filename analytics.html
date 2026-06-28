@@ -283,6 +283,33 @@ function loadGsUrl(){return localStorage.getItem('tpa_gs_url')||'';}
 function calcNormDay(cycleTime,cavities){if(!cycleTime||cycleTime<=0||!cavities)return 0;return Math.floor((3600/cycleTime)*cavities*22);}
 function calcNormShift(cycleTime,cavities,shiftStr){if(!cycleTime||cycleTime<=0||!cavities)return 0;var hours=(shiftStr&&shiftStr.indexOf('Смена 2')>=0)?12:10;return Math.floor((3600/cycleTime)*cavities*hours);}
 
+// ✅ ЕДИНАЯ логика нормы (как в дашборде):
+// группируем записи по (дата+смена), в каждой группе берём
+// средневзвешенную по выпуску скорость × часы смены (С1=10ч, С2=12ч), суммируем.
+// Корректно учитывает смену пресс-форм внутри периода.
+function calcNormFromRecords(recs) {
+  var groups = {}; // "дата|смена" -> {shiftNum, good, rateSum, rateSimple, recCount}
+  recs.forEach(function(r){
+    if(!(r.cycleTime>0) || !r.date) return;
+    var isS1 = r.shift && r.shift.indexOf('Смена 1')>=0;
+    var shiftNum = isS1 ? 1 : 2;
+    var k = r.date+'|'+shiftNum;
+    if(!groups[k]) groups[k]={shiftNum:shiftNum,good:0,rateSum:0,rateSimple:0,recCount:0};
+    var rate=(3600/r.cycleTime)*(r.cavities||1); // деталей/час при 100%
+    var g=r.good||0;
+    groups[k].good+=g; groups[k].rateSum+=rate*g; groups[k].rateSimple+=rate; groups[k].recCount++;
+  });
+  var total=0;
+  Object.keys(groups).forEach(function(k){
+    var g=groups[k], wr;
+    if(g.good>0 && g.rateSum>0) wr=g.rateSum/g.good;        // взвешено по выпуску
+    else if(g.recCount>0) wr=g.rateSimple/g.recCount;       // запас: простое среднее
+    else return;
+    total += Math.floor(wr*(g.shiftNum===1?10:12));
+  });
+  return total;
+}
+
 // ✅ Форматирование кг: если >= 1000 → тонны
 function fmtKg(kg) {
   if (!kg || kg <= 0) return '—';
@@ -350,23 +377,32 @@ function renderSummary(records){
   var totalKgGood=records.reduce(function(s,r){return s+(r.good||0)*(r.weight||0)/1000;},0);
   var totalKgRaw=records.reduce(function(s,r){return s+((r.good||0)+(r.defects||0))*(r.weight||0)/1000;},0);
 
-  var dayMachineNorm={};
+  // ✅ Общая норма периода — суммируем норму по каждому станку (единая логика)
+  var recsByMachine={};
   records.forEach(function(r){
-    if(!r.cycleTime||!r.date||!r.machine)return;
-    var m=r.machine.split(' ')[0],key=r.date+'_'+m,n=calcNormDay(r.cycleTime,r.cavities||1);
-    if(!dayMachineNorm[key]||n>dayMachineNorm[key])dayMachineNorm[key]=n;
+    if(!r.machine)return;
+    var m=r.machine.split(' ')[0];
+    if(!recsByMachine[m])recsByMachine[m]=[];
+    recsByMachine[m].push(r);
   });
-  var totalNorm=Object.values(dayMachineNorm).reduce(function(s,v){return s+v;},0);
+  var totalNorm=0;
+  Object.keys(recsByMachine).forEach(function(m){ totalNorm+=calcNormFromRecords(recsByMachine[m]); });
   var normPct=totalNorm>0?Math.round(totalGood/totalNorm*100):0;
 
+  // ✅ % по дням — норма дня = сумма по станкам за этот день (единая логика)
   var byDate={};
   records.forEach(function(r){
     if(!r.date)return;
-    if(!byDate[r.date])byDate[r.date]={good:0,machineNorms:{}};
+    if(!byDate[r.date])byDate[r.date]={good:0,recsByMachine:{}};
     byDate[r.date].good+=r.good||0;
-    if(r.cycleTime>0&&r.machine){var m=r.machine.split(' ')[0],n=calcNormDay(r.cycleTime,r.cavities||1);if(!byDate[r.date].machineNorms[m]||n>byDate[r.date].machineNorms[m])byDate[r.date].machineNorms[m]=n;}
+    if(r.machine){var m=r.machine.split(' ')[0];if(!byDate[r.date].recsByMachine[m])byDate[r.date].recsByMachine[m]=[];byDate[r.date].recsByMachine[m].push(r);}
   });
-  var dailyPcts=dates.map(function(d){var v=byDate[d],dn=Object.values(v.machineNorms).reduce(function(s,x){return s+x;},0);return{date:d,good:v.good,norm:dn,pct:dn>0?Math.round(v.good/dn*100):0};});
+  var dailyPcts=dates.map(function(d){
+    var v=byDate[d];
+    var dn=0;
+    Object.keys(v.recsByMachine).forEach(function(m){ dn+=calcNormFromRecords(v.recsByMachine[m]); });
+    return{date:d,good:v.good,norm:dn,pct:dn>0?Math.round(v.good/dn*100):0};
+  });
   var bestDay=dailyPcts.reduce(function(a,b){return b.pct>a.pct?b:a;},dailyPcts[0]);
   var worstDay=dailyPcts.reduce(function(a,b){return b.pct<a.pct?b:a;},dailyPcts[0]);
   var avgPct=dayCount>0?Math.round(dailyPcts.reduce(function(s,d){return s+d.pct;},0)/dayCount):0;
@@ -497,9 +533,9 @@ function renderMachineNormTable(records){
   records.forEach(function(r){
     if(!r.date)return;var m=r.machine?r.machine.split(' ')[0]:'';if(!m)return;
     if(!cell[r.date])cell[r.date]={};
-    if(!cell[r.date][m])cell[r.date][m]={good:0,bestCt:0,bestCav:1};
+    if(!cell[r.date][m])cell[r.date][m]={good:0,recs:[]};
     cell[r.date][m].good+=r.good||0;
-    if(r.cycleTime>0&&r.cycleTime>cell[r.date][m].bestCt){cell[r.date][m].bestCt=r.cycleTime;cell[r.date][m].bestCav=r.cavities||1;}
+    cell[r.date][m].recs.push(r);
   });
   var showDates=dates.slice(-14);
   var thead='<thead><tr><th>Станок</th>'+showDates.map(function(d){return'<th style="text-align:center">'+d.slice(5)+'</th>';}).join('')+'<th style="text-align:center">Итого</th></tr></thead>';
@@ -507,8 +543,9 @@ function renderMachineNormTable(records){
     var tG=0,tN=0;
     var cells=showDates.map(function(d){
       var v=cell[d]&&cell[d][m];
-      if(!v||!v.bestCt)return'<td class="pct-cell pct-off" style="text-align:center">—</td>';
-      var norm=calcNormDay(v.bestCt,v.bestCav);tG+=v.good;tN+=norm;
+      if(!v||!v.recs.length)return'<td class="pct-cell pct-off" style="text-align:center">—</td>';
+      var norm=calcNormFromRecords(v.recs);tG+=v.good;tN+=norm;
+      if(!norm)return'<td class="pct-cell pct-off" style="text-align:center">—</td>';
       var pct=norm>0?Math.round(v.good/norm*100):0;
       return'<td class="pct-cell '+pctClass(pct)+'" style="text-align:center">'+pct+'%</td>';
     }).join('');
@@ -520,14 +557,19 @@ function renderMachineNormTable(records){
 
 // ===================== ЗАГРУЖЕННОСТЬ СТАНКОВ =====================
 function renderMachineRating(records){
-  var machines={};
+  // ✅ Группируем записи по станку, норму считаем единой логикой (как в дашборде)
+  var byMachine={};
   records.forEach(function(r){
     var key=r.machine?r.machine.split(' ')[0]:'—';
-    if(!machines[key])machines[key]={good:0,dayNorms:{}};
-    machines[key].good+=r.good||0;
-    if(r.date&&r.cycleTime>0){var n=calcNormDay(r.cycleTime,r.cavities||1);if(!machines[key].dayNorms[r.date]||n>machines[key].dayNorms[r.date])machines[key].dayNorms[r.date]=n;}
+    if(!byMachine[key])byMachine[key]={good:0,recs:[]};
+    byMachine[key].good+=r.good||0;
+    byMachine[key].recs.push(r);
   });
-  var list=Object.entries(machines).map(function(e){var nt=Object.values(e[1].dayNorms).reduce(function(s,v){return s+v;},0);var pct=nt>0?Math.round(e[1].good/nt*100):0;return{name:e[0],good:e[1].good,pct:pct};}).filter(function(m){return m.good>0;}).sort(function(a,b){return b.pct-a.pct;});
+  var list=Object.entries(byMachine).map(function(e){
+    var nt=calcNormFromRecords(e[1].recs);
+    var pct=nt>0?Math.round(e[1].good/nt*100):0;
+    return{name:e[0],good:e[1].good,pct:pct};
+  }).filter(function(m){return m.good>0;}).sort(function(a,b){return b.pct-a.pct;});
   if(!list.length){document.getElementById('machine-rating').innerHTML='<div class="empty">Нет данных</div>';return;}
   var maxPct=list[0].pct||1;
   document.getElementById('machine-rating').innerHTML=list.map(function(m,i){
@@ -539,8 +581,8 @@ function renderMachineRating(records){
 // ===================== РЕЙТИНГ ОПЕРАТОРОВ =====================
 function renderOpRating(records){
   var ops={};
-  records.forEach(function(r){var op=r.operator||'—';if(!ops[op])ops[op]={good:0,shiftNorms:{}};ops[op].good+=r.good||0;if(r.date&&r.cycleTime>0){var isS2=r.shift&&r.shift.indexOf('Смена 2')>=0,sk=r.date+'_'+(r.machine||'')+(isS2?'_s2':'_s1'),n=calcNormShift(r.cycleTime,r.cavities||1,r.shift);if(!ops[op].shiftNorms[sk]||n>ops[op].shiftNorms[sk])ops[op].shiftNorms[sk]=n;}});
-  var list=Object.entries(ops).map(function(e){var nt=Object.values(e[1].shiftNorms).reduce(function(s,v){return s+v;},0),pct=nt>0?Math.round(e[1].good/nt*100):0;return{name:e[0],good:e[1].good,pct:pct};}).sort(function(a,b){return b.pct-a.pct;});
+  records.forEach(function(r){var op=r.operator||'—';if(!ops[op])ops[op]={good:0,recs:[]};ops[op].good+=r.good||0;ops[op].recs.push(r);});
+  var list=Object.entries(ops).map(function(e){var nt=calcNormFromRecords(e[1].recs),pct=nt>0?Math.round(e[1].good/nt*100):0;return{name:e[0],good:e[1].good,pct:pct};}).sort(function(a,b){return b.pct-a.pct;});
   if(!list.length){document.getElementById('op-rating').innerHTML='<div class="empty">Нет данных</div>';return;}
   var maxPct=list[0].pct||1;
   document.getElementById('op-rating').innerHTML=list.map(function(o,i){
@@ -563,16 +605,16 @@ function renderOpCards(records){
   var ops={};
   records.forEach(function(r){
     var op=r.operator||'—';
-    if(!ops[op])ops[op]={good:0,defects:0,shifts:0,days:{},machines:{},shiftNorms:{},downtime:0,kgGood:0};
+    if(!ops[op])ops[op]={good:0,defects:0,shifts:0,days:{},machines:{},recs:[],downtime:0,kgGood:0};
     ops[op].good+=r.good||0;ops[op].defects+=r.defects||0;ops[op].downtime+=(r.plannedDown||0)+(r.unplannedDown||0);
     if(r.date)ops[op].days[r.date]=true;
     if(r.machine){var m=r.machine.split(' ')[0];ops[op].machines[m]=(ops[op].machines[m]||0)+(r.good||0);}
-    if(r.date&&r.cycleTime>0){var isS2=r.shift&&r.shift.indexOf('Смена 2')>=0,sk=r.date+'_'+(r.machine||'')+(isS2?'_s2':'_s1'),n=calcNormShift(r.cycleTime,r.cavities||1,r.shift);if(!ops[op].shiftNorms[sk]||n>ops[op].shiftNorms[sk])ops[op].shiftNorms[sk]=n;}
+    ops[op].recs.push(r);
     ops[op].kgGood += (r.good||0) * (r.weight||0) / 1000; // ✅
     ops[op].shifts++;
   });
   var list=Object.entries(ops).map(function(e){
-    var nt=Object.values(e[1].shiftNorms).reduce(function(s,v){return s+v;},0),pct=nt>0?Math.round(e[1].good/nt*100):0;
+    var nt=calcNormFromRecords(e[1].recs),pct=nt>0?Math.round(e[1].good/nt*100):0;
     var bm=Object.entries(e[1].machines).sort(function(a,b){return b[1]-a[1];})[0];
     return{name:e[0],good:e[1].good,defects:e[1].defects,days:Object.keys(e[1].days).length,shifts:e[1].shifts,pct:pct,downtime:e[1].downtime,bestMachine:bm?bm[0]:'—',kgGood:e[1].kgGood};
   }).sort(function(a,b){return b.pct-a.pct;});

@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Заказы и очереди — ТПА Трекер</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --bg2: #1a1d26;
+    --bg3: #22263a;
+    --border: #2d3555;
+    --text: #e2e8f0;
+    --muted: #718096;
+    --accent: #4a90e2;
+    --accent2: #63b3ed;
+    --green: #48bb78;
+    --red: #fc8181;
+    --yellow: #f6e05e;
+    --orange: #f6ad55;
+    --purple: #b794f4;
+    --teal: #81e6d9;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-size: 18px; }
+  .header-title { font-weight: 700; font-size: 15px; color: var(--accent2); }
+  .header-sub { font-size: 11px; color: var(--muted); }
+  .header-back { margin-left: auto; text-decoration: none; color: var(--muted); font-size: 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; }
+  .header-back:hover { color: var(--text); }
+
+  /* TABS */
+  .tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 16px; gap: 4px; overflow-x: auto; }
+  .tab { padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); white-space: nowrap; transition: all .15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  /* PAGES */
+  .page { display: none; padding: 16px; max-width: 1200px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--accent2); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group.span2 { grid-column: span 2; }
+  label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+  input, select, textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 8px 10px; font-size: 13px; width: 100%; outline: none; transition: border-color .15s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--bg3); }
+  .calc-hint { font-size: 11px; color: var(--green); margin-top: 4px; font-weight: 600; }
+
+  /* BUTTONS */
+  .btn { border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #357abd; }
+  .btn-success { background: #276749; color: var(--green); border: 1px solid #38a169; }
+  .btn-success:hover { background: #2f855a; color: #fff; }
+  .btn-danger { background: #742a2a; color: var(--red); border: 1px solid #c53030; font-size: 11px; padding: 4px 8px; }
+  .btn-danger:hover { background: #9b2c2c; }
+  .btn-small { font-size: 11px; padding: 4px 10px; }
+  .btn-ghost { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+  .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  .btn-assign { background: #2c4a7a; color: var(--accent2); border: 1px solid var(--accent); font-size: 11px; padding: 4px 10px; }
+  .btn-assign:hover { background: var(--accent); color: #fff; }
+
+  /* PRIORITY BADGES */
+  .badge { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: .5px; }
+  .badge-urgent { background: #742a2a; color: var(--red); border: 1px solid #c53030; }
+  .badge-normal { background: #2c4a7a; color: var(--accent2); border: 1px solid var(--accent); }
+  .badge-low { background: #2d3748; color: var(--muted); border: 1px solid #4a5568; }
+
+  /* STATUS BADGES */
+  .status-new { background: #2d3748; color: #a0aec0; border: 1px solid #4a5568; }
+  .status-queued { background: #2c4a7a; color: var(--accent2); border: 1px solid var(--accent); }
+  .status-running { background: #22543d; color: var(--green); border: 1px solid #38a169; }
+  .status-done { background: #1a2a1a; color: #68d391; border: 1px solid #276749; }
+  .status-warn { background: #744210; color: var(--orange); border: 1px solid #b7791f; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: var(--bg3); }
+  tr.urgent-row td { border-left: 3px solid var(--red); }
+  tr.warn-row td { border-left: 3px solid var(--orange); }
+
+  /* MACHINE CARDS */
+  .machines-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .machine-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .machine-card.overloaded { border-color: var(--red); }
+  .machine-card.busy { border-color: var(--orange); }
+  .machine-card.free { border-color: var(--green); }
+  .machine-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .machine-name { font-weight: 700; font-size: 14px; }
+  .machine-model { font-size: 10px; color: var(--muted); }
+  .machine-type { font-size: 10px; padding: 2px 8px; border-radius: 3px; font-weight: 700; }
+  .type-tpa { background: #2c4a7a; color: var(--accent2); }
+  .type-vdv { background: #22543d; color: var(--green); }
+
+  /* LOAD BAR */
+  .load-bar-wrap { margin: 8px 0; }
+  .load-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .load-label .load-pct { font-weight: 700; }
+  .load-label .load-pct.over { color: var(--red); }
+  .load-label .load-pct.warn { color: var(--orange); }
+  .load-label .load-pct.ok { color: var(--green); }
+  .load-bar-bg { background: var(--bg3); border-radius: 3px; height: 6px; overflow: hidden; }
+  .load-bar { height: 100%; border-radius: 3px; transition: width .3s; }
+  .load-bar.over { background: var(--red); }
+  .load-bar.warn { background: var(--orange); }
+  .load-bar.ok { background: var(--green); }
+
+  /* QUEUE LIST inside machine card */
+  .queue-list { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+  .queue-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 11px; display: flex; align-items: center; gap: 6px; }
+  .queue-item.current { border-color: var(--green); background: #1a2a1a; }
+  .queue-item .qi-pos { color: var(--muted); font-weight: 700; min-width: 16px; }
+  .queue-item .qi-name { flex: 1; color: var(--text); }
+  .queue-item .qi-time { color: var(--muted); white-space: nowrap; }
+  .queue-item .qi-warn { color: var(--orange); font-size: 10px; }
+  .queue-empty { font-size: 11px; color: var(--muted); font-style: italic; margin-top: 6px; }
+
+  /* SUMMARY STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .stat-val { font-size: 22px; font-weight: 700; }
+  .stat-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+  .stat-blue .stat-val { color: var(--accent2); }
+  .stat-green .stat-val { color: var(--green); }
+  .stat-red .stat-val { color: var(--red); }
+  .stat-orange .stat-val { color: var(--orange); }
+
+  /* GANTT */
+  .gantt-wrap { overflow-x: auto; }
+  .gantt-table { min-width: 700px; }
+  .gantt-row { display: flex; align-items: center; margin-bottom: 6px; gap: 8px; }
+  .gantt-label { min-width: 110px; font-size: 11px; font-weight: 700; color: var(--text); }
+  .gantt-track { flex: 1; background: var(--bg3); border-radius: 4px; height: 28px; position: relative; overflow: hidden; border: 1px solid var(--border); }
+  .gantt-block { position: absolute; height: 100%; border-radius: 3px; display: flex; align-items: center; padding: 0 6px; font-size: 10px; font-weight: 600; overflow: hidden; white-space: nowrap; cursor: pointer; transition: opacity .15s; }
+  .gantt-block:hover { opacity: .85; }
+  .gantt-hour-labels { display: flex; padding-left: 118px; margin-bottom: 4px; }
+  .gantt-hour { flex: 1; font-size: 9px; color: var(--muted); text-align: center; }
+  .gantt-now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); opacity: .7; z-index: 10; }
+
+  /* FILTER ROW */
+  .filter-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-row input, .filter-row select { max-width: 160px; }
+  .filter-row label { white-space: nowrap; }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 13px; z-index: 999; transform: translateY(80px); opacity: 0; transition: all .25s; max-width: 300px; }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { border-color: var(--green); color: var(--green); }
+  #toast.error { border-color: var(--red); color: var(--red); }
+  #toast.info { border-color: var(--accent2); color: var(--accent2); }
+
+  /* DEADLINE WARN */
+  .deadline-ok { color: var(--green); }
+  .deadline-warn { color: var(--orange); }
+  .deadline-over { color: var(--red); }
+
+  /* SETTINGS */
+  .settings-note { font-size: 12px; color: var(--muted); line-height: 1.6; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  .settings-note code { background: #2d3748; border-radius: 3px; padding: 1px 5px; color: var(--accent2); font-family: monospace; font-size: 11px; }
+  pre { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 11px; color: var(--teal); font-family: monospace; overflow-x: auto; line-height: 1.6; margin-bottom: 10px; }
+  .copy-btn { font-size: 11px; }
+
+  /* RESPONSIVE */
+  @media(max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .form-group.span2 { grid-column: span 2; }
+    .machines-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-logo">📋</span>
+  <div>
+    <div class="header-title">Заказы и очереди</div>
+    <div class="header-sub">Управление производственными заказами</div>
+  </div>
+  <a href="index.html" class="header-back">← Журнал</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('orders')">📦 Заказы</div>
+  <div class="tab" onclick="switchTab('queues')">🏭 Очереди по станкам</div>
+  <div class="tab" onclick="switchTab('gantt')">📅 График</div>
+  <div class="tab" onclick="switchTab('settings')">🔗 Настройки</div>
+</div>
+
+<!-- ════════════════ ЗАКАЗЫ ════════════════ -->
+<div id="page-orders" class="page active">
+
+  <!-- Форма создания заказа -->
+  <div class="card">
+    <div class="card-title">➕ Новый заказ</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Клиент / Назначение</label>
+        <input id="f-client" type="text" placeholder="Иванов ИП, Склад №2...">
+      </div>
+      <div class="form-group">
+        <label>Пресс-форма / Деталь</label>
+        <select id="f-mold" onchange="onMoldSelect()">
+          <option value="">— выбрать —</option>
+        </select>
+        <div id="mold-info" style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5"></div>
+      </div>
+      <div class="form-group">
+        <label>Количество (шт)</label>
+        <input id="f-qty" type="number" min="1" placeholder="10000" oninput="calcTime()">
+        <div class="calc-hint" id="calc-hint"></div>
+      </div>
+      <div class="form-group">
+        <label>Приоритет</label>
+        <select id="f-priority">
+          <option value="normal">Обычный</option>
+          <option value="urgent">🔴 Срочный</option>
+          <option value="low">⬇ Пониженный</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Дедлайн</label>
+        <input id="f-deadline" type="datetime-local">
+      </div>
+      <div class="form-group">
+        <label>Назначить на станок</label>
+        <select id="f-machine">
+          <option value="auto">🤖 Авто (оптимально)</option>
+        </select>
+      </div>
+      <div class="form-group span2">
+        <label>Комментарий</label>
+        <input id="f-comment" type="text" placeholder="Цвет, материал, особые требования...">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addOrder()">💾 Добавить заказ</button>
+      <button class="btn btn-ghost btn-small" onclick="resetForm()">Очистить</button>
+      <span id="form-hint" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <!-- Фильтры -->
+  <div class="filter-row">
+    <input type="text" id="filter-search" placeholder="🔍 Поиск..." oninput="renderOrdersTable()" style="max-width:200px">
+    <select id="filter-status" onchange="renderOrdersTable()">
+      <option value="">Все статусы</option>
+      <option value="new">Новые</option>
+      <option value="queued">В очереди</option>
+      <option value="running">В производстве</option>
+      <option value="done">Выполнены</option>
+    </select>
+    <select id="filter-machine" onchange="renderOrdersTable()">
+      <option value="">Все станки</option>
+    </select>
+    <button class="btn btn-ghost btn-small" onclick="exportCSV()">📥 CSV</button>
+  </div>
+
+  <!-- Таблица заказов -->
+  <div class="card" style="padding:0">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Клиент</th>
+            <th>Деталь</th>
+            <th>Кол-во</th>
+            <th>Время произв.</th>
+            <th>Станок</th>
+            <th>Приоритет</th>
+            <th>Дедлайн</th>
+            <th>ETA</th>
+            <th>Статус</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody">
+          <tr><td colspan="11" style="text-align:center;color:var(--muted);padding:24px">Нет заказов. Добавьте первый заказ выше.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ ОЧЕРЕДИ ════════════════ -->
+<div id="page-queues" class="page">
+
+  <!-- Статистика -->
+  <div class="stats-row" id="stats-row"></div>
+
+  <!-- Тип фильтр -->
+  <div class="filter-row" style="margin-bottom:12px">
+    <button class="btn btn-ghost btn-small active-filter" id="ft-all" onclick="filterMachineType('all')">Все</button>
+    <button class="btn btn-ghost btn-small" id="ft-tpa" onclick="filterMachineType('tpa')">⚙️ ТПА (Литьё)</button>
+    <button class="btn btn-ghost btn-small" id="ft-vdv" onclick="filterMachineType('vdv')">💨 Выдув</button>
+  </div>
+
+  <div class="machines-grid" id="machines-grid"></div>
+</div>
+
+<!-- ════════════════ ГРАФИК ════════════════ -->
+<div id="page-gantt" class="page">
+  <div class="card">
+    <div class="card-title">📅 График загрузки — текущие смены (16 часов)</div>
+    <div class="gantt-wrap">
+      <div id="gantt-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ НАСТРОЙКИ ════════════════ -->
+<div id="page-settings" class="page">
+  <div class="card">
+    <div class="card-title">🔗 Подключение к Google Sheets</div>
+    <div class="settings-note">
+      Вставьте тот же <code>Apps Script URL</code>, который вы используете в основном трекере. Система загрузит список пресс-форм и будет сохранять заказы на новый лист <code>Заказы</code>.
+    </div>
+    <div class="form-group" style="max-width:500px;margin-bottom:12px">
+      <label>URL Apps Script</label>
+      <input id="s-url" type="text" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveSettings()">💾 Сохранить</button>
+      <button class="btn btn-ghost btn-small" onclick="loadFromSheets()">☁️ Загрузить пресс-формы</button>
+      <span id="s-status" style="font-size:11px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Код для добавления в Apps Script</div>
+    <div class="settings-note">
+      Добавьте эти блоки в ваш существующий скрипт — внутрь функций <code>doGet</code> и <code>doPost</code>, перед финальным <code>return</code>.
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:6px">В <code>doGet</code> добавьте:</p>
+    <pre id="code-get">if (action === "getOrders") {
+  var sheet = ss.getSheetByName("Заказы");
+  var orders = [];
+  if (sheet && sheet.getLastRow() > 1) {
+    var data = sheet.getRange(2,1,sheet.getLastRow()-1,14).getValues();
+    data.forEach(function(row){
+      if(row[0]) orders.push({
+        id:String(row[0]), client:String(row[1]||""),
+        moldId:String(row[2]||""), partName:String(row[3]||""),
+        qty:Number(row[4]||0), prodHours:Number(row[5]||0),
+        machine:String(row[6]||""), priority:String(row[7]||"normal"),
+        deadline:String(row[8]||""), eta:String(row[9]||""),
+        status:String(row[10]||"new"), comment:String(row[11]||""),
+        createdAt:String(row[12]||""), updatedAt:String(row[13]||"")
+      });
+    });
+  }
+  var json = JSON.stringify({status:"ok",orders:orders});
+  if(callback) return ContentService.createTextOutput(callback+"("+json+")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+  return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+    <button class="btn btn-ghost copy-btn" onclick="copyCode('code-get')">📋 Копировать</button>
+
+    <p style="font-size:11px;color:var(--muted);margin: 12px 0 6px">В <code>doPost</code> добавьте:</p>
+    <pre id="code-post">if (d.action === "addOrder") {
+  var sheet = ss.getSheetByName("Заказы") || ss.insertSheet("Заказы");
+  if (sheet.getLastRow() === 0) sheet.appendRow(["ID","Клиент","Пресс-форма","Деталь","Кол-во","Часов произв.","Станок","Приоритет","Дедлайн","ETA","Статус","Комментарий","Создан","Обновлён"]);
+  sheet.appendRow([d.id,d.client,d.moldId,d.partName,d.qty,d.prodHours,d.machine,d.priority,d.deadline,d.eta,d.status,d.comment,d.createdAt,d.updatedAt]);
+  return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+}
+if (d.action === "updateOrder") {
+  var sheet = ss.getSheetByName("Заказы");
+  if (sheet && sheet.getLastRow() > 1) {
+    var ids = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues();
+    for (var i=0;i<ids.length;i++) {
+      if (String(ids[i][0]) === String(d.id)) {
+        var row = i+2;
+        if(d.status) sheet.getRange(row,11).setValue(d.status);
+        if(d.machine) sheet.getRange(row,7).setValue(d.machine);
+        if(d.eta) sheet.getRange(row,10).setValue(d.eta);
+        sheet.getRange(row,14).setValue(new Date().toISOString());
+        break;
+      }
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+}
+if (d.action === "deleteOrder") {
+  var sheet = ss.getSheetByName("Заказы");
+  if (sheet && sheet.getLastRow() > 1) {
+    var ids = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues();
+    for (var i=ids.length-1;i>=0;i--) {
+      if (String(ids[i][0]) === String(d.id)) { sheet.deleteRow(i+2); break; }
+    }
+  }
+  return ContentService.createTextOutput(JSON.stringify({status:"ok"})).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+    <button class="btn btn-ghost copy-btn" onclick="copyCode('code-post')">📋 Копировать</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏭 Параметры смены</div>
+    <div class="form-grid" style="max-width:400px">
+      <div class="form-group">
+        <label>Часов в смене</label>
+        <input id="s-shift-hours" type="number" value="10" min="6" max="12">
+      </div>
+      <div class="form-group">
+        <label>Смен в сутках</label>
+        <input id="s-shifts-per-day" type="number" value="2" min="1" max="3">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveShiftSettings()">💾 Сохранить</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗑 Данные</div>
+    <div class="btn-row">
+      <button class="btn btn-danger" onclick="clearAllOrders()">🗑 Очистить все заказы (локально)</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ──────────────────────────────────────────────────────────────
+// ДАННЫЕ
+// ──────────────────────────────────────────────────────────────
+
+const MACHINES = [
+  { id:'T1', name:'T1', model:'Hwamda 170', type:'tpa' },
+  { id:'T2', name:'T2', model:'Hwamda 170', type:'tpa' },
+  { id:'T3', name:'T3', model:'Airfa 130', type:'tpa' },
+  { id:'T4', name:'T4', model:'Airfa 130', type:'tpa' },
+  { id:'T5', name:'T5', model:'Yongjian 160', type:'tpa' },
+  { id:'T6', name:'T6', model:'Yongjian 160', type:'tpa' },
+  { id:'T7', name:'T7', model:'Hanplas 130', type:'tpa' },
+  { id:'T8', name:'T8', model:'Hanplas 170', type:'tpa' },
+  { id:'T9', name:'T9', model:'Airfa 220', type:'tpa' },
+  { id:'V1', name:'V1', model:'Juneng 5L', type:'vdv' },
+  { id:'V2', name:'V2', model:'Juneng 5L', type:'vdv' },
+  { id:'V3', name:'V3', model:'Eski kok 5L', type:'vdv' },
+  { id:'V4', name:'V4', model:'Yashil 2L', type:'vdv' },
+  { id:'V5', name:'V5', model:'Juneng 5L', type:'vdv' },
+];
+
+let orders = JSON.parse(localStorage.getItem('tpa_orders') || '[]');
+let molds = JSON.parse(localStorage.getItem('tpa_molds_cache') || '[]');
+let scriptUrl = localStorage.getItem('tpa_script_url') || '';
+let shiftHours = Number(localStorage.getItem('tpa_shift_hours') || 10);
+let shiftsPerDay = Number(localStorage.getItem('tpa_shifts_per_day') || 2);
+let machineTypeFilter = 'all';
+
+// ──────────────────────────────────────────────────────────────
+// ИНИЦИАЛИЗАЦИЯ
+// ──────────────────────────────────────────────────────────────
+function init() {
+  populateMoldSelect();
+  populateMachineSelect();
+  populateFilterMachineSelect();
+  renderOrdersTable();
+  renderQueues();
+  renderGantt();
+
+  // Поля настроек
+  document.getElementById('s-url').value = scriptUrl;
+  document.getElementById('s-shift-hours').value = shiftHours;
+  document.getElementById('s-shifts-per-day').value = shiftsPerDay;
+
+  // Дефолтный дедлайн — завтра 18:00
+  const tm = new Date();
+  tm.setDate(tm.getDate() + 1);
+  tm.setHours(18, 0, 0, 0);
+  document.getElementById('f-deadline').value = localDatetimeStr(tm);
+
+  // Если есть URL — загружаем пресс-формы
+  if (scriptUrl && molds.length === 0) loadFromSheets();
+}
+
+function moldToOption(m) {
+  const o = document.createElement('option');
+  o.value = m.id;
+  o.dataset.cycle     = m.cycleTime  || '';
+  o.dataset.cavities  = m.cavities   || '1';
+  o.dataset.article   = m.article    || '';
+  o.dataset.label     = m.label      || m.article || m.id;
+  o.dataset.machine   = m.machine    || '';
+  o.dataset.material  = m.material   || '';
+  o.dataset.weight    = m.weight     || '';
+  // Тип станка: V* → выдув, остальное → тпа
+  const mac = String(m.machine || '');
+  o.dataset.type = mac.startsWith('V') ? 'vdv' : 'tpa';
+  // Текст опции: № — Артикул — Название
+  const parts = [m.id];
+  if (m.article && m.article !== m.id) parts.push(m.article);
+  if (m.label && m.label !== m.article) parts.push(m.label);
+  o.textContent = parts.join(' · ');
+  return o;
+}
+
+function populateMoldSelect() {
+  const sel = document.getElementById('f-mold');
+  sel.innerHTML = '<option value="">— выбрать —</option>';
+  const source = molds.length > 0 ? molds : getDemoMolds();
+  if (molds.length === 0) {
+    sel.innerHTML += '<option value="" disabled style="color:#f6ad55">⚠ Демо-данные · Подключите Sheets в Настройках</option>';
+  }
+  source.forEach(m => sel.appendChild(moldToOption(m)));
+}
+
+function populateMachineSelect() {
+  const sel = document.getElementById('f-machine');
+  sel.innerHTML = '<option value="auto">🤖 Авто (оптимально)</option>';
+  MACHINES.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id;
+    o.dataset.type = m.type;
+    o.textContent = `${m.name} — ${m.model}`;
+    sel.appendChild(o);
+  });
+}
+
+function populateFilterMachineSelect() {
+  const sel = document.getElementById('filter-machine');
+  sel.innerHTML = '<option value="">Все станки</option>';
+  MACHINES.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m.id;
+    o.textContent = `${m.name} — ${m.model}`;
+    sel.appendChild(o);
+  });
+}
+
+function getDemoMolds() {
+  return [
+    { id:'ПФ-001', article:'VEDRO-10L', label:'Ведро 10л', cycleTime:'45', cavities:'1', machine:'T1' },
+    { id:'ПФ-002', article:'VEDRO-5L', label:'Ведро 5л', cycleTime:'32', cavities:'2', machine:'T2' },
+    { id:'ПФ-003', article:'KRYSHKA-90', label:'Крышка 90мм', cycleTime:'12', cavities:'4', machine:'T3' },
+    { id:'ПФ-004', article:'KRYSHKA-38', label:'Крышка 38мм', cycleTime:'8', cavities:'8', machine:'T4' },
+    { id:'ПФ-005', article:'KANIST-5L', label:'Канистра 5л ПЭ', cycleTime:'28', cavities:'1', machine:'V1' },
+    { id:'ПФ-006', article:'BUTYL-PE-1L', label:'Бутылка ПЭ 1л', cycleTime:'18', cavities:'2', machine:'V2' },
+    { id:'ПФ-007', article:'YASHCHIK-5L', label:'Ящик 5л', cycleTime:'55', cavities:'1', machine:'T5' },
+    { id:'ПФ-008', article:'STAKANCHIK', label:'Стаканчик 0.2л', cycleTime:'6', cavities:'16', machine:'T6' },
+  ];
+}
+
+// ──────────────────────────────────────────────────────────────
+// ФОРМА СОЗДАНИЯ ЗАКАЗА
+// ──────────────────────────────────────────────────────────────
+function onMoldSelect() {
+  calcTime();
+  const sel = document.getElementById('f-mold');
+  const opt = sel.selectedOptions[0];
+  const infoEl = document.getElementById('mold-info');
+
+  if (!opt || !opt.value) { infoEl.textContent = ''; return; }
+
+  const type      = opt.dataset.type     || 'tpa';
+  const article   = opt.dataset.article  || '';
+  const label     = opt.dataset.label    || '';
+  const cycle     = opt.dataset.cycle    || '—';
+  const cavities  = opt.dataset.cavities || '1';
+  const material  = opt.dataset.material || '';
+  const weight    = opt.dataset.weight   || '';
+  const defaultM  = opt.dataset.machine  || '';
+
+  // Показываем инфо о пресс-форме
+  const parts = [];
+  if (article) parts.push(`Арт: <b>${article}</b>`);
+  if (label)   parts.push(label);
+  if (cycle !== '—') parts.push(`⏱ ${cycle}с`);
+  if (cavities) parts.push(`🔲 ${cavities} гн.`);
+  if (material) parts.push(`🧪 ${material}`);
+  if (weight)   parts.push(`⚖ ${weight}г`);
+  infoEl.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+
+  // Фильтруем список машин по типу
+  const mSel = document.getElementById('f-machine');
+  Array.from(mSel.options).forEach(o => {
+    if (o.value === 'auto') return;
+    const m = MACHINES.find(x => x.id === o.value);
+    if (m) o.style.display = (m.type === type) ? '' : 'none';
+  });
+
+  // Если в базе указан конкретный станок — подставляем его
+  if (defaultM && MACHINES.find(x => x.id === defaultM)) {
+    mSel.value = defaultM;
+  } else {
+    mSel.value = 'auto';
+  }
+}
+
+function calcTime() {
+  const moldSel = document.getElementById('f-mold');
+  const opt = moldSel.selectedOptions[0];
+  const qty = Number(document.getElementById('f-qty').value) || 0;
+  const hint = document.getElementById('calc-hint');
+
+  if (!opt || !opt.value || qty === 0) { hint.textContent = ''; return; }
+
+  const cycle = Number(opt.dataset.cycle) || 0;
+  const cavities = Number(opt.dataset.cavities) || 1;
+  if (!cycle) { hint.textContent = ''; return; }
+
+  const totalCycles = Math.ceil(qty / cavities);
+  const totalSec = totalCycles * cycle;
+  const hours = totalSec / 3600;
+  const shifts = hours / shiftHours;
+  hint.textContent = `≈ ${fmtHours(hours)} (${shifts.toFixed(1)} смен) при цикле ${cycle}с × ${cavities} гн.`;
+}
+
+function getProductionHours() {
+  const moldSel = document.getElementById('f-mold');
+  const opt = moldSel.selectedOptions[0];
+  const qty = Number(document.getElementById('f-qty').value) || 0;
+  if (!opt || !opt.value || qty === 0) return 0;
+  const cycle = Number(opt.dataset.cycle) || 0;
+  const cavities = Number(opt.dataset.cavities) || 1;
+  if (!cycle) return 0;
+  return (Math.ceil(qty / cavities) * cycle) / 3600;
+}
+
+function autoAssignMachine(type, prodHours) {
+  // Собираем загрузку по машинам нужного типа
+  const typeMachines = MACHINES.filter(m => m.type === type);
+  const loads = {};
+  typeMachines.forEach(m => { loads[m.id] = 0; });
+
+  orders.filter(o => o.status !== 'done').forEach(o => {
+    if (loads[o.machine] !== undefined) loads[o.machine] += o.prodHours;
+  });
+
+  // Выбираем машину с минимальной нагрузкой
+  let bestMachine = null, bestLoad = Infinity;
+  typeMachines.forEach(m => {
+    if (loads[m.id] < bestLoad) { bestLoad = loads[m.id]; bestMachine = m.id; }
+  });
+  return bestMachine;
+}
+
+function calcETA(machine, prodHours) {
+  // Суммарная нагрузка на машине до этого заказа
+  const queueHours = orders
+    .filter(o => o.machine === machine && o.status !== 'done')
+    .reduce((s, o) => s + o.prodHours, 0);
+  const totalHours = queueHours + prodHours;
+  const now = new Date();
+  // Учитываем только рабочие часы (shiftHours * shiftsPerDay в сутки)
+  const workHoursPerDay = shiftHours * shiftsPerDay;
+  const days = Math.floor(totalHours / workHoursPerDay);
+  const remHours = totalHours % workHoursPerDay;
+  now.setDate(now.getDate() + days);
+  now.setHours(now.getHours() + remHours);
+  return now;
+}
+
+function addOrder() {
+  const client = document.getElementById('f-client').value.trim();
+  const moldSel = document.getElementById('f-mold');
+  const moldOpt = moldSel.selectedOptions[0];
+  const qty = Number(document.getElementById('f-qty').value);
+  const priority = document.getElementById('f-priority').value;
+  const deadline = document.getElementById('f-deadline').value;
+  const machineVal = document.getElementById('f-machine').value;
+  const comment = document.getElementById('f-comment').value.trim();
+
+  if (!moldOpt || !moldOpt.value) { showToast('Выберите пресс-форму / деталь', 'error'); return; }
+  if (!qty || qty < 1) { showToast('Введите количество', 'error'); return; }
+
+  const prodHours = getProductionHours();
+  const type = moldOpt.dataset.type || 'tpa';
+  // Если в форме выбрана конкретная машина — берём её, иначе авто
+  const machine = (machineVal && machineVal !== 'auto')
+    ? machineVal
+    : autoAssignMachine(type, prodHours);
+
+  if (!machine) { showToast('Нет доступных станков для этого типа', 'error'); return; }
+
+  const eta = calcETA(machine, prodHours);
+  const now = new Date();
+
+  // Проверка дедлайна
+  if (deadline) {
+    const dl = new Date(deadline);
+    if (eta > dl) {
+      const diff = ((eta - dl) / 3600000).toFixed(1);
+      showToast(`⚠️ ETA позже дедлайна на ${diff}ч. Заказ добавлен, но требует внимания.`, 'error');
+    }
+  }
+
+  const order = {
+    id: 'ORD-' + Date.now(),
+    client: client || '—',
+    moldId: moldOpt.value,
+    article: moldOpt.dataset.article || '',
+    partName: moldOpt.dataset.label || moldOpt.dataset.article || moldOpt.value,
+    qty,
+    prodHours,
+    machine,
+    priority,
+    deadline,
+    eta: eta.toISOString(),
+    status: 'queued',
+    comment,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+  };
+
+  // Срочный — вставляем перед обычными в очереди этой машины
+  if (priority === 'urgent') {
+    const insertIdx = orders.findIndex(o => o.machine === machine && o.status === 'queued' && o.priority !== 'urgent');
+    if (insertIdx >= 0) orders.splice(insertIdx, 0, order);
+    else orders.push(order);
+  } else {
+    orders.push(order);
+  }
+
+  recalcETAs(machine);
+  saveOrders();
+  renderAll();
+  resetForm();
+  showToast(`✅ Заказ добавлен → ${machine} (${fmtHours(prodHours)})`, 'success');
+
+  // Синхронизация с Google Sheets
+  if (scriptUrl) pushOrderToSheets(order);
+}
+
+function recalcETAs(machine) {
+  // Пересчитываем ETA для всех заказов на данной машине по порядку
+  let accHours = 0;
+  orders.filter(o => o.machine === machine && o.status !== 'done').forEach(o => {
+    accHours += o.prodHours;
+    const workHoursPerDay = shiftHours * shiftsPerDay;
+    const days = Math.floor(accHours / workHoursPerDay);
+    const remH = accHours % workHoursPerDay;
+    const eta = new Date();
+    eta.setDate(eta.getDate() + days);
+    eta.setHours(eta.getHours() + remH);
+    o.eta = eta.toISOString();
+    o.updatedAt = new Date().toISOString();
+  });
+}
+
+function resetForm() {
+  document.getElementById('f-client').value = '';
+  document.getElementById('f-mold').value = '';
+  document.getElementById('f-qty').value = '';
+  document.getElementById('f-priority').value = 'normal';
+  document.getElementById('f-machine').value = 'auto';
+  document.getElementById('f-comment').value = '';
+  document.getElementById('calc-hint').textContent = '';
+  const tm = new Date();
+  tm.setDate(tm.getDate() + 1);
+  tm.setHours(18, 0, 0, 0);
+  document.getElementById('f-deadline').value = localDatetimeStr(tm);
+}
+
+// ──────────────────────────────────────────────────────────────
+// ТАБЛИЦА ЗАКАЗОВ
+// ──────────────────────────────────────────────────────────────
+function renderOrdersTable() {
+  const search = document.getElementById('filter-search').value.toLowerCase();
+  const statusF = document.getElementById('filter-status').value;
+  const machineF = document.getElementById('filter-machine').value;
+
+  let list = [...orders];
+  if (search) list = list.filter(o =>
+    o.client.toLowerCase().includes(search) ||
+    o.partName.toLowerCase().includes(search) ||
+    o.id.toLowerCase().includes(search)
+  );
+  if (statusF) list = list.filter(o => o.status === statusF);
+  if (machineF) list = list.filter(o => o.machine === machineF);
+
+  // Sort: urgent first, then by createdAt
+  list.sort((a, b) => {
+    if (a.priority === 'urgent' && b.priority !== 'urgent') return -1;
+    if (b.priority === 'urgent' && a.priority !== 'urgent') return 1;
+    return new Date(a.createdAt) - new Date(b.createdAt);
+  });
+
+  const tbody = document.getElementById('orders-tbody');
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:24px">Нет заказов.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map((o, i) => {
+    const eta = o.eta ? new Date(o.eta) : null;
+    const dl = o.deadline ? new Date(o.deadline) : null;
+    const isOverDeadline = eta && dl && eta > dl;
+    const rowClass = o.priority === 'urgent' ? 'urgent-row' : (isOverDeadline ? 'warn-row' : '');
+
+    return `<tr class="${rowClass}">
+      <td style="color:var(--muted)">${o.id}</td>
+      <td>${escHtml(o.client)}</td>
+      <td>
+        <div style="font-weight:600">${escHtml(o.partName)}</div>
+        <div style="font-size:10px;color:var(--muted)">${escHtml(o.moldId)}${o.article ? ' · ' + escHtml(o.article) : ''}</div>
+      </td>
+      <td>${o.qty.toLocaleString()} шт</td>
+      <td>${fmtHours(o.prodHours)}</td>
+      <td>
+        <span style="font-weight:700">${o.machine}</span>
+        <div style="font-size:10px;color:var(--muted)">${MACHINES.find(m=>m.id===o.machine)?.model||''}</div>
+      </td>
+      <td>${priorityBadge(o.priority)}</td>
+      <td class="${isOverDeadline?'deadline-over':''}">${o.deadline ? fmtDatetime(new Date(o.deadline)) : '—'}</td>
+      <td class="${isOverDeadline?'deadline-over':'deadline-ok'}">${eta ? fmtDatetime(eta) : '—'}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${o.status !== 'running' && o.status !== 'done' ? `<button class="btn btn-assign" onclick="setStatus('${o.id}','running')">▶ Запуск</button>` : ''}
+          ${o.status === 'running' ? `<button class="btn btn-success btn-small" onclick="setStatus('${o.id}','done')">✓ Готово</button>` : ''}
+          ${o.status !== 'done' ? `<button class="btn btn-ghost btn-small" onclick="reassignOrder('${o.id}')">↔</button>` : ''}
+          <button class="btn btn-danger" onclick="deleteOrder('${o.id}')">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function setStatus(id, status) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  o.status = status;
+  o.updatedAt = new Date().toISOString();
+  saveOrders();
+  renderAll();
+  showToast(status === 'running' ? '▶ Заказ запущен' : '✅ Заказ выполнен', 'success');
+  if (scriptUrl) patchOrderStatus(o.id, status);
+}
+
+function deleteOrder(id) {
+  if (!confirm('Удалить заказ?')) return;
+  const o = orders.find(x => x.id === id);
+  orders = orders.filter(x => x.id !== id);
+  if (o) recalcETAs(o.machine);
+  saveOrders();
+  renderAll();
+  showToast('🗑 Удалено', 'info');
+}
+
+function reassignOrder(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  const type = MACHINES.find(m => m.id === o.machine)?.type || 'tpa';
+  const typeMachines = MACHINES.filter(m => m.type === type).map(m => `${m.id} (${m.model})`).join('\n');
+  const newM = prompt(`Переназначить на станок:\n${typeMachines}\n\nВведите ID (например T3):`);
+  if (!newM) return;
+  const valid = MACHINES.find(m => m.id === newM.trim().toUpperCase());
+  if (!valid) { showToast('Неизвестный станок', 'error'); return; }
+  const oldM = o.machine;
+  o.machine = valid.id;
+  o.updatedAt = new Date().toISOString();
+  recalcETAs(oldM);
+  recalcETAs(valid.id);
+  saveOrders();
+  renderAll();
+  showToast(`↔ Переназначен на ${valid.id}`, 'info');
+}
+
+// ──────────────────────────────────────────────────────────────
+// ОЧЕРЕДИ ПО СТАНКАМ
+// ──────────────────────────────────────────────────────────────
+function renderQueues() {
+  renderStats();
+
+  const grid = document.getElementById('machines-grid');
+  let list = MACHINES;
+  if (machineTypeFilter === 'tpa') list = MACHINES.filter(m => m.type === 'tpa');
+  if (machineTypeFilter === 'vdv') list = MACHINES.filter(m => m.type === 'vdv');
+
+  grid.innerHTML = list.map(m => {
+    const mOrders = orders.filter(o => o.machine === m.id && o.status !== 'done');
+    const running = mOrders.find(o => o.status === 'running');
+    const queued = mOrders.filter(o => o.status !== 'running' && o.status !== 'done');
+    const totalH = mOrders.reduce((s, o) => s + o.prodHours, 0);
+    const maxH = shiftHours * shiftsPerDay * 2; // 2 суток как 100%
+    const pct = Math.min(totalH / maxH * 100, 100);
+    const loadClass = pct > 80 ? 'overloaded' : pct > 50 ? 'busy' : 'free';
+    const barClass = pct > 80 ? 'over' : pct > 50 ? 'warn' : 'ok';
+    const pctClass = pct > 80 ? 'over' : pct > 50 ? 'warn' : 'ok';
+
+    const queueItems = [running, ...queued].filter(Boolean).map((o, i) => {
+      const isRun = o.status === 'running';
+      const eta = o.eta ? new Date(o.eta) : null;
+      const dl = o.deadline ? new Date(o.deadline) : null;
+      const warn = eta && dl && eta > dl;
+      return `<div class="queue-item ${isRun ? 'current' : ''}">
+        <span class="qi-pos">${isRun ? '▶' : i}</span>
+        <div style="flex:1;min-width:0">
+          <div class="qi-name" title="${escHtml(o.partName)}">${escHtml(o.partName.length>20?o.partName.slice(0,20)+'…':o.partName)}</div>
+          <div style="font-size:10px;color:var(--muted)">${o.qty.toLocaleString()} шт · ${fmtHours(o.prodHours)}</div>
+        </div>
+        ${warn ? '<span class="qi-warn">⚠</span>' : ''}
+        ${priorityBadge(o.priority)}
+      </div>`;
+    }).join('');
+
+    return `<div class="machine-card ${loadClass}">
+      <div class="machine-header">
+        <div>
+          <div class="machine-name">${m.name}</div>
+          <div class="machine-model">${m.model}</div>
+        </div>
+        <span class="machine-type ${m.type === 'tpa' ? 'type-tpa' : 'type-vdv'}">${m.type === 'tpa' ? '⚙️ ТПА' : '💨 Выдув'}</span>
+      </div>
+      <div class="load-bar-wrap">
+        <div class="load-label">
+          <span>Загрузка: ${fmtHours(totalH)}</span>
+          <span class="load-pct ${pctClass}">${Math.round(pct)}%</span>
+        </div>
+        <div class="load-bar-bg"><div class="load-bar ${barClass}" style="width:${pct}%"></div></div>
+      </div>
+      ${mOrders.length > 0
+        ? `<div class="queue-list">${queueItems}</div>`
+        : '<div class="queue-empty">Очередь пуста — свободен</div>'
+      }
+    </div>`;
+  }).join('');
+}
+
+function renderStats() {
+  const total = orders.length;
+  const active = orders.filter(o => o.status !== 'done').length;
+  const urgent = orders.filter(o => o.priority === 'urgent' && o.status !== 'done').length;
+  const overdue = orders.filter(o => {
+    if (o.status === 'done' || !o.deadline || !o.eta) return false;
+    return new Date(o.eta) > new Date(o.deadline);
+  }).length;
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card stat-blue"><div class="stat-val">${total}</div><div class="stat-lbl">Всего заказов</div></div>
+    <div class="stat-card stat-blue"><div class="stat-val">${active}</div><div class="stat-lbl">Активных</div></div>
+    <div class="stat-card stat-red"><div class="stat-val">${urgent}</div><div class="stat-lbl">Срочных</div></div>
+    <div class="stat-card stat-orange"><div class="stat-val">${overdue}</div><div class="stat-lbl">Риск срыва</div></div>
+    <div class="stat-card stat-green"><div class="stat-val">${orders.filter(o=>o.status==='done').length}</div><div class="stat-lbl">Выполнено</div></div>
+  `;
+}
+
+function filterMachineType(type) {
+  machineTypeFilter = type;
+  document.querySelectorAll('[id^="ft-"]').forEach(b => b.classList.remove('active-filter'));
+  document.getElementById('ft-' + type).classList.add('active-filter');
+  renderQueues();
+}
+
+// ──────────────────────────────────────────────────────────────
+// ДИАГРАММА ГАНТА
+// ──────────────────────────────────────────────────────────────
+function renderGantt() {
+  const container = document.getElementById('gantt-container');
+  const totalHours = 16;
+  const now = new Date();
+  const startTime = new Date(now);
+  startTime.setMinutes(0, 0, 0);
+  const endTime = new Date(startTime.getTime() + totalHours * 3600000);
+
+  // Часовые метки
+  let hourLabels = '<div class="gantt-hour-labels">';
+  for (let h = 0; h <= totalHours; h += 2) {
+    const t = new Date(startTime.getTime() + h * 3600000);
+    hourLabels += `<div class="gantt-hour">${t.getHours()}:00</div>`;
+  }
+  hourLabels += '</div>';
+
+  // Позиция текущего времени
+  const nowPct = Math.max(0, Math.min(100, (now - startTime) / (endTime - startTime) * 100));
+
+  // Строки по машинам
+  const COLORS = ['#3182ce','#38a169','#d69e2e','#e53e3e','#805ad5','#319795','#dd6b20','#d53f8c','#2b6cb0'];
+  const machineRows = MACHINES.filter(m => {
+    const mOrders = orders.filter(o => o.machine === m.id && o.status !== 'done');
+    return mOrders.length > 0;
+  }).map(m => {
+    const mOrders = orders.filter(o => o.machine === m.id && o.status !== 'done')
+      .sort((a,b) => (a.status==='running'?-1:b.status==='running'?1:new Date(a.createdAt)-new Date(b.createdAt)));
+
+    let cursor = now;
+    const blocks = mOrders.map((o, i) => {
+      const blockStart = new Date(cursor);
+      const blockEnd = new Date(cursor.getTime() + o.prodHours * 3600000);
+      cursor = new Date(blockEnd);
+
+      const startPct = Math.max(0, (blockStart - startTime) / (endTime - startTime) * 100);
+      const endPct = Math.min(100, (blockEnd - startTime) / (endTime - startTime) * 100);
+      if (endPct <= 0 || startPct >= 100) return '';
+      const w = Math.max(0.5, endPct - startPct);
+      const color = COLORS[i % COLORS.length];
+      const short = o.partName.length > 12 ? o.partName.slice(0,12)+'…' : o.partName;
+      const isUrgent = o.priority === 'urgent';
+
+      return `<div class="gantt-block" style="left:${startPct}%;width:${w}%;background:${color};opacity:${isUrgent?1:0.8};border:${isUrgent?'1px solid #fc8181':'none'}" title="${o.partName} — ${o.qty.toLocaleString()} шт · ${fmtHours(o.prodHours)}">${w > 5 ? short : ''}</div>`;
+    }).join('');
+
+    return `<div class="gantt-row">
+      <div class="gantt-label">${m.name}<div style="font-size:9px;color:var(--muted)">${m.model}</div></div>
+      <div class="gantt-track">
+        <div class="gantt-now" style="left:${nowPct}%"></div>
+        ${blocks}
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = hourLabels + (machineRows || '<div style="color:var(--muted);font-size:12px;padding:20px;text-align:center">Нет активных заказов для отображения</div>');
+}
+
+// ──────────────────────────────────────────────────────────────
+// GOOGLE SHEETS
+// ──────────────────────────────────────────────────────────────
+function loadFromSheets() {
+  if (!scriptUrl) { showToast('Сначала введите URL скрипта в Настройках', 'error'); return; }
+  const st = document.getElementById('s-status');
+  if (st) st.textContent = 'Загружаю...';
+
+  const cbName = 'cb_molds_' + Date.now();
+  const script = document.createElement('script');
+  window[cbName] = function(data) {
+    delete window[cbName];
+    script.remove();
+    if (data.status === 'ok' && data.molds) {
+      molds = data.molds;
+      localStorage.setItem('tpa_molds_cache', JSON.stringify(molds));
+      populateMoldSelect();
+      showToast(`✅ Загружено ${molds.length} пресс-форм`, 'success');
+      if (st) st.textContent = `Загружено ${molds.length} пресс-форм`;
+    } else {
+      showToast('Ошибка загрузки пресс-форм', 'error');
+    }
+  };
+  script.src = scriptUrl + '?action=getMolds&callback=' + cbName;
+  document.body.appendChild(script);
+}
+
+function pushOrderToSheets(order) {
+  if (!scriptUrl) return;
+  fetch(scriptUrl, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'addOrder', ...order }),
+  }).catch(() => {});
+}
+
+function patchOrderStatus(id, status) {
+  if (!scriptUrl) return;
+  fetch(scriptUrl, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateOrder', id, status, updatedAt: new Date().toISOString() }),
+  }).catch(() => {});
+}
+
+// ──────────────────────────────────────────────────────────────
+// НАСТРОЙКИ
+// ──────────────────────────────────────────────────────────────
+function saveSettings() {
+  scriptUrl = document.getElementById('s-url').value.trim();
+  localStorage.setItem('tpa_script_url', scriptUrl);
+  showToast('💾 Сохранено', 'success');
+  if (scriptUrl) loadFromSheets();
+}
+
+function saveShiftSettings() {
+  shiftHours = Number(document.getElementById('s-shift-hours').value) || 10;
+  shiftsPerDay = Number(document.getElementById('s-shifts-per-day').value) || 2;
+  localStorage.setItem('tpa_shift_hours', shiftHours);
+  localStorage.setItem('tpa_shifts_per_day', shiftsPerDay);
+  orders.forEach(o => recalcETAs(o.machine));
+  saveOrders();
+  renderAll();
+  showToast('💾 Параметры смены сохранены', 'success');
+}
+
+function clearAllOrders() {
+  if (!confirm('Удалить ВСЕ заказы? Действие необратимо.')) return;
+  orders = [];
+  saveOrders();
+  renderAll();
+  showToast('🗑 Все заказы удалены', 'info');
+}
+
+// ──────────────────────────────────────────────────────────────
+// ВСПОМОГАТЕЛЬНЫЕ
+// ──────────────────────────────────────────────────────────────
+function saveOrders() {
+  localStorage.setItem('tpa_orders', JSON.stringify(orders));
+}
+
+function renderAll() {
+  renderOrdersTable();
+  renderQueues();
+  renderGantt();
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const names = ['orders','queues','gantt','settings'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'queues') renderQueues();
+  if (name === 'gantt') renderGantt();
+}
+
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+function fmtHours(h) {
+  if (h < 1) return Math.round(h * 60) + 'м';
+  const hh = Math.floor(h);
+  const mm = Math.round((h - hh) * 60);
+  return mm > 0 ? `${hh}ч ${mm}м` : `${hh}ч`;
+}
+
+function fmtDatetime(d) {
+  return d.toLocaleDateString('ru-RU', { day:'2-digit', month:'2-digit' }) + ' ' +
+         d.toLocaleTimeString('ru-RU', { hour:'2-digit', minute:'2-digit' });
+}
+
+function localDatetimeStr(d) {
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function priorityBadge(p) {
+  if (p === 'urgent') return '<span class="badge badge-urgent">🔴 Срочный</span>';
+  if (p === 'low') return '<span class="badge badge-low">⬇ Низкий</span>';
+  return '<span class="badge badge-normal">Обычный</span>';
+}
+
+function statusBadge(s) {
+  const map = {
+    new: ['status-new', '🆕 Новый'],
+    queued: ['status-queued', '⏳ В очереди'],
+    running: ['status-running', '▶ В работе'],
+    done: ['status-done', '✅ Выполнен'],
+    warn: ['status-warn', '⚠ Внимание'],
+  };
+  const [cls, label] = map[s] || ['status-new', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function exportCSV() {
+  const headers = ['ID','Клиент','Деталь','Кол-во','Часов','Станок','Приоритет','Дедлайн','ETA','Статус','Комментарий'];
+  const rows = orders.map(o => [
+    o.id, o.client, o.partName, o.qty, o.prodHours.toFixed(2),
+    o.machine, o.priority,
+    o.deadline ? new Date(o.deadline).toLocaleString('ru-RU') : '',
+    o.eta ? new Date(o.eta).toLocaleString('ru-RU') : '',
+    o.status, o.comment
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `orders_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+function copyCode(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(() => showToast('📋 Скопировано', 'success'));
+}
+
+// Обновляем каждые 60 секунд (пересчёт ETA)
+setInterval(() => { if (orders.length) { renderQueues(); renderGantt(); } }, 60000);
+
+init();
+</script>
+</body>
+</html>

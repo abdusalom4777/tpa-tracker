@@ -217,6 +217,10 @@
       <div class="card-body"><div class="rank-list" id="op-days"><div class="empty">Нет данных</div></div></div>
     </div>
     <div class="card">
+      <div class="card-header"><div class="card-title">🏭 Станков на оператора</div><span style="font-size:12px;color:var(--text2)">в среднем за день</span></div>
+      <div class="card-body"><div class="rank-list" id="op-machines"><div class="empty">Нет данных</div></div></div>
+    </div>
+    <div class="card">
       <div class="card-header"><div class="card-title">⚙️ Загруженность станков</div><span style="font-size:12px;color:var(--text2)">по % суточной нормы (22ч)</span></div>
       <div class="card-body"><div class="rank-list" id="machine-rating"><div class="empty">Нет данных</div></div></div>
     </div>
@@ -284,16 +288,19 @@ function calcNormDay(cycleTime,cavities){if(!cycleTime||cycleTime<=0||!cavities)
 function calcNormShift(cycleTime,cavities,shiftStr){if(!cycleTime||cycleTime<=0||!cavities)return 0;var hours=(shiftStr&&shiftStr.indexOf('Смена 2')>=0)?12:10;return Math.floor((3600/cycleTime)*cavities*hours);}
 
 // ✅ ЕДИНАЯ логика нормы (как в дашборде):
-// группируем записи по (дата+смена), в каждой группе берём
+// группируем записи по (дата+станок+смена), в каждой группе берём
 // средневзвешенную по выпуску скорость × часы смены (С1=10ч, С2=12ч), суммируем.
-// Корректно учитывает смену пресс-форм внутри периода.
+// Станок в ключе нужен для операторов, ведущих НЕСКОЛЬКО станков за смену:
+// норма = сумма норм всех его станков (иначе % завышается кратно числу станков).
+// Для расчёта по одному станку наличие станка в ключе ничего не меняет.
 function calcNormFromRecords(recs) {
-  var groups = {}; // "дата|смена" -> {shiftNum, good, rateSum, rateSimple, recCount}
+  var groups = {}; // "дата|станок|смена" -> {shiftNum, good, rateSum, rateSimple, recCount}
   recs.forEach(function(r){
     if(!(r.cycleTime>0) || !r.date) return;
     var isS1 = r.shift && r.shift.indexOf('Смена 1')>=0;
     var shiftNum = isS1 ? 1 : 2;
-    var k = r.date+'|'+shiftNum;
+    var mCode = r.machine ? r.machine.split(' ')[0] : '?';
+    var k = r.date+'|'+mCode+'|'+shiftNum;
     if(!groups[k]) groups[k]={shiftNum:shiftNum,good:0,rateSum:0,rateSimple:0,recCount:0};
     var rate=(3600/r.cycleTime)*(r.cavities||1); // деталей/час при 100%
     var g=r.good||0;
@@ -353,6 +360,7 @@ function render(){
   renderKgMaterials(records);    // ✅
   renderOpRating(records);
   renderOpDays(records);
+  renderOpMachines(records);
   renderMachineRating(records);
   renderDowntime(records);
   renderMachineNormTable(records);
@@ -600,15 +608,49 @@ function renderOpDays(records){
   document.getElementById('op-days').innerHTML=list.map(function(o,i){var w=Math.round(o.days/maxDays*100);return'<div class="rank-row">'+rankNum(i)+'<div style="flex:1"><div style="font-size:14px;font-weight:600">'+o.name+'</div><div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill fill-blue" style="width:'+w+'%"></div></div></div></div><div class="rank-val">'+o.days+' дн.</div></div>';}).join('');
 }
 
+// ✅ Сколько станков обслуживает оператор в среднем за день
+function renderOpMachines(records){
+  var ops={}; // op -> { dayMachines: {date:{machine:true}} }
+  records.forEach(function(r){
+    var op=r.operator||'—';
+    if(!r.machine||!r.date)return;
+    if(!ops[op])ops[op]={dayMachines:{}};
+    var m=r.machine.split(' ')[0];
+    if(!ops[op].dayMachines[r.date])ops[op].dayMachines[r.date]={};
+    ops[op].dayMachines[r.date][m]=true;
+  });
+  var list=Object.entries(ops).map(function(e){
+    var days=Object.keys(e[1].dayMachines);
+    var counts=days.map(function(d){return Object.keys(e[1].dayMachines[d]).length;});
+    var avg=counts.length?counts.reduce(function(s,x){return s+x;},0)/counts.length:0;
+    var mx=counts.length?Math.max.apply(null,counts):0;
+    return{name:e[0],avg:avg,max:mx,days:days.length};
+  }).filter(function(o){return o.days>0;}).sort(function(a,b){return b.avg-a.avg;});
+  if(!list.length){document.getElementById('op-machines').innerHTML='<div class="empty">Нет данных</div>';return;}
+  var maxAvg=list[0].avg||1;
+  document.getElementById('op-machines').innerHTML=list.map(function(o,i){
+    var w=Math.round(o.avg/maxAvg*100);
+    var avgStr=o.avg.toFixed(1).replace(/\.0$/,'');
+    return'<div class="rank-row">'+rankNum(i)+
+      '<div style="flex:1"><div style="font-size:14px;font-weight:600">'+o.name+
+      ' <span style="font-size:11px;color:var(--text2);font-weight:400">макс '+o.max+'</span></div>'+
+      '<div style="margin-top:4px"><div class="rank-bar-bg"><div class="rank-bar-fill fill-blue" style="width:'+w+'%"></div></div></div></div>'+
+      '<div class="rank-val">'+avgStr+' <span style="font-size:11px;color:var(--text2);font-weight:400">ст/д</span></div></div>';
+  }).join('');
+}
+
 function renderOpCards(records){
   if(!records.length){document.getElementById('op-cards').innerHTML='<div class="empty">Нет данных</div>';return;}
   var ops={};
   records.forEach(function(r){
     var op=r.operator||'—';
-    if(!ops[op])ops[op]={good:0,defects:0,shifts:0,days:{},machines:{},recs:[],downtime:0,kgGood:0};
+    if(!ops[op])ops[op]={good:0,defects:0,shifts:0,days:{},machines:{},recs:[],downtime:0,kgGood:0,dayMachines:{}};
     ops[op].good+=r.good||0;ops[op].defects+=r.defects||0;ops[op].downtime+=(r.plannedDown||0)+(r.unplannedDown||0);
     if(r.date)ops[op].days[r.date]=true;
-    if(r.machine){var m=r.machine.split(' ')[0];ops[op].machines[m]=(ops[op].machines[m]||0)+(r.good||0);}
+    if(r.machine){var m=r.machine.split(' ')[0];ops[op].machines[m]=(ops[op].machines[m]||0)+(r.good||0);
+      // ✅ станки по дням: какие станки оператор вёл в каждый день
+      if(r.date){if(!ops[op].dayMachines[r.date])ops[op].dayMachines[r.date]={};ops[op].dayMachines[r.date][m]=true;}
+    }
     ops[op].recs.push(r);
     ops[op].kgGood += (r.good||0) * (r.weight||0) / 1000; // ✅
     ops[op].shifts++;
@@ -616,7 +658,13 @@ function renderOpCards(records){
   var list=Object.entries(ops).map(function(e){
     var nt=calcNormFromRecords(e[1].recs),pct=nt>0?Math.round(e[1].good/nt*100):0;
     var bm=Object.entries(e[1].machines).sort(function(a,b){return b[1]-a[1];})[0];
-    return{name:e[0],good:e[1].good,defects:e[1].defects,days:Object.keys(e[1].days).length,shifts:e[1].shifts,pct:pct,downtime:e[1].downtime,bestMachine:bm?bm[0]:'—',kgGood:e[1].kgGood};
+    // ✅ среднее и макс. число станков в день
+    var dmKeys=Object.keys(e[1].dayMachines);
+    var perDayCounts=dmKeys.map(function(d){return Object.keys(e[1].dayMachines[d]).length;});
+    var avgMpd=perDayCounts.length?(perDayCounts.reduce(function(s,x){return s+x;},0)/perDayCounts.length):0;
+    var maxMpd=perDayCounts.length?Math.max.apply(null,perDayCounts):0;
+    var totalMachines=Object.keys(e[1].machines).length;
+    return{name:e[0],good:e[1].good,defects:e[1].defects,days:Object.keys(e[1].days).length,shifts:e[1].shifts,pct:pct,downtime:e[1].downtime,bestMachine:bm?bm[0]:'—',kgGood:e[1].kgGood,avgMpd:avgMpd,maxMpd:maxMpd,totalMachines:totalMachines};
   }).sort(function(a,b){return b.pct-a.pct;});
   document.getElementById('op-cards').innerHTML=list.map(function(op,i){
     var pc=op.pct>=100?'var(--green)':op.pct>=80?'var(--amber-text)':'var(--red)',bc=op.pct>=100?'fill-green':op.pct>=80?'fill-amber':'fill-red',bw=Math.min(op.pct,100);
@@ -625,6 +673,7 @@ function renderOpCards(records){
     return'<div class="op-card">'+
       '<div class="op-card-name">'+badge+' '+op.name+'<span class="badge '+(op.pct>=100?'badge-ok':op.pct>=80?'badge-warn':'badge-err')+'" style="margin-left:auto">'+op.pct+'%</span></div>'+
       '<div class="op-stat-row"><span>Дней отработано</span><span class="op-stat-val">'+op.days+' дн.</span></div>'+
+      '<div class="op-stat-row"><span>🏭 Станков в день</span><span class="op-stat-val" style="color:var(--blue)">'+op.avgMpd.toFixed(1).replace(/\.0$/,'')+(op.maxMpd>op.avgMpd+0.05?' (макс '+op.maxMpd+')':'')+'</span></div>'+
       '<div class="op-stat-row"><span>Записей (смен)</span><span class="op-stat-val">'+op.shifts+'</span></div>'+
       '<div class="op-stat-row"><span>Выпущено</span><span class="op-stat-val" style="color:var(--green)">'+op.good.toLocaleString()+' шт</span></div>'+
       (op.kgGood>0?'<div class="op-stat-row"><span>Произведено</span><span class="op-stat-val" style="color:var(--green)">'+fmtKg(op.kgGood)+'</span></div>':'')+

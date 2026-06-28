@@ -24,7 +24,6 @@
   .clock { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 2px; }
   .date-str { font-size: 13px; color: var(--text2); text-align: right; }
   .shift-tag { padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
-  /* ✅ summary теперь 7 колонок */
   .summary { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
   .summary-item { background: var(--surface); padding: 10px 12px; display: flex; flex-direction: column; align-items: center; }
   .summary-val { font-size: 22px; font-weight: 700; }
@@ -75,7 +74,6 @@
   .auto-badge { font-size: 11px; color: var(--green); background: var(--green-bg); padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
   .days-badge { font-size: 11px; color: var(--blue); background: var(--blue-bg); padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
   .status-bar-bottom { padding: 4px 20px 60px; font-size: 11px; color: var(--text3); text-align: center; }
-  /* Таблица расхода материалов */
   .mat-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 8px; }
   .mat-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); }
   .mat-table tr:last-child td { border-bottom: none; }
@@ -97,7 +95,6 @@
   </div>
 </div>
 
-<!-- ✅ Summary: 7 колонок — добавлены кг произведено и расход сырья -->
 <div class="summary">
   <div class="summary-item"><div class="summary-val" id="s-total">—</div><div class="summary-lbl">Годные шт</div></div>
   <div class="summary-item"><div class="summary-val" style="color:var(--red)" id="s-defects">—</div><div class="summary-lbl">Брак шт</div></div>
@@ -118,7 +115,6 @@
       <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">⚡ Эффективность (%)</div>
       <canvas id="chart-eff" height="140"></canvas>
     </div>
-    <!-- ✅ Новый график: расход сырья по материалам -->
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;">
       <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">🧪 Расход сырья по материалам</div>
       <div id="mat-breakdown"><div style="color:var(--text3);font-size:12px;text-align:center;padding:20px 0">Нет данных</div></div>
@@ -169,7 +165,6 @@ var records=[], nextRefresh=300;
 
 function loadGsUrl(){return localStorage.getItem('dash_gs_url')||'';}
 function saveGsUrl(u){localStorage.setItem('dash_gs_url',u);}
-function calcNorm(ct,cav,sn){if(!ct||ct<=0||!cav)return 0;return Math.floor((3600/ct)*cav*(sn===1?10:12));}
 function getTodayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function normalizeDate(v){
   if(!v)return'';var s=String(v);
@@ -181,7 +176,6 @@ function normalizeDate(v){
   return s;
 }
 
-// ✅ Умное форматирование кг
 function fmtKg(kg) {
   if (!kg || kg <= 0) return '—';
   if (kg >= 1000) return (kg/1000).toFixed(2)+' т';
@@ -280,7 +274,6 @@ function renderAll(){
   var tDn=filtered.reduce(function(s,r){return s+(r.plannedDown||0)+(r.unplannedDown||0);},0);
   var dr=(tG+tD)?Math.round(tD/(tG+tD)*100):0;
 
-  // ✅ кг
   var tKgGood=filtered.reduce(function(s,r){return s+(r.good||0)*(r.weight||0)/1000;},0);
   var tKgRaw=filtered.reduce(function(s,r){return s+((r.good||0)+(r.defects||0))*(r.weight||0)/1000;},0);
 
@@ -298,7 +291,6 @@ function renderAll(){
   document.getElementById('s-kg-raw').textContent=fmtKg(tKgRaw);
   document.getElementById('s-down').textContent=tDn||'0';
 
-  // ✅ Расход по материалам
   renderMaterialBreakdown(filtered);
 
   renderGrid('grid-t',MACHINES_T,filtered,sf);
@@ -306,7 +298,6 @@ function renderAll(){
   if(typeof renderCharts==='function')renderCharts(filtered,sf);
 }
 
-// ✅ НОВОЕ: блок расхода сырья по материалам
 function renderMaterialBreakdown(filtered) {
   var mats = {};
   filtered.forEach(function(r){
@@ -340,21 +331,23 @@ function renderMaterialBreakdown(filtered) {
   }).join('');
 }
 
+// ✅ ИСПРАВЛЕНО: норма считается отдельно по каждой (дата+смена)
+// с реальными гнёздами/циклом каждой пресс-формы (взвешенно по выпуску),
+// затем суммируется. Это корректно учитывает смену форм внутри диапазона.
 function getMachineStats(machineId,recs,sf){
   var s={good:0,defects:0,cycles:0,plannedDown:0,unplannedDown:0,
     operators:{},opShifts:{},parts:[],molds:{},
-    s1:{good:0,cycleTime:0,cavities:0,count:0},
-    s2:{good:0,cycleTime:0,cavities:0,count:0},
-    normDay:0,norm1:0,norm2:0,normTotal:0,machineDays:1,
+    norm1:0,norm2:0,normDay:0,normTotal:0,machineDays:1,
     kgGood:0,kgRaw:0};
   var mDates={};
+  // Группы: "дата|номерСмены" -> { shiftNum, good, rateSum=Σ(rate*good), rateSimple=Σrate, recCount }
+  var shiftGroups={};
   recs.forEach(function(r){
     var key=r.machine?r.machine.split(' ')[0]:'';
     if(key!==machineId)return;
     if(r.date)mDates[r.date]=true;
     s.good+=r.good||0; s.defects+=r.defects||0; s.cycles+=r.cycles||0;
     s.plannedDown+=r.plannedDown||0; s.unplannedDown+=r.unplannedDown||0;
-    // ✅ кг
     s.kgGood += (r.good||0)*(r.weight||0)/1000;
     s.kgRaw  += ((r.good||0)+(r.defects||0))*(r.weight||0)/1000;
     if(r.partName)s.parts.push(r.partName);
@@ -365,19 +358,37 @@ function getMachineStats(machineId,recs,sf){
       var sl=(r.shift&&r.shift.indexOf('Смена 1')>=0)?'С1':'С2';
       s.opShifts[r.operator][sl]=(s.opShifts[r.operator][sl]||0)+(r.good||0);
     }
-    var isS1=r.shift&&r.shift.indexOf('Смена 1')>=0,sd=isS1?s.s1:s.s2;
-    sd.good+=r.good||0;
-    if(r.cycleTime>0){sd.cycleTime=sd.count>0?(sd.cycleTime*sd.count+r.cycleTime)/(sd.count+1):r.cycleTime;sd.cavities=r.cavities||1;sd.count++;}
+    // ✅ накопление для нормы — отдельно по каждой смене каждого дня,
+    //    с РЕАЛЬНЫМ временем цикла и гнёздами каждой записи (формы)
+    if(r.cycleTime>0&&r.date){
+      var isS1=r.shift&&r.shift.indexOf('Смена 1')>=0;
+      var shiftNum=isS1?1:2;
+      var gKey=r.date+'|'+shiftNum;
+      if(!shiftGroups[gKey])shiftGroups[gKey]={shiftNum:shiftNum,good:0,rateSum:0,rateSimple:0,recCount:0};
+      var rate=(3600/r.cycleTime)*(r.cavities||1); // деталей/час при 100%
+      var g=r.good||0;
+      shiftGroups[gKey].good+=g;
+      shiftGroups[gKey].rateSum+=rate*g; // взвешиваем скорость по выпуску
+      shiftGroups[gKey].rateSimple+=rate;
+      shiftGroups[gKey].recCount++;
+    }
   });
   s.machineDays=Math.max(Object.keys(mDates).length,1);
-  var ct=s.s1.cycleTime>0?s.s1.cycleTime:s.s2.cycleTime;
-  var cav=s.s1.cycleTime>0?s.s1.cavities:s.s2.cavities;
-  s.norm1=s.s1.cycleTime>0?calcNorm(s.s1.cycleTime,s.s1.cavities,1):(ct>0?calcNorm(ct,cav,1):0);
-  s.norm2=s.s2.cycleTime>0?calcNorm(s.s2.cycleTime,s.s2.cavities,2):(ct>0?calcNorm(ct,cav,2):0);
-  if(!sf||sf==='all') s.normDay=s.norm1+s.norm2;
-  else if(sf==='s1')  s.normDay=s.norm1;
-  else if(sf==='s2')  s.normDay=s.norm2;
-  s.normTotal=s.normDay*s.machineDays;
+
+  // ✅ Норма = Σ по сменам: (средневзвеш. скорость) × (часы смены: С1=10ч, С2=12ч)
+  var normTotal=0,n1=0,n2=0;
+  Object.keys(shiftGroups).forEach(function(gKey){
+    var g=shiftGroups[gKey];
+    var weightedRate;
+    if(g.good>0&&g.rateSum>0) weightedRate=g.rateSum/g.good;      // взвешено по выпуску
+    else if(g.recCount>0)     weightedRate=g.rateSimple/g.recCount; // запас: простое среднее
+    else return;
+    var hours=g.shiftNum===1?10:12;
+    var shiftNorm=Math.floor(weightedRate*hours);
+    normTotal+=shiftNorm;
+    if(g.shiftNum===1)n1+=shiftNorm;else n2+=shiftNorm;
+  });
+  s.norm1=n1; s.norm2=n2; s.normDay=normTotal; s.normTotal=normTotal;
   return s;
 }
 
@@ -403,7 +414,6 @@ function renderGrid(gridId,machines,recs,sf){
     if(hasData&&normTotal>0){var lbl=(!sf||sf==='all')?'📅 Норма':sf==='s1'?'☀️ С1':'🌙 С2';nb=pBar(s.good,normTotal,lbl+dl);}
     else if(hasData){nb='<div style="font-size:11px;color:var(--text3);text-align:center;padding:4px 0">Норма: нет данных о цикле</div>';}
 
-    // ✅ Строка кг в карточке
     var kgRow='';
     if(hasData&&(s.kgGood>0||s.kgRaw>0)){
       kgRow='<div class="kg-row">'+

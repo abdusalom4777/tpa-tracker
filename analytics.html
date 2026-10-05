@@ -534,7 +534,7 @@ function renderKgMaterials(records) {
 
 // ===================== ТАБЛИЦА % нормы по станкам =====================
 function renderMachineNormTable(records){
-  var MACHINES=['T1','T2','T3','T4','T5','T6','T7','T8','T9','V1','V2','V3','V4'];
+  var MACHINES=['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','V1','V2','V3','V4','V5'];
   var dates=[...new Set(records.map(function(r){return r.date;}).filter(Boolean))].sort();
   if(!dates.length){document.getElementById('machine-norm-table').innerHTML='<tbody><tr><td class="empty" colspan="20">Нет данных</td></tr></tbody>';return;}
   var cell={};
@@ -738,9 +738,11 @@ function loadFromSheets(){
           partName:r[5]||'',moldId:r[6]||'',cavities:parseInt(r[7])||1,cycles:parseInt(r[8])||0,
           cycleTime:parseFloat(r[9])||0,good:parseInt(r[10])||0,defects:parseInt(r[11])||0,
           weight:parseFloat(r[13])||0,defectNote:r[14]||'',plannedDown:parseInt(r[15])||0,
-          unplannedDown:parseInt(r[16])||0,downtimeReason:r[17]||'',synced:true};
+          unplannedDown:parseInt(r[16])||0,downtimeReason:r[17]||'',sentAt:r[18]||'',autoMode:parseInt(r[19])||0,synced:true};
       });
-      saveRecords(imported);showStatus('✅ Загружено '+imported.length+' записей','ok');render();
+      // ✅ не затираем неотправленные (офлайн) записи формы — localStorage 'tpa_v2' общий
+      var pendingLocal=loadRecords().filter(function(x){return !x.synced;});
+      saveRecords(imported.concat(pendingLocal));showStatus('✅ Загружено '+imported.length+' записей','ok');render();
     }else{showStatus('⚠️ Нет данных или ошибка загрузки','err');}
   };
   script.onerror=function(){if(!done){done=true;delete window[cbName];showStatus('❌ Ошибка соединения','err');}};

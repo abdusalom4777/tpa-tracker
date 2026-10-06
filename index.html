@@ -639,6 +639,7 @@
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var d = JSON.parse(e.postData.contents);
+    if (d.action === "login") return handleLogin(d); // ✅ вход — файл Auth.gs
     if (d.action === "addMold") {
       var sheet = ss.getSheetByName("Пресс-формы") || ss.insertSheet("Пресс-формы");
       if (sheet.getLastRow() === 0) sheet.appendRow(["№ Пресс-формы","Артикул","Название","Станок","Цикл (сек)","Гнёзда","Вес (г)","Материал"]);

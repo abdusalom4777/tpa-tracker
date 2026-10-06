@@ -19,6 +19,9 @@
 - `analytics.html` — аналитика.
 - `kpi.html` — KPI наладчиков (доступ только role=admin).
 - `login.html` — вход (sessionStorage `tpa_session`). `ROUTES`: admin → home.html, operator → index.html.
+  Паролей в коде НЕТ: POST `{action:'login'}` → `handleLogin` в `Auth.gs` (Apps Script), пароли в Свойствах скрипта
+  `ADMIN_PASS` / `OPERATOR_PASS`. Без связи — вход по SHA-256 отпечатку в localStorage `tpa_auth_cache`.
+- `Auth.gs` — функция входа для Apps Script, НЕ на GitHub (как TelegramNotifier.gs).
 - `TelegramNotifier.gs` — код Apps Script, НЕ на GitHub (вставляется в редактор Apps Script).
 
 ## Станки

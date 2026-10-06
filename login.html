@@ -189,16 +189,20 @@
     <input type="password" id="password" placeholder="Введите пароль" autocomplete="current-password">
   </div>
 
-  <button class="btn" onclick="doLogin()">Войти →</button>
+  <!-- Показывается, только если на этом устройстве ещё не сохранён URL Apps Script -->
+  <div class="field" id="gs-url-field" style="display:none">
+    <label>URL Apps Script (один раз)</label>
+    <input type="url" id="gs-url" placeholder="https://script.google.com/macros/s/.../exec" autocapitalize="none">
+  </div>
+
+  <button class="btn" id="btn-login" onclick="doLogin()">Войти →</button>
 
   <div class="error" id="error-msg">❌ Неверный логин или пароль</div>
 </div>
 
 <script>
-var USERS = {
-  'admin':    { password: '12345678', role: 'admin' },
-  'operator': { password: '12345678', role: 'operator' }
-};
+// ✅ Пароли НЕ хранятся в коде: проверка в Apps Script (handleLogin, Свойства скрипта).
+// Без связи — вход по отпечатку (SHA-256) последнего удачного входа на этом устройстве.
 
 var ROUTES = {
   'admin':    'home.html',
@@ -219,24 +223,101 @@ function redirect(role) {
   window.location.href = ROUTES[role] || 'index.html';
 }
 
+// URL Apps Script: берём любой уже сохранённый на устройстве (форма / дашборд / KPI)
+function findGsUrl() {
+  try {
+    return localStorage.getItem('tpa_gs_url') || localStorage.getItem('dash_gs_url') ||
+           localStorage.getItem('kpi_gs_url') || '';
+  } catch(e) { return ''; }
+}
+
+if (!findGsUrl()) document.getElementById('gs-url-field').style.display = 'block';
+
+function sha256(text) {
+  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf) {
+    return Array.prototype.map.call(new Uint8Array(buf), function(b) {
+      return ('0' + b.toString(16)).slice(-2);
+    }).join('');
+  });
+}
+
+function loadAuthCache() {
+  try { return JSON.parse(localStorage.getItem('tpa_auth_cache') || '{}'); } catch(e) { return {}; }
+}
+
+function loginOk(username, role) {
+  sessionStorage.setItem('tpa_session', JSON.stringify({ username: username, role: role }));
+  redirect(role);
+}
+
+function showError(text) {
+  var errorEl = document.getElementById('error-msg');
+  var card = document.getElementById('login-card');
+  errorEl.textContent = text;
+  errorEl.style.display = 'block';
+  card.classList.remove('shake');
+  void card.offsetWidth;
+  card.classList.add('shake');
+  document.getElementById('password').value = '';
+  document.getElementById('password').focus();
+}
+
+function setBusy(busy) {
+  var btn = document.getElementById('btn-login');
+  btn.disabled = busy;
+  btn.textContent = busy ? '⏳ Проверка...' : 'Войти →';
+}
+
+// Без связи: сверяем с отпечатком последнего удачного входа
+function offlineLogin(username, password) {
+  var cached = loadAuthCache()[username];
+  if (!cached) { showError('📵 Нет связи. Первый вход на этом устройстве — только с интернетом.'); return; }
+  sha256(username + ':' + password).then(function(h) {
+    if (h === cached.hash) loginOk(username, cached.role);
+    else showError('❌ Неверный логин или пароль');
+  });
+}
+
 function doLogin() {
   var username = document.getElementById('username').value.trim().toLowerCase();
   var password = document.getElementById('password').value;
-  var errorEl = document.getElementById('error-msg');
-  var card = document.getElementById('login-card');
+  document.getElementById('error-msg').style.display = 'none';
+  if (!username || !password) { showError('Введите логин и пароль'); return; }
 
-  var user = USERS[username];
-  if (user && user.password === password) {
-    sessionStorage.setItem('tpa_session', JSON.stringify({ username: username, role: user.role }));
-    redirect(user.role);
-  } else {
-    errorEl.style.display = 'block';
-    card.classList.remove('shake');
-    void card.offsetWidth;
-    card.classList.add('shake');
-    document.getElementById('password').value = '';
-    document.getElementById('password').focus();
+  var url = findGsUrl();
+  if (!url) {
+    url = document.getElementById('gs-url').value.trim();
+    if (!/^https:\/\/script\.google\.com\//.test(url)) { showError('Вставьте URL Apps Script'); return; }
   }
+
+  setBusy(true);
+  // text/plain — «простой» запрос, Apps Script отдаёт ответ без CORS-ошибки
+  fetch(url, { method: 'POST', body: JSON.stringify({ action: 'login', username: username, password: password }) })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      setBusy(false);
+      if (res.status === 'ok' && ROUTES[res.role]) {
+        try {
+          if (!findGsUrl()) localStorage.setItem('tpa_gs_url', url);
+        } catch(e) {}
+        sha256(username + ':' + password).then(function(h) {
+          var cache = loadAuthCache();
+          cache[username] = { hash: h, role: res.role };
+          try { localStorage.setItem('tpa_auth_cache', JSON.stringify(cache)); } catch(e) {}
+          loginOk(username, res.role);
+        });
+      } else if (res.status === 'locked') {
+        showError('🔒 Слишком много попыток. Подождите 10 минут.');
+      } else if (res.status === 'ok') {
+        showError('⚠️ Apps Script не обновлён — нет функции входа');
+      } else {
+        showError('❌ Неверный логин или пароль');
+      }
+    })
+    .catch(function() {
+      setBusy(false);
+      offlineLogin(username, password);
+    });
 }
 
 // Enter key
